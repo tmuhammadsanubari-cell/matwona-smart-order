@@ -126,3 +126,25 @@ describe('InvalidQr (FR-001)', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 });
+
+describe('Banner pesanan aktif (FR-007)', () => {
+  it('menampilkan "Lihat pesanan aktif" untuk pesanan meja ini yang belum selesai', async () => {
+    localStorage.setItem(
+      'matwona-orders',
+      JSON.stringify([{ code: 'MTW-261105-0042', outlet: 'matwona', tableToken: TOKEN, createdAt: new Date().toISOString() }]),
+    );
+    renderMenu();
+    const link = await screen.findByRole('link', { name: /Lihat pesanan aktif/ });
+    expect(link.getAttribute('href')).toBe('/m/matwona/order/MTW-261105-0042');
+  });
+
+  it('tidak ada banner untuk pesanan meja lain', async () => {
+    localStorage.setItem(
+      'matwona-orders',
+      JSON.stringify([{ code: 'MTW-261105-0042', outlet: 'matwona', tableToken: 'MejaLain', createdAt: new Date().toISOString() }]),
+    );
+    renderMenu();
+    await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' });
+    expect(screen.queryByRole('link', { name: /Lihat pesanan aktif/ })).toBeNull();
+  });
+});

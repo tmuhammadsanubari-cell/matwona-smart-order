@@ -4,6 +4,8 @@ Base URL lokal: `http://localhost:4000/api`. Spesifikasi lengkap (contoh request
 
 Legenda status: ⬜ belum · 🟨 sedang dikerjakan · ✅ selesai & teruji
 
+CORS: hanya origin di `WEB_ORIGIN` (dipisah koma). Di luar `NODE_ENV=production`, origin LAN `http://192.168.*.*:3000` juga diterima (HTTP & Socket.IO) agar web bisa diuji di HP lewat Wi-Fi/hotspot laptop.
+
 Header khusus:
 - `X-Table-Token`: token meja (akses pelanggan)
 - `Idempotency-Key`: UUID per pembuatan pesanan

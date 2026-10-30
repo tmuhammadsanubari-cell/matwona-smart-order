@@ -3,6 +3,7 @@ import { OnGatewayConnection, OnGatewayInit, WebSocketGateway } from '@nestjs/we
 import { ErrorCode, REALTIME_NAMESPACE } from 'shared';
 import type { Namespace, Socket } from 'socket.io';
 import { AppException } from '../../common/app.exception.js';
+import { corsOrigin } from '../../common/cors.js';
 import { RealtimeAuthService } from './realtime-auth.service.js';
 import { RealtimeService } from './realtime.service.js';
 
@@ -13,17 +14,12 @@ interface SocketData {
   rooms: string[];
 }
 
-/** Origin dibaca saat request (env sudah dimuat ConfigModule), sama dengan CORS HTTP di app.setup.ts. */
-const allowedOrigin = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-  const origins = process.env.WEB_ORIGIN?.split(',') ?? ['http://localhost:3000'];
-  callback(null, !origin || origins.includes(origin));
-};
-
 /**
  * Gateway Socket.IO `/realtime` (PRD 4.3). Klien hanya menerima event dari server;
  * autentikasi dilakukan sekali di handshake, gagal → `connect_error` dengan `data.code`.
+ * Origin sama dengan CORS HTTP (`common/cors.ts`), dibaca saat request setelah env dimuat ConfigModule.
  */
-@WebSocketGateway({ namespace: REALTIME_NAMESPACE, cors: { origin: allowedOrigin, credentials: true } })
+@WebSocketGateway({ namespace: REALTIME_NAMESPACE, cors: { origin: corsOrigin, credentials: true } })
 export class RealtimeGateway implements OnGatewayInit<Namespace>, OnGatewayConnection<Socket> {
   private readonly logger = new Logger('RealtimeGateway');
 

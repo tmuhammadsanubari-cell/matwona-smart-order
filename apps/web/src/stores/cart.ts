@@ -28,6 +28,10 @@ interface CartState {
   setNote: (menuItemId: string, note: string) => void;
   /** Samakan nama & harga dengan menu terbaru agar yang dilihat pelanggan = harga sekarang. */
   syncWithMenu: (items: Map<string, PublicMenuItem>) => void;
+  /** Terapkan harga baru dari server (error PRICE_CHANGED saat checkout). */
+  updatePrices: (prices: { menuItemId: string; unitPrice: number }[]) => void;
+  /** Hapus beberapa item sekaligus (error ITEM_UNAVAILABLE saat checkout). */
+  remove: (menuItemIds: string[]) => void;
   clear: () => void;
 }
 
@@ -73,6 +77,12 @@ export const useCart = create<CartState>()(
             return item ? { ...l, name: item.name, unitPrice: item.price } : l;
           }),
         })),
+      updatePrices: (prices) =>
+        set((s) => {
+          const byId = new Map(prices.map((p) => [p.menuItemId, p.unitPrice]));
+          return { lines: s.lines.map((l) => (byId.has(l.menuItemId) ? { ...l, unitPrice: byId.get(l.menuItemId)! } : l)) };
+        }),
+      remove: (menuItemIds) => set((s) => ({ lines: s.lines.filter((l) => !menuItemIds.includes(l.menuItemId)) })),
       clear: () => set({ lines: [] }),
     }),
     {

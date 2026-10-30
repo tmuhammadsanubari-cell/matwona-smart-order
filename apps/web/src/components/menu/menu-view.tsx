@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { PublicMenu, PublicMenuItem } from 'shared';
 import { CartBar } from '@/components/cart/cart-bar';
 import { CartSheet } from '@/components/cart/cart-sheet';
 import { Button } from '@/components/ui';
 import { filterMenu } from '@/lib/menu';
+import { activeOrderForTable, type PlacedOrder } from '@/lib/placed-orders';
 import { loadCartForTable, summarizeCart, useCart } from '@/stores/cart';
 import { CategoryTabs } from './category-tabs';
 import { MenuItemCard } from './menu-item-card';
@@ -25,6 +27,7 @@ export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps)
   const [activeId, setActiveId] = useState<string | null>(menu.categories[0]?.id ?? null);
   const [cartReady, setCartReady] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [activeOrder, setActiveOrder] = useState<PlacedOrder | undefined>(undefined);
   const lines = useCart((s) => s.lines);
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
@@ -43,6 +46,7 @@ export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps)
       if (cancelled) return;
       // Harga & nama mengikuti menu terbaru; item habis ditandai di keranjang.
       useCart.getState().syncWithMenu(menuItems);
+      setActiveOrder(activeOrderForTable(token));
       setCartReady(true);
     });
     return () => {
@@ -92,6 +96,18 @@ export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps)
           />
         </div>
       </header>
+
+      {activeOrder && (
+        <Link
+          href={`/m/${menu.outlet.slug}/order/${activeOrder.code}`}
+          className="flex min-h-11 items-center justify-between gap-3 bg-primary-soft px-4 py-2 text-sm font-semibold text-primary"
+        >
+          <span>Kamu punya pesanan aktif ({activeOrder.code})</span>
+          <span className="shrink-0">
+            Lihat pesanan aktif <span aria-hidden="true">→</span>
+          </span>
+        </Link>
+      )}
 
       <p className="sr-only" aria-live="polite">
         {query ? `${resultCount} menu ditemukan` : ''}

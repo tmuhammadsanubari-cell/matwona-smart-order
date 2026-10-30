@@ -1,6 +1,7 @@
 import type { ApiError, ApiResponse } from 'shared';
+import { resolveDevUrl } from './dev-url';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
 export class ApiClientError extends Error {
   constructor(
@@ -20,7 +21,7 @@ export async function apiFetch<T>(
   init: RequestInit & { tableToken?: string; idempotencyKey?: string } = {},
 ): Promise<T> {
   const { tableToken, idempotencyKey, headers, ...rest } = init;
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const res = await fetch(`${resolveDevUrl(API_URL)}${path}`, {
     credentials: 'include',
     ...rest,
     headers: {
