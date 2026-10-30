@@ -3,10 +3,14 @@
 /*
  * Design token brand Matwona (docs/design/BRAND.md).
  * Pakai kelas token (bg-primary, text-cream, border-accent, ...). Jangan hardcode hex di komponen.
- * Kontras: primary vs putih ±6.2:1 ✅ · accent vs putih ±3.5:1 → hanya teks besar.
+ * Kontras teks normal wajib ≥ 4,5:1 (NFR-014); pasangan yang dipakai komponen diuji di
+ * src/components/ui/contrast.test.ts. accent/success vs putih hanya ±3,5:1 → jangan untuk teks kecil,
+ * pakai untuk ikon, garis, latar besar, atau teks ≥ 24 px.
  */
 @theme {
   --color-primary: #106f4d; /* sea green */
+  --color-primary-hover: #0c5a3e; /* primary lebih gelap untuk hover/active */
+  --color-primary-soft: #e3f2ea; /* latar lembut untuk badge/teks primary */
   --color-primary-foreground: #ffffff;
   --color-accent: #069d70; /* teal old green */
   --color-cream: #ffffca; /* soft shade of yellow */
@@ -15,11 +19,25 @@
   --color-surface: #ffffff;
   --color-line: #e3e8d9;
   --color-danger: #c0392b;
-  --color-success: #069d70;
+  --color-danger-soft: #fbe8e6; /* latar lembut untuk badge/teks danger */
+  --color-success: #069d70; /* = accent; bukan untuk teks kecil */
 
   --font-sans: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 1rem;
+}
+
+/* Animasi BottomSheet; dipakai lewat motion-safe: agar menghormati prefers-reduced-motion. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
 }
 
 @layer base {

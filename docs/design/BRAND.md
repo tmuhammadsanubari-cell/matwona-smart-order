@@ -17,8 +17,14 @@ Sumber: Brand Guideline Matwona (dari mitra). Token diimplementasikan di `apps/w
 | `cream` | `#ffffca` | soft shade of yellow | Latar kartu/section, teks di atas `primary` (±6:1 ✅) |
 | `ink` | `#1f2a24` | – | Teks body di latar terang |
 | `danger` | `#c0392b` | – | Error, label Habis |
+| `primary-hover` | `#0c5a3e` | – | Hover/active tombol primary (teks putih ±8,2:1 ✅) |
+| `primary-soft` | `#e3f2ea` | – | Latar badge "berhasil/lunas" & hover tombol sekunder; teks `primary` di atasnya ±5,3:1 ✅ |
+| `danger-soft` | `#fbe8e6` | – | Latar badge "Habis/Belum bayar"; teks `danger` di atasnya ±4,6:1 ✅ |
+| `success` | `#069d70` | = accent | Ikon/garis status berhasil. **Bukan** untuk teks kecil (±3,5:1) |
 
 Jangan hardcode hex di komponen; selalu pakai kelas token (`bg-primary`, `text-cream`, `border-accent`).
+
+Setiap pasangan teks/latar yang dipakai komponen diuji otomatis (≥ 4,5:1, NFR-014) di `apps/web/src/components/ui/contrast.test.ts`.
 
 ## Tipografi
 
