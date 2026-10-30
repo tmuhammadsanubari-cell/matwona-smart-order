@@ -41,6 +41,21 @@ export class CacheService implements OnModuleDestroy {
     }
   }
 
+  /**
+   * Naikkan counter fixed-window. TTL dipasang hanya saat counter baru dibuat.
+   * Mengembalikan null bila Redis tidak tersedia.
+   */
+  async increment(key: string, ttlSeconds: number): Promise<number | null> {
+    try {
+      const result = await this.redis.multi().incr(key).expire(key, ttlSeconds, 'NX').exec();
+      const count = result?.[0]?.[1];
+      return typeof count === 'number' ? count : null;
+    } catch (error) {
+      this.warn(error);
+      return null;
+    }
+  }
+
   async del(key: string): Promise<void> {
     try {
       await this.redis.del(key);

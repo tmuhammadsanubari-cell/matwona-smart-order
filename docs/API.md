@@ -38,11 +38,23 @@ Catatan implementasi (S1-01):
 | ✅ | GET | `/public/outlets/:slug/menu` | publik |
 | ⬜ | GET | `/public/outlets/:slug/promos` | publik |
 | ✅ | GET | `/public/tables/:token` | publik |
-| ⬜ | POST | `/public/orders` | table token |
+| ✅ | POST | `/public/orders` | table token |
 | ⬜ | GET | `/public/orders/:code` | table token |
 | ⬜ | POST | `/public/orders/:code/pay` | table token |
 | ⬜ | GET | `/public/recommendations` | publik |
 | ⬜ | POST | `/public/recommendation-events` | publik |
+
+Catatan implementasi (S1-06):
+- `POST /public/orders` wajib header `X-Table-Token` dan `Idempotency-Key` (UUID). Body `{ customerName, customerPhone?, paymentMethod: "CASHIER"|"QRIS", items: [{ menuItemId, quantity, note?, fromRecommendation?, expectedUnitPrice? }], recommendationSessionId? }` (skema `createOrderSchema`). Field lain (mis. harga/total dari klien) diabaikan.
+- 201 → `PublicOrderDto`: `{ orderCode, table, customerName, status, paymentMethod, paymentStatus, subtotalAmount, discountAmount, totalAmount, items: [{ menuItemId, name, quantity, unitPrice, discountAmount, lineTotal, note }], createdAt }`. `CASHIER` → `paymentStatus = UNPAID`; `QRIS` → `PENDING` (transaksi Midtrans dibuat terpisah di S2-01).
+- Harga & total selalu dihitung ulang dari DB (NFR-007). `expectedUnitPrice` opsional, yaitu harga yang dilihat pelanggan; jika berbeda dari DB → 409 `PRICE_CHANGED` (`details.items: [{ menuItemId, name, expectedUnitPrice, unitPrice }]`).
+- Item tidak dikenal, diarsipkan, ditandai habis, atau stok kurang (dijumlah per menu) → 409 `ITEM_UNAVAILABLE` (`details.items: [{ menuItemId, name }]`). Dicek lebih dulu daripada `PRICE_CHANGED`.
+- Stok item yang dilacak (`stock != null`) dikurangi dalam transaksi yang sama dengan `SELECT … FOR UPDATE`, lalu cache menu publik di-invalidate.
+- Kode pesanan `MTW-YYMMDD-XXXX` (tanggal WIB, nomor urut per hari, diserialisasi dengan advisory lock).
+- `Idempotency-Key` yang sudah dipakai → 409 `DUPLICATE_REQUEST` dengan `details.order` = pesanan awal (hanya jika meja sama; meja lain tanpa `details`). Request ulang tidak dihitung rate limit.
+- Rate limit (NFR-009): maks. `ORDER_RATE_LIMIT_MAX` (5) pesanan per `ORDER_RATE_LIMIT_WINDOW_SEC` (600 dtk) per meja **dan** per IP → 429 `RATE_LIMITED`. Counter di Redis; bila Redis mati, memakai counter in-memory per instance. IP klien diambil dari `X-Forwarded-For` sesuai `TRUST_PROXY_HOPS` (default 1, untuk Cloud Run).
+- Token tidak valid/kosong/meja nonaktif → 400 `INVALID_TABLE_TOKEN`. Header `Idempotency-Key` bukan UUID → 400 `VALIDATION_ERROR`.
+- Diskon promo selalu 0 sampai S3-08; event `order.created` menyusul di S1-08.
 
 ## Pembayaran (FR-005)
 | Status | Method | Endpoint | Auth |

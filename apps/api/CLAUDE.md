@@ -25,12 +25,14 @@ test/fixtures/              CSV contoh Olsera (fiktif)
 - `modules/auth` → login/refresh/logout/me, guard global `JwtAuthGuard` → `RolesGuard` → `CsrfGuard`. **Semua endpoint wajib login kecuali ditandai `@Public()`**; batasi role dengan `@Roles('ADMIN')`; ambil staf dengan `@CurrentUser()`. Saat menonaktifkan akun (S2-12) panggil `AuthService.revokeAllForUser`.
 - `modules/tables` → `GET /public/tables/:token`, CRUD meja admin. Untuk validasi header `X-Table-Token` (S1-06) pakai `TablesService.resolveToken`; token baru dari `generateTableToken()`.
 - `modules/menu` → menu publik (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip. **Setiap perubahan yang memengaruhi menu pelanggan (stok dari pesanan di S1-06, sinkron Olsera di S2-07) wajib memanggil `PublicMenuService.invalidate(outletId)`.**
+- `modules/orders` → `POST /public/orders` (`OrdersService.create`): hitung ulang harga di `order-pricing.ts`, kode pesanan di `order-code.ts`, kunci stok `FOR UPDATE`, idempotency, rate limit. Pembatalan (S1-07) & expire QRIS (S2-02) wajib mengembalikan stok lalu memanggil `PublicMenuService.invalidate`.
+- `redis/rate-limit.service.ts` → `RateLimitService.hit(key, limit, windowSec)` (Redis, fallback in-memory). `app.setup.ts` memasang `trust proxy` (`TRUST_PROXY_HOPS`, default 1) agar `req.ip` = IP klien.
 - `common/pipes/zod-validation.pipe.ts` → `uuidParam()` untuk validasi `:id`.
 - Skema update parsial di `shared` sengaja tanpa `.default()`: di Zod 4 `.partial()` tetap menerapkan default dan akan menimpa field yang tidak dikirim.
 
 ## Belum Ada (lihat docs/BACKLOG.md)
 
-users, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
+users, orders untuk staf (S1-07), payments, realtime, promos, analytics, recommendations, controller pos-sync.
 
 ## Catatan Teknis
 

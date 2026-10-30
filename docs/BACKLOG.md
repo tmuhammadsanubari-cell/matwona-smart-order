@@ -14,7 +14,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S0-01 | Scaffold monorepo, CLAUDE.md, docs, docker compose | – | 🔴 | BE | – |
 | [x] | S0-02 | `pnpm install` lulus; `pnpm dev` menjalankan web & api kosong; `/health` API 200 | NFR-017 | 🔴 | BE | S0-01 |
 | [ ] | S0-03 | CI GitHub Actions: lint, typecheck, test (Node) + ruff & pytest (reco) | NFR-019 | 🔴 | BE | S0-02 |
-| [ ] | S0-04 | Prisma migrate pertama dari `schema.prisma` + seed (outlet, admin, kasir, kategori, menu contoh, 10 meja) | 4.2 | 🔴 | BE | S0-02 |
+| [x] | S0-04 | Prisma migrate pertama dari `schema.prisma` + seed (outlet, admin, kasir, kategori, menu contoh, 10 meja) | 4.2 | 🔴 | BE | S0-02 |
 | [ ] | S0-05 | Design token brand di `globals.css` + komponen dasar (Button, Card, Badge, Input, BottomSheet) | 4.9, NFR-014 | 🔴 | FE1 | S0-02 |
 | [ ] | S0-06 | Wireframe & mockup Figma: menu, keranjang, checkout, status, kasir, admin menu | FR-001…008 | 🔴 | FE1 | – |
 | [ ] | S0-07 | Finalisasi BRS & SRS draft (`docs/compro/`) + notulen validasi mitra | – | 🔴 | SA, PM | – |
@@ -29,7 +29,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S1-03 | Modul `menu`: `GET /public/outlets/:slug/menu` (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip | FR-002, FR-010 | 🔴 | BE | S0-04 |
 | [ ] | S1-04 | Halaman menu digital `/m/[outlet]/t/[token]`: header meja, tab kategori sticky, kartu menu, label Habis, pencarian | FR-001, FR-002 | 🔴 | FE1 | S1-02, S1-03 |
 | [ ] | S1-05 | Keranjang (Zustand + localStorage per token), catatan item, bottom sheet total | FR-003 | 🔴 | FE1 | S1-04 |
-| [ ] | S1-06 | Modul `orders`: `POST /public/orders` (idempotency, hitung ulang harga, lock stok, rate limit) metode CASHIER | FR-004, FR-006, NFR-007, NFR-009 | 🔴 | BE | S1-03 |
+| [x] | S1-06 | Modul `orders`: `POST /public/orders` (idempotency, hitung ulang harga, lock stok, rate limit) metode CASHIER | FR-004, FR-006, NFR-007, NFR-009 | 🔴 | BE | S1-03 |
 | [ ] | S1-07 | `order-status.machine.ts` + endpoint `PATCH /orders/:id/status`, `mark-paid`, `cancel` (kembalikan stok) | FR-006, FR-008 | 🔴 | BE | S1-06 |
 | [ ] | S1-08 | Gateway Socket.IO `/realtime` (auth handshake JWT, room kasir & order) + event `order.created/updated` | FR-008, NFR-002 | 🔴 | BE | S1-06 |
 | [ ] | S1-09 | Halaman checkout (nama, HP opsional, pilih metode) + halaman status pesanan realtime | FR-004, FR-007 | 🔴 | FE1 | S1-06, S1-08 |
