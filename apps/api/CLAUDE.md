@@ -11,6 +11,7 @@ prisma/seed.ts              Data lokal (outlet, staf, menu fiktif, 10 meja)
 src/generated/prisma/       Client Prisma hasil generate (jangan diedit, di-gitignore)
 src/common/                 AppException, AllExceptionsFilter, ZodValidationPipe, decorator @Public/@Roles
 src/prisma/                 PrismaService (adapter pg)
+src/redis/                  CacheService (JSON cache Redis, gagal = cache miss)
 src/modules/<nama>/         Satu modul per domain
 test/fixtures/              CSV contoh Olsera (fiktif)
 ```
@@ -23,10 +24,13 @@ test/fixtures/              CSV contoh Olsera (fiktif)
 - Format error global sesuai PRD 4.5
 - `modules/auth` → login/refresh/logout/me, guard global `JwtAuthGuard` → `RolesGuard` → `CsrfGuard`. **Semua endpoint wajib login kecuali ditandai `@Public()`**; batasi role dengan `@Roles('ADMIN')`; ambil staf dengan `@CurrentUser()`. Saat menonaktifkan akun (S2-12) panggil `AuthService.revokeAllForUser`.
 - `modules/tables` → `GET /public/tables/:token`, CRUD meja admin. Untuk validasi header `X-Table-Token` (S1-06) pakai `TablesService.resolveToken`; token baru dari `generateTableToken()`.
+- `modules/menu` → menu publik (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip. **Setiap perubahan yang memengaruhi menu pelanggan (stok dari pesanan di S1-06, sinkron Olsera di S2-07) wajib memanggil `PublicMenuService.invalidate(outletId)`.**
+- `common/pipes/zod-validation.pipe.ts` → `uuidParam()` untuk validasi `:id`.
+- Skema update parsial di `shared` sengaja tanpa `.default()`: di Zod 4 `.partial()` tetap menerapkan default dan akan menimpa field yang tidak dikirim.
 
 ## Belum Ada (lihat docs/BACKLOG.md)
 
-users, menu, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
+users, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
 
 ## Catatan Teknis
 

@@ -1473,6 +1473,8 @@ Pesan `message` berbahasa Indonesia dan aman ditampilkan ke pengguna; detail tek
 | INVALID_SIGNATURE | 403 | Signature webhook tidak valid |
 | NOT_FOUND | 404 | Resource tidak ditemukan |
 | TABLE_LABEL_TAKEN | 409 | Label meja sudah dipakai di outlet yang sama |
+| CATEGORY_NOT_EMPTY | 409 | Kategori masih berisi item menu (termasuk yang diarsipkan) |
+| SKU_TAKEN | 409 | SKU sudah dipakai item lain di outlet yang sama |
 | ITEM_UNAVAILABLE | 409 | Item habis/nonaktif saat checkout |
 | PRICE_CHANGED | 409 | Harga berubah sejak keranjang dibuat |
 | INVALID_STATUS_TRANSITION | 409 | Transisi status pesanan tidak diizinkan |

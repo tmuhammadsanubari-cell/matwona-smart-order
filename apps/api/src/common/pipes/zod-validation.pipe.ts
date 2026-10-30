@@ -1,6 +1,6 @@
 import { PipeTransform } from '@nestjs/common';
 import { ErrorCode } from 'shared';
-import type { ZodType } from 'zod';
+import { z, type ZodType } from 'zod';
 import { AppException } from '../app.exception.js';
 
 /**
@@ -22,3 +22,6 @@ export class ZodValidationPipe<T> implements PipeTransform<unknown, T> {
     return result.data;
   }
 }
+
+/** Validasi parameter path berupa UUID: @Param('id', uuidParam()) id: string */
+export const uuidParam = () => new ZodValidationPipe(z.uuid());
