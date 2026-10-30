@@ -27,7 +27,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S1-01 | Modul `auth`: login, refresh (rotasi), logout, me, lockout 5x, `JwtAuthGuard`, `RolesGuard` | FR-009 | 🔴 | BE | S0-04 |
 | [x] | S1-02 | Modul `tables`: `GET /public/tables/:token`, CRUD meja admin | FR-001, FR-011 | 🔴 | BE | S0-04 |
 | [x] | S1-03 | Modul `menu`: `GET /public/outlets/:slug/menu` (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip | FR-002, FR-010 | 🔴 | BE | S0-04 |
-| [ ] | S1-04 | Halaman menu digital `/m/[outlet]/t/[token]`: header meja, tab kategori sticky, kartu menu, label Habis, pencarian | FR-001, FR-002 | 🔴 | FE1 | S1-02, S1-03 |
+| [x] | S1-04 | Halaman menu digital `/m/[outlet]/t/[token]`: header meja, tab kategori sticky, kartu menu, label Habis, pencarian | FR-001, FR-002 | 🔴 | FE1 | S1-02, S1-03 |
 | [ ] | S1-05 | Keranjang (Zustand + localStorage per token), catatan item, bottom sheet total | FR-003 | 🔴 | FE1 | S1-04 |
 | [x] | S1-06 | Modul `orders`: `POST /public/orders` (idempotency, hitung ulang harga, lock stok, rate limit) metode CASHIER | FR-004, FR-006, NFR-007, NFR-009 | 🔴 | BE | S1-03 |
 | [x] | S1-07 | `order-status.machine.ts` + endpoint `PATCH /orders/:id/status`, `mark-paid`, `cancel` (kembalikan stok) | FR-006, FR-008 | 🔴 | BE | S1-06 |
