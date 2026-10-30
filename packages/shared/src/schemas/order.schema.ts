@@ -26,7 +26,7 @@ export const createOrderItemSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  customerName: z.string().trim().min(2, 'Nama minimal 2 karakter').max(50),
+  customerName: z.string().trim().min(2, 'Nama minimal 2 karakter').max(50, 'Nama maksimal 50 karakter'),
   customerPhone: z
     .string()
     .trim()

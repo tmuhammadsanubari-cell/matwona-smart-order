@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+import { Providers } from './providers';
 
 // Fallback untuk font brand Mosvita (belum tersedia). Ganti dengan next/font/local bila file font diterima.
 const brandFont = Plus_Jakarta_Sans({
@@ -27,7 +28,9 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className={brandFont.variable}>
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   );
 }
