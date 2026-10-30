@@ -8,9 +8,10 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter web --filter api dev",
+    "dev": "pnpm --filter shared build && pnpm --parallel --filter web --filter api dev",
     "build": "pnpm -r --filter=!reco build",
     "lint": "pnpm -r --filter=!reco lint",
+    "postinstall": "pnpm --filter shared build",
     "typecheck": "pnpm -r --filter=!reco typecheck",
     "test": "pnpm -r --filter=!reco test",
     "format": "prettier --write .",
