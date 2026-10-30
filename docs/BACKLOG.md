@@ -24,7 +24,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 
 | | ID | Task | Ref | Prio | Peran | Bergantung |
 |---|----|------|-----|------|-------|------------|
-| [ ] | S1-01 | Modul `auth`: login, refresh (rotasi), logout, me, lockout 5x, `JwtAuthGuard`, `RolesGuard` | FR-009 | 🔴 | BE | S0-04 |
+| [x] | S1-01 | Modul `auth`: login, refresh (rotasi), logout, me, lockout 5x, `JwtAuthGuard`, `RolesGuard` | FR-009 | 🔴 | BE | S0-04 |
 | [ ] | S1-02 | Modul `tables`: `GET /public/tables/:token`, CRUD meja admin | FR-001, FR-011 | 🔴 | BE | S0-04 |
 | [ ] | S1-03 | Modul `menu`: `GET /public/outlets/:slug/menu` (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip | FR-002, FR-010 | 🔴 | BE | S0-04 |
 | [ ] | S1-04 | Halaman menu digital `/m/[outlet]/t/[token]`: header meja, tab kategori sticky, kartu menu, label Habis, pencarian | FR-001, FR-002 | 🔴 | FE1 | S1-02, S1-03 |

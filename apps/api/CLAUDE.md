@@ -21,10 +21,11 @@ test/fixtures/              CSV contoh Olsera (fiktif)
 - `modules/orders/order-status.machine.ts` + spec (aturan transisi status, jangan diduplikasi)
 - `modules/pos-sync/adapters/*` → interface `PosSyncAdapter`, `MockOlseraAdapter`, kerangka `OlseraCsvAdapter`
 - Format error global sesuai PRD 4.5
+- `modules/auth` → login/refresh/logout/me, guard global `JwtAuthGuard` → `RolesGuard` → `CsrfGuard`. **Semua endpoint wajib login kecuali ditandai `@Public()`**; batasi role dengan `@Roles('ADMIN')`; ambil staf dengan `@CurrentUser()`. Saat menonaktifkan akun (S2-12) panggil `AuthService.revokeAllForUser`.
 
 ## Belum Ada (lihat docs/BACKLOG.md)
 
-auth, users, tables, menu, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
+users, tables, menu, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
 
 ## Catatan Teknis
 
