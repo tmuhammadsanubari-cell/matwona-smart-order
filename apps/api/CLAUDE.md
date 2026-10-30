@@ -26,13 +26,14 @@ test/fixtures/              CSV contoh Olsera (fiktif)
 - `modules/tables` → `GET /public/tables/:token`, CRUD meja admin. Untuk validasi header `X-Table-Token` (S1-06) pakai `TablesService.resolveToken`; token baru dari `generateTableToken()`.
 - `modules/menu` → menu publik (cache Redis 60 s), CRUD kategori & item, toggle availability, arsip. **Setiap perubahan yang memengaruhi menu pelanggan (stok dari pesanan di S1-06, sinkron Olsera di S2-07) wajib memanggil `PublicMenuService.invalidate(outletId)`.**
 - `modules/orders` → `POST /public/orders` (`OrdersService.create`): hitung ulang harga di `order-pricing.ts`, kode pesanan di `order-code.ts`, kunci stok `FOR UPDATE`, idempotency, rate limit. `StaffOrdersService` → daftar/detail, ubah status, tandai lunas (`assertCanMarkPaid` di state machine), batal + kembalikan stok. Update status memakai `guardedUpdate` (bersyarat status lama) agar aman dari kasir paralel. Expire QRIS (S2-02) wajib mengembalikan stok dengan cara yang sama lalu memanggil `PublicMenuService.invalidate`. DTO dibentuk di `order.mapper.ts`; tanggal WIB di `common/wib.ts`.
+- `modules/realtime` → gateway `/realtime` (auth di handshake: cookie staf → room kasir; `tableToken`+`orderCode` → room pesanan). Modul lain memancarkan event lewat `RealtimeService` (`orderCreated/orderUpdated/paymentUpdated`) **setelah** commit. `main.ts` memasang `RedisIoAdapter` (fallback in-memory). Webhook Midtrans (S2-02) wajib memanggil `paymentUpdated`.
 - `redis/rate-limit.service.ts` → `RateLimitService.hit(key, limit, windowSec)` (Redis, fallback in-memory). `app.setup.ts` memasang `trust proxy` (`TRUST_PROXY_HOPS`, default 1) agar `req.ip` = IP klien.
 - `common/pipes/zod-validation.pipe.ts` → `uuidParam()` untuk validasi `:id`.
 - Skema update parsial di `shared` sengaja tanpa `.default()`: di Zod 4 `.partial()` tetap menerapkan default dan akan menimpa field yang tidak dikirim.
 
 ## Belum Ada (lihat docs/BACKLOG.md)
 
-users, payments, realtime, promos, analytics, recommendations, controller pos-sync.
+users, payments, promos, analytics, recommendations, controller pos-sync.
 
 ## Catatan Teknis
 

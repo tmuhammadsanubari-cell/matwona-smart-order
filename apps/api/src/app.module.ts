@@ -9,9 +9,9 @@ import { TablesModule } from './modules/tables/tables.module.js';
 import { MenuModule } from './modules/menu/menu.module.js';
 import { OrdersModule } from './modules/orders/orders.module.js';
 import { PosSyncModule } from './modules/pos-sync/pos-sync.module.js';
+import { RealtimeModule } from './modules/realtime/realtime.module.js';
 
 // Modul fitur ditambahkan sesuai docs/BACKLOG.md:
-// realtime (S1-08),
 // payments (S2-01), promos (S3-08), analytics (S3-05), recommendations (S3-03), users (S2-12)
 @Module({
   imports: [
@@ -25,6 +25,7 @@ import { PosSyncModule } from './modules/pos-sync/pos-sync.module.js';
     TablesModule,
     MenuModule,
     OrdersModule,
+    RealtimeModule,
     PosSyncModule,
   ],
   controllers: [HealthController],

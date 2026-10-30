@@ -2,6 +2,8 @@ import { wibDate } from '../../common/wib.js';
 
 const MAX_DAILY_SEQUENCE = 9999;
 
+export const ORDER_CODE_PATTERN = /^MTW-\d{6}-\d{4}$/;
+
 /** Prefix kode pesanan per hari WIB: `MTW-YYMMDD-`. */
 export function orderCodePrefix(now: Date): string {
   const [yyyy, mm, dd] = wibDate(now).split('-');

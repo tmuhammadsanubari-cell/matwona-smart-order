@@ -39,7 +39,7 @@ Catatan implementasi (S1-01):
 | ⬜ | GET | `/public/outlets/:slug/promos` | publik |
 | ✅ | GET | `/public/tables/:token` | publik |
 | ✅ | POST | `/public/orders` | table token |
-| ⬜ | GET | `/public/orders/:code` | table token |
+| ✅ | GET | `/public/orders/:code` | table token |
 | ⬜ | POST | `/public/orders/:code/pay` | table token |
 | ⬜ | GET | `/public/recommendations` | publik |
 | ⬜ | POST | `/public/recommendation-events` | publik |
@@ -54,7 +54,8 @@ Catatan implementasi (S1-06):
 - `Idempotency-Key` yang sudah dipakai → 409 `DUPLICATE_REQUEST` dengan `details.order` = pesanan awal (hanya jika meja sama; meja lain tanpa `details`). Request ulang tidak dihitung rate limit.
 - Rate limit (NFR-009): maks. `ORDER_RATE_LIMIT_MAX` (5) pesanan per `ORDER_RATE_LIMIT_WINDOW_SEC` (600 dtk) per meja **dan** per IP → 429 `RATE_LIMITED`. Counter di Redis; bila Redis mati, memakai counter in-memory per instance. IP klien diambil dari `X-Forwarded-For` sesuai `TRUST_PROXY_HOPS` (default 1, untuk Cloud Run).
 - Token tidak valid/kosong/meja nonaktif → 400 `INVALID_TABLE_TOKEN`. Header `Idempotency-Key` bukan UUID → 400 `VALIDATION_ERROR`.
-- Diskon promo selalu 0 sampai S3-08; event `order.created` menyusul di S1-08.
+- Diskon promo selalu 0 sampai S3-08. Setelah commit, `order.created` dipancarkan ke room kasir (S1-08).
+- `GET /public/orders/:code` (S1-08) wajib header `X-Table-Token` → `PublicOrderDto`. Hanya pesanan yang dibuat dari meja token tersebut; kode milik meja lain/tidak dikenal → 404 `NOT_FOUND`; token tidak valid → 400 `INVALID_TABLE_TOKEN`.
 
 ## Pembayaran (FR-005)
 | Status | Method | Endpoint | Auth |
@@ -78,7 +79,7 @@ Catatan implementasi (S1-07):
 - `POST /orders/:id/mark-paid` (tanpa body) hanya untuk `paymentMethod = CASHIER`, `paymentStatus = UNPAID`, dan belum batal; selain itu 409 `INVALID_STATUS_TRANSITION`. Mengisi `paymentStatus = PAID`, `paidByUserId`, `paidAt`, dan mencatat baris `payments` (`provider = CASHIER`).
 - `POST /orders/:id/cancel` body `{ reason }` (5–200 karakter). Hanya dari NEW/CONFIRMED. Stok item yang dilacak dikembalikan dalam transaksi yang sama lalu cache menu di-invalidate. Status bayar tidak diubah (pembatalan transaksi Midtrans menyusul di S2).
 - Perubahan dilakukan bersyarat pada status saat dibaca: bila dua kasir mengubah pesanan yang sama bersamaan, yang kalah mendapat 409 `INVALID_STATUS_TRANSITION` ("muat ulang") dan stok tidak dikembalikan dua kali.
-- Event `order.updated` / `payment.updated` menyusul di S1-08.
+- Setiap perubahan memancarkan `order.updated` (status/batal) atau `payment.updated` (tandai lunas) ke room kasir & pesanan (S1-08).
 
 ## Menu (FR-010)
 | Status | Method | Endpoint | Auth |
@@ -160,9 +161,22 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | ⬜ | POST | `/internal/train` | X-Internal-Key / OIDC |
 
 ## WebSocket `/realtime`
-| Event | Room |
-|---|---|
-| `order.created` | `outlet:<id>:cashier` |
-| `order.updated` | `outlet:<id>:cashier`, `order:<code>` |
-| `payment.updated` | `outlet:<id>:cashier`, `order:<code>` |
-| `menu.updated` | `outlet:<id>:menu` |
+| Status | Event | Room | Payload |
+|---|---|---|---|
+| ✅ | `order.created` | `outlet:<id>:cashier` | `StaffOrderDto` |
+| ✅ | `order.updated` | `outlet:<id>:cashier` | `{ orderCode, status, order: StaffOrderDto }` |
+| ✅ | `order.updated` | `order:<code>` | `{ orderCode, status }` |
+| ✅ | `payment.updated` | `outlet:<id>:cashier` | `{ orderCode, paymentStatus, order: StaffOrderDto }` |
+| ✅ | `payment.updated` | `order:<code>` | `{ orderCode, paymentStatus }` |
+| ⬜ | `menu.updated` | `outlet:<id>:menu` | `{ menuItemId, isAvailable }` (belum dijadwalkan) |
+
+Catatan implementasi (S1-08):
+- URL: `NEXT_PUBLIC_SOCKET_URL` (lokal `http://localhost:4000/realtime`), path Socket.IO default `/socket.io`. Klien hanya **menerima** event; tidak ada event dari klien ke server.
+- Room ditentukan server saat handshake (tipe `RealtimeHandshakeAuth` di `shared`):
+  - **Kasir/admin**: `io(url, { withCredentials: true })` → cookie `mtw_access` dibaca; klien non-browser boleh `auth: { token }`. Masuk room kasir outletnya.
+  - **Pelanggan**: `io(url, { auth: { tableToken, orderCode } })`. Pesanan harus dibuat dari meja token tersebut. Masuk room `order:<code>` saja.
+- Handshake gagal → `connect_error` dengan `err.message` (bahasa Indonesia) dan `err.data.code`: `UNAUTHORIZED` (tanpa kredensial / sesi kedaluwarsa), `INVALID_TABLE_TOKEN`, `NOT_FOUND` (pesanan bukan milik meja). Saat `UNAUTHORIZED`, dashboard kasir sebaiknya memanggil `POST /auth/refresh` lalu menyambung ulang.
+- Autentikasi hanya diperiksa saat handshake; koneksi yang sudah tersambung tidak diputus saat access token kedaluwarsa (15 menit). Reconnect berikutnya diperiksa ulang.
+- Room pelanggan hanya menerima status (tanpa no. HP/nama); data lengkap lewat `GET /public/orders/:code`.
+- Event dipancarkan setelah transaksi DB commit; kegagalan emit tidak menggagalkan request HTTP. Klien tetap harus mengambil ulang data setelah reconnect (FR-007/FR-008: polling 10 dtk / refresh saat tersambung).
+- Multi-instance (NFR-015): `main.ts` memakai Redis adapter (`REDIS_URL`); bila Redis tidak tersedia saat start, memakai adapter in-memory (cukup untuk satu instance).

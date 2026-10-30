@@ -6,6 +6,7 @@ import { wibDate, wibDayRange } from '../../common/wib.js';
 import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 import { assertCanMarkPaid, assertTransition } from './order-status.machine.js';
 import { orderInclude, toStaffOrderDto, type OrderWithItems } from './order.mapper.js';
 
@@ -21,6 +22,7 @@ export class StaffOrdersService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(PublicMenuService) private readonly menu: PublicMenuService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async list(outletId: string, query: OrderListQuery): Promise<StaffOrderDto[]> {
@@ -59,8 +61,9 @@ export class StaffOrdersService {
         handledByUserId: order.handledByUserId ?? user.id,
       }),
     );
-    // TODO(S1-08): emit SocketEvent.ORDER_UPDATED ke room kasir & order.
-    return this.get(user.outletId, id);
+    const updated = await this.get(user.outletId, id);
+    this.realtime.orderUpdated(user.outletId, updated);
+    return updated;
   }
 
   async markPaid(user: AuthUser, id: string): Promise<StaffOrderDto> {
@@ -72,8 +75,9 @@ export class StaffOrdersService {
         data: { orderId: order.id, provider: 'CASHIER', status: 'PAID', amount: order.totalAmount },
       });
     });
-    // TODO(S1-08): emit SocketEvent.PAYMENT_UPDATED ke room kasir & order.
-    return this.get(user.outletId, id);
+    const updated = await this.get(user.outletId, id);
+    this.realtime.paymentUpdated(user.outletId, updated);
+    return updated;
   }
 
   async cancel(user: AuthUser, id: string, reason: string): Promise<StaffOrderDto> {
@@ -90,8 +94,9 @@ export class StaffOrdersService {
     });
 
     if (restoredStock) await this.menu.invalidate(order.outletId);
-    // TODO(S1-08): emit SocketEvent.ORDER_UPDATED ke room kasir & order.
-    return this.get(user.outletId, id);
+    const updated = await this.get(user.outletId, id);
+    this.realtime.orderUpdated(user.outletId, updated);
+    return updated;
   }
 
   /**

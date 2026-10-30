@@ -51,6 +51,14 @@ export class PublicOrdersController {
     });
     return { success: true, data: order };
   }
+
+  @Get(':code')
+  async get(
+    @Param('code') code: string,
+    @Headers(ORDER_HEADER.TABLE_TOKEN) tableToken: string | undefined,
+  ): Promise<ApiSuccess<PublicOrderDto>> {
+    return { success: true, data: await this.orders.getForTable(code, tableToken ?? '') };
+  }
 }
 
 /** Kelola pesanan oleh kasir & admin (FR-006, FR-008). */
