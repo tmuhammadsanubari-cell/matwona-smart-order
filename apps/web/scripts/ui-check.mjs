@@ -1,9 +1,9 @@
 // Cek tampilan mobile dengan Playwright (Chromium): screenshot + pemeriksaan otomatis NFR-012.
 //
 //   node scripts/ui-check.mjs --url http://localhost:3000/dev/ui --out <folder> [--width 360] [--height 740]
-//                             [--click "Buka keranjang"] [--key Escape] ...
+//                             [--click "Buka keranjang"] [--fill "Cari menu=teh"] [--key Escape] ...
 //
-// Langkah --click (nama tombol/link) dan --key (tombol keyboard) dijalankan berurutan; setiap langkah
+// Langkah --click (nama tombol/link), --fill (label field=nilai), dan --key (tombol keyboard) dijalankan berurutan; setiap langkah
 // menghasilkan screenshot bernomor. Butuh server web yang sudah berjalan (pnpm --filter web dev).
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
@@ -21,6 +21,7 @@ function parseArgs(argv) {
     else if (flag === '--height') opts.height = Number(value);
     else if (flag === '--click') opts.steps.push({ click: value });
     else if (flag === '--key') opts.steps.push({ key: value });
+    else if (flag === '--fill') opts.steps.push({ fill: value });
     else throw new Error(`Argumen tidak dikenal: ${flag}`);
   }
   if (!opts.url || !opts.out) throw new Error('Wajib: --url dan --out');
@@ -78,6 +79,11 @@ for (const step of opts.steps) {
     await page.getByRole('button', { name: step.click }).or(page.getByRole('link', { name: step.click })).first().click();
     await page.waitForTimeout(400);
     await shot(`klik-${step.click.replace(/\W+/g, '-').toLowerCase()}`);
+  } else if (step.fill) {
+    const [label, ...rest] = step.fill.split('=');
+    await page.getByLabel(label).fill(rest.join('='));
+    await page.waitForTimeout(300);
+    await shot(`isi-${label.replace(/\W+/g, '-').toLowerCase()}`);
   } else {
     await page.keyboard.press(step.key);
     await page.waitForTimeout(300);

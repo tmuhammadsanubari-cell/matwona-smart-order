@@ -64,9 +64,21 @@ export const useCart = create<CartState>()(
         })),
       clear: () => set({ lines: [] }),
     }),
-    { name: 'matwona-cart', storage: createJSONStorage(() => localStorage) },
+    {
+      name: 'matwona-cart',
+      storage: createJSONStorage(() => localStorage),
+      // Dimuat manual setelah mount (loadCartForTable) agar render server & render pertama klien
+      // sama → tidak ada hydration mismatch.
+      skipHydration: true,
+    },
   ),
 );
+
+/** Muat keranjang dari localStorage lalu ikat ke meja ini (keranjang meja lain dikosongkan). */
+export async function loadCartForTable(token: string): Promise<void> {
+  await useCart.persist.rehydrate();
+  useCart.getState().bindTable(token);
+}
 
 export const cartSubtotal = (lines: CartLine[]) =>
   lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);

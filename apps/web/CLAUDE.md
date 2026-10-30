@@ -18,12 +18,13 @@ Baca `CLAUDE.md` root dan `docs/design/BRAND.md` dulu.
 - Token brand Tailwind v4 di `src/app/globals.css` (`@theme`), font fallback Plus Jakarta Sans di `layout.tsx`
 - Komponen dasar di `src/components/ui` (import dari `@/components/ui`): `Button` (primary/secondary/ghost/danger, `loading`, min. 44 px), `Card` (`muted` untuk item Habis), `Badge` (tone neutral/primary/success/danger/cream), `Input` & `Textarea` (label, hint, error + aria), `BottomSheet` (modal: Escape, klik latar, kunci scroll, fokus terjebak & dikembalikan, `footer` sticky untuk total). Gabung kelas dengan `cx`.
 - Pratinjau komponen: `/dev/ui` (hanya `pnpm dev`, 404 di build produksi). Cek di lebar 360 px.
-- Cek tampilan otomatis (Playwright/Chromium): `pnpm --filter web ui:check --url http://localhost:3000/<rute> --out <folder> [--click "Nama tombol"] [--key Escape]` → screenshot 360×740 per langkah + laporan overflow horizontal, target sentuh < 44 px, dan error console. Butuh `npx playwright install chromium` sekali. Simpan screenshot di luar repo.
+- Cek tampilan otomatis (Playwright/Chromium): `pnpm --filter web ui:check --url http://localhost:3000/<rute> --out <folder> [--click "Nama tombol"] [--fill "Label=nilai"] [--key Escape]` → screenshot 360×740 per langkah + laporan overflow horizontal, target sentuh < 44 px, dan error console. Butuh `npx playwright install chromium` sekali. Simpan screenshot di luar repo.
 - Uji dari HP sungguhan: HP & laptop di jaringan yang sama (Wi-Fi kos sering memakai client isolation → pakai Mobile hotspot laptop, IP `192.168.137.1`), buka `http://<IP-laptop>:3000/...`. `allowedDevOrigins: ['192.168.*.*']` di `next.config.ts` mengizinkan JS dev dari IP tersebut; tanpa itu halaman tampil tetapi tidak interaktif.
 - Test: Vitest + Testing Library (jsdom), file `*.test.ts(x)` di samping komponen. `contrast.test.ts` membaca token dari `globals.css` dan menguji kontras ≥ 4,5:1 (NFR-014) untuk setiap pasangan teks/latar komponen — tambahkan pasangan baru di sana bila memakai kombinasi warna baru.
 - `src/lib/api.ts`: `apiFetch` (header `X-Table-Token`, `Idempotency-Key`, error `ApiClientError`)
-- `src/stores/cart.ts`: keranjang Zustand dipersist per token meja
-- Halaman placeholder untuk setiap rute utama
+- `src/stores/cart.ts`: keranjang Zustand dipersist per token meja. `skipHydration: true` → panggil `loadCartForTable(token)` setelah mount (sudah dilakukan `MenuView`) agar tidak ada hydration mismatch.
+- Menu meja `/m/[outlet]/t/[token]` (S1-04): data diambil di server lewat `load-table-menu.ts` (no-store, paralel); token tidak valid → `InvalidQr`, slug salah → redirect; `loading.tsx` skeleton & `error.tsx`. UI di `src/components/menu` (`MenuView`, `CategoryTabs`, `MenuItemCard` dengan stepper ke keranjang). Pencarian `filterMenu` di `src/lib/menu.ts`; foto via `cloudinaryLoader`.
+- Halaman placeholder untuk rute lain (status pesanan, kasir, admin, landing)
 
 ## Konvensi
 
