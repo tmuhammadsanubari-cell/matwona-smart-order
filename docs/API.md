@@ -18,10 +18,18 @@ Header khusus:
 ## Auth (FR-009)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | POST | `/auth/login` | publik |
-| ⬜ | POST | `/auth/refresh` | cookie refresh |
-| ⬜ | POST | `/auth/logout` | staf |
-| ⬜ | GET | `/auth/me` | staf |
+| ✅ | POST | `/auth/login` | publik |
+| ✅ | POST | `/auth/refresh` | cookie refresh |
+| ✅ | POST | `/auth/logout` | publik (cookie refresh opsional) |
+| ✅ | GET | `/auth/me` | staf |
+
+Catatan implementasi (S1-01):
+- Cookie: `mtw_access` (HttpOnly, path `/`, 15 menit), `mtw_refresh` (HttpOnly, path `/api/auth`, 7 hari), `mtw_csrf` (bisa dibaca JS, path `/`). Semua `SameSite=Lax`; `Secure` aktif saat `NODE_ENV=production` atau `COOKIE_SECURE=true`. `COOKIE_DOMAIN` opsional untuk web & api beda subdomain.
+- `login` & `refresh` → `{ success: true, data: { user: AuthUser, csrfToken } }`. Kirim `csrfToken` sebagai header `X-CSRF-Token` pada request staf `POST/PUT/PATCH/DELETE` (selain endpoint publik); jika tidak cocok → 403 `FORBIDDEN`.
+- `login`: email/password salah → 401 `UNAUTHORIZED`; gagal ke-5 berturut-turut atau akun masih terkunci → 423 `ACCOUNT_LOCKED` (`details.lockedUntil`); akun nonaktif → 401 dan semua refresh token dicabut.
+- `refresh`: rotasi setiap dipakai. Memakai ulang token lama mencabut semua sesi user. Gagal → 401 dan cookie dihapus.
+- `logout` sengaja publik (menyimpang dari PRD 4.3 "✅") agar tetap bisa mencabut refresh token & menghapus cookie walau access token sudah kedaluwarsa.
+- Semua endpoint wajib login kecuali yang ditandai `@Public()`. Klien non-browser boleh memakai `Authorization: Bearer <access>` (tanpa cek CSRF). Endpoint ber-`@Roles(...)` menolak role lain dengan 403 `FORBIDDEN`.
 
 ## Publik (FR-001…007, FR-012, FR-015)
 | Status | Method | Endpoint | Auth |
