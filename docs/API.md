@@ -37,7 +37,7 @@ Catatan implementasi (S1-01):
 | ⬜ | GET | `/public/outlets/:slug` | publik |
 | ⬜ | GET | `/public/outlets/:slug/menu` | publik |
 | ⬜ | GET | `/public/outlets/:slug/promos` | publik |
-| ⬜ | GET | `/public/tables/:token` | publik |
+| ✅ | GET | `/public/tables/:token` | publik |
 | ⬜ | POST | `/public/orders` | table token |
 | ⬜ | GET | `/public/orders/:code` | table token |
 | ⬜ | POST | `/public/orders/:code/pay` | table token |
@@ -73,10 +73,15 @@ Catatan implementasi (S1-01):
 ## Meja & QR (FR-011)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET/POST | `/tables` | ADMIN |
-| ⬜ | PUT | `/tables/:id` | ADMIN |
-| ⬜ | POST | `/tables/:id/regenerate-token` | ADMIN |
-| ⬜ | GET | `/tables/qr.pdf` | ADMIN |
+| ✅ | GET/POST | `/tables` | ADMIN |
+| ✅ | PUT | `/tables/:id` | ADMIN |
+| ⬜ | POST | `/tables/:id/regenerate-token` | ADMIN (S2-04) |
+| ⬜ | GET | `/tables/qr.pdf` | ADMIN (S2-04) |
+
+Catatan implementasi (S1-02):
+- `GET /tables` → `DiningTableDto[]` (`id, label, capacity, qrToken, isActive`) milik outlet admin, diurutkan natural (`2` sebelum `10`).
+- `POST /tables` body `{ label, capacity? }` atau bulk `{ labels: ["A1","A2"] }` (maks. 100) → 201 `DiningTableDto[]`. Label di-trim, maks. 20 karakter, unik per outlet; bentrok → 409 `TABLE_LABEL_TAKEN` (`details.labels`).
+- `PUT /tables/:id` body parsial `{ label?, capacity?, isActive? }` (minimal satu field). Meja outlet lain → 404 `NOT_FOUND`. Meja tidak dihapus; nonaktifkan dengan `isActive: false`.
 
 ## Promo & Staf (FR-020, FR-021)
 | Status | Method | Endpoint | Auth |

@@ -3,30 +3,18 @@
  * Jalankan: pnpm db:seed
  * Data menu riil nantinya berasal dari impor CSV Olsera (FR-013).
  */
-import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import bcrypt from 'bcrypt';
 import { config } from 'dotenv';
 import { PrismaClient } from '../src/generated/prisma/client.js';
+import { generateTableToken } from '../src/modules/tables/table-token.js';
 
 config({ path: path.resolve(import.meta.dirname, '../../../.env') });
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
 });
-
-const BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-/** Token 128-bit base62 (NFR-010). */
-function tableToken(): string {
-  let n = BigInt('0x' + randomBytes(16).toString('hex'));
-  let out = '';
-  while (n > 0n) {
-    out = BASE62[Number(n % 62n)] + out;
-    n /= 62n;
-  }
-  return out.padStart(22, '0');
-}
 
 async function main() {
   const outlet = await prisma.outlet.upsert({
@@ -128,7 +116,7 @@ async function main() {
   if (existingTables === 0) {
     for (let i = 1; i <= 10; i++) {
       await prisma.diningTable.create({
-        data: { outletId: outlet.id, label: String(i), capacity: 4, qrToken: tableToken() },
+        data: { outletId: outlet.id, label: String(i), capacity: 4, qrToken: generateTableToken() },
       });
     }
   }
