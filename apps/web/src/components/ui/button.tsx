@@ -26,6 +26,23 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   ref?: Ref<HTMLButtonElement>;
 }
 
+/** Kelas Button untuk elemen lain yang harus tampil sebagai tombol, mis. `<Link>` navigasi. */
+export function buttonClassName({
+  variant = 'primary',
+  size = 'md',
+  fullWidth = false,
+  className,
+}: Pick<ButtonProps, 'variant' | 'size' | 'fullWidth' | 'className'> = {}) {
+  return cx(
+    'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors',
+    'disabled:cursor-not-allowed disabled:opacity-50',
+    VARIANTS[variant],
+    SIZES[size],
+    fullWidth && 'w-full',
+    className,
+  );
+}
+
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -42,14 +59,7 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={cx(
-        'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors',
-        'disabled:cursor-not-allowed disabled:opacity-50',
-        VARIANTS[variant],
-        SIZES[size],
-        fullWidth && 'w-full',
-        className,
-      )}
+      className={buttonClassName({ variant, size, fullWidth, className })}
       {...props}
     >
       {loading && (

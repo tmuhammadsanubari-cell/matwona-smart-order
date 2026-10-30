@@ -94,7 +94,8 @@ describe('MenuView (FR-001, FR-002)', () => {
     expect(within(group).getByText('2')).toBeTruthy();
 
     fireEvent.click(within(group).getByRole('button', { name: 'Kurangi Tuna Sambal Matah' }));
-    fireEvent.click(within(group).getByRole('button', { name: 'Kurangi Tuna Sambal Matah' }));
+    // Di jumlah 1 tombol − menghapus item dari keranjang.
+    fireEvent.click(within(group).getByRole('button', { name: 'Hapus Tuna Sambal Matah' }));
     expect(useCart.getState().lines).toEqual([]);
     expect(await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' })).toBeTruthy();
   });

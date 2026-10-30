@@ -24,6 +24,7 @@ Baca `CLAUDE.md` root dan `docs/design/BRAND.md` dulu.
 - `src/lib/api.ts`: `apiFetch` (header `X-Table-Token`, `Idempotency-Key`, error `ApiClientError`)
 - `src/stores/cart.ts`: keranjang Zustand dipersist per token meja. `skipHydration: true` → panggil `loadCartForTable(token)` setelah mount (sudah dilakukan `MenuView`) agar tidak ada hydration mismatch.
 - Menu meja `/m/[outlet]/t/[token]` (S1-04): data diambil di server lewat `load-table-menu.ts` (no-store, paralel); token tidak valid → `InvalidQr`, slug salah → redirect; `loading.tsx` skeleton & `error.tsx`. UI di `src/components/menu` (`MenuView`, `CategoryTabs`, `MenuItemCard` dengan stepper ke keranjang). Pencarian `filterMenu` di `src/lib/menu.ts`; foto via `cloudinaryLoader`.
+- Keranjang (S1-05) di `src/components/cart`: `CartBar` (fixed bawah, jumlah item + total) dan `CartSheet` (BottomSheet: baris + `QuantityStepper` 1–20, catatan ≤ 120 karakter, subtotal/diskon/total, tombol ke `/m/[outlet]/t/[token]/checkout`). `summarizeCart(lines, menuItems)` mengeluarkan item habis dari total dan menahan checkout; `syncWithMenu` menyamakan nama & harga dengan menu terbaru saat halaman dibuka. Halaman checkout masih placeholder (S1-09). Link yang tampil sebagai tombol: `buttonClassName()`.
 - Halaman placeholder untuk rute lain (status pesanan, kasir, admin, landing)
 
 ## Konvensi
