@@ -1,0 +1,10 @@
+Kode Produk,SKU,Nama Produk,Kategori,Harga Jual,Stok,Status
+OLS-001,TN-SMT,Tuna Sambal Matah,Olahan Tuna,"Rp 45.000",30,Aktif
+OLS-002,TN-GPK,Tuna Geprek,Olahan Tuna,"Rp 38.000",25,Aktif
+OLS-003,TN-BKK,Tuna Bakar Kecap,Olahan Tuna,"Rp 42.000",0,Aktif
+OLS-004,AK-BKR,Ayam Kampung Bakar,Olahan Ayam Kampung,"Rp 42.000",20,Aktif
+OLS-005,AK-GRL,Ayam Kampung Goreng Lengkuas,Olahan Ayam Kampung,"Rp 40.000",18,Aktif
+OLS-006,TB-NSP,Nasi Putih,Tambahan,"Rp 6.000",,Aktif
+OLS-007,MN-ETS,Es Teh Serai,Minuman,"Rp 8.000",,Aktif
+OLS-008,MN-EJR,Es Jeruk,Minuman,,40,Aktif
+OLS-009,,Menu Lama,Minuman,"Rp 7.000",0,Nonaktif

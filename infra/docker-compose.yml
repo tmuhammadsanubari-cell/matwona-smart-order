@@ -1,0 +1,65 @@
+name: matwona-smart-order
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: matwona
+      POSTGRES_PASSWORD: matwona
+      POSTGRES_DB: matwona_smart_order
+      TZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matwona -d matwona_smart_order"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Opsional: jalankan api & reco di container (pnpm dev lebih cepat untuk pengembangan)
+  api:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.api
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://matwona:matwona@postgres:5432/matwona_smart_order
+      REDIS_URL: redis://redis:6379
+      RECO_SERVICE_URL: http://reco:8000
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  reco:
+    profiles: ["full"]
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.reco
+    env_file: ../.env
+    environment:
+      RECO_DATABASE_URL: postgresql+psycopg://matwona:matwona@postgres:5432/matwona_smart_order
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

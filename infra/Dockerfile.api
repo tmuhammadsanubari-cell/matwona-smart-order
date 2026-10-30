@@ -1,0 +1,21 @@
+# Build context: root repo
+FROM node:22-alpine AS base
+RUN corepack enable
+WORKDIR /repo
+
+FROM base AS build
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml* ./
+COPY packages/shared/package.json packages/shared/
+COPY apps/api/package.json apps/api/
+RUN pnpm install --frozen-lockfile --filter api... || pnpm install --filter api...
+COPY packages/shared packages/shared
+COPY apps/api apps/api
+RUN pnpm --filter shared build && pnpm --filter api prisma:generate && pnpm --filter api build
+
+FROM base AS runtime
+ENV NODE_ENV=production
+WORKDIR /repo
+COPY --from=build /repo /repo
+WORKDIR /repo/apps/api
+EXPOSE 4000
+CMD ["node", "dist/main.js"]

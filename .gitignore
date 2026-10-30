@@ -1,0 +1,35 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build
+dist/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+apps/api/src/generated/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+apps/reco/.ipynb_checkpoints/
+
+# data mitra (JANGAN di-commit: export Olsera asli, transaksi riil)
+data/
+*.olsera-export.csv
+
+# misc
+.DS_Store
+*.log
+.vercel
+playwright-report/
+test-results/

@@ -1,0 +1,34 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"(web) belum ada unit test — tambahkan Vitest saat komponen pertama dibuat\""
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.2.0",
+    "shared": "workspace:*",
+    "socket.io-client": "^4.8.1",
+    "zod": "^4.1.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.0",
+    "@types/node": "^22.18.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^16.0.0",
+    "tailwindcss": "^4.1.0",
+    "typescript": "~6.0.3"
+  }
+}

@@ -1,0 +1,36 @@
+[project]
+name = "matwona-reco"
+version = "0.1.0"
+description = "AI service rekomendasi menu Matwona Smart Order (FP-Growth + popularitas per slot waktu)"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastapi[standard]>=0.120",
+    "pandas>=2.3",
+    "mlxtend>=0.23",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "pydantic-settings>=2.11",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "ruff>=0.13",
+    "httpx>=0.28",
+    "jupyterlab>=4.4",
+    "matplotlib>=3.10",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

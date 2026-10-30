@@ -1,0 +1,467 @@
+// Matwona Smart Order — skema database
+// Sumber: docs/PRD.md bagian 3.2 (ERD) & 4.2 (desain database)
+// Konvensi: model PascalCase, field camelCase, tabel/kolom snake_case via @@map/@map,
+// uang = Int (Rupiah), waktu = timestamptz (UTC).
+// Koneksi database diatur di prisma.config.ts (Prisma 7).
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Enums ----------
+
+enum UserRole {
+  ADMIN
+  CASHIER
+}
+
+enum OrderStatus {
+  NEW
+  CONFIRMED
+  PREPARING
+  SERVED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  QRIS
+  CASHIER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+enum PaymentProvider {
+  MIDTRANS
+  CASHIER
+}
+
+enum PaymentRecordStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}
+
+enum OrderSource {
+  DIGITAL
+  OLSERA_IMPORT
+}
+
+enum DiscountType {
+  PERCENT
+  NOMINAL
+}
+
+enum SyncDirection {
+  PULL
+  PUSH
+}
+
+enum SyncEntity {
+  PRODUCT
+  STOCK
+  TRANSACTION
+  HISTORY_IMPORT
+}
+
+enum SyncStatus {
+  PREVIEW
+  SUCCESS
+  PARTIAL
+  FAILED
+}
+
+enum MappingEntity {
+  PRODUCT
+  HISTORY_IMPORT
+}
+
+enum RecoRuleType {
+  ASSOCIATION
+  POPULAR_SLOT
+}
+
+enum TimeSlot {
+  MORNING
+  LUNCH
+  AFTERNOON
+  DINNER
+}
+
+enum RecoSource {
+  CART_ASSOCIATION
+  POPULAR_NOW
+}
+
+enum RecoEventType {
+  IMPRESSION
+  CLICK
+  ADD_TO_CART
+  PURCHASED
+}
+
+// ---------- Models ----------
+
+model Outlet {
+  id            String   @id @default(uuid()) @db.Uuid
+  slug          String   @unique @db.VarChar(50)
+  name          String   @db.VarChar(100)
+  tagline       String?  @db.VarChar(150)
+  description   String?
+  address       String
+  phoneWhatsapp String?  @map("phone_whatsapp") @db.VarChar(20)
+  latitude      Decimal? @db.Decimal(9, 6)
+  longitude     Decimal? @db.Decimal(9, 6)
+  /// { "mon": ["10:00","21:00"], ... }
+  openingHours  Json     @map("opening_hours")
+  socialLinks   Json?    @map("social_links")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  users                User[]
+  tables               DiningTable[]
+  categories           Category[]
+  menuItems            MenuItem[]
+  orders               Order[]
+  promos               Promo[]
+  posSyncLogs          PosSyncLog[]
+  posColumnMappings    PosColumnMapping[]
+  recommendationRules  RecommendationRule[]
+  recommendationModels RecommendationModel[]
+  recommendationEvents RecommendationEvent[]
+
+  @@map("outlets")
+}
+
+model User {
+  id               String    @id @default(uuid()) @db.Uuid
+  outletId         String    @map("outlet_id") @db.Uuid
+  name             String    @db.VarChar(100)
+  email            String    @unique @db.VarChar(150)
+  passwordHash     String    @map("password_hash") @db.VarChar(255)
+  role             UserRole
+  isActive         Boolean   @default(true) @map("is_active")
+  failedLoginCount Int       @default(0) @map("failed_login_count") @db.SmallInt
+  lockedUntil      DateTime? @map("locked_until") @db.Timestamptz
+  lastLoginAt      DateTime? @map("last_login_at") @db.Timestamptz
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet          Outlet         @relation(fields: [outletId], references: [id])
+  refreshTokens   RefreshToken[]
+  handledOrders   Order[]        @relation("OrderHandledBy")
+  paidOrders      Order[]        @relation("OrderPaidBy")
+  posSyncLogs     PosSyncLog[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(255)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model DiningTable {
+  id        String   @id @default(uuid()) @db.Uuid
+  outletId  String   @map("outlet_id") @db.Uuid
+  label     String   @db.VarChar(20)
+  capacity  Int?     @db.SmallInt
+  /// Token acak 128-bit base62, isi URL QR: /m/<slug>/t/<qrToken>
+  qrToken   String   @unique @map("qr_token") @db.VarChar(32)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet Outlet  @relation(fields: [outletId], references: [id])
+  orders Order[]
+
+  @@unique([outletId, label])
+  @@map("dining_tables")
+}
+
+model Category {
+  id               String   @id @default(uuid()) @db.Uuid
+  outletId         String   @map("outlet_id") @db.Uuid
+  name             String   @db.VarChar(60)
+  sortOrder        Int      @default(0) @map("sort_order")
+  olseraCategoryId String?  @map("olsera_category_id") @db.VarChar(64)
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet    Outlet     @relation(fields: [outletId], references: [id])
+  menuItems MenuItem[]
+
+  @@map("categories")
+}
+
+model MenuItem {
+  id              String    @id @default(uuid()) @db.Uuid
+  outletId        String    @map("outlet_id") @db.Uuid
+  categoryId      String    @map("category_id") @db.Uuid
+  name            String    @db.VarChar(100)
+  description     String?   @db.VarChar(300)
+  /// Harga dalam Rupiah (integer)
+  price           Int
+  imageUrl        String?   @map("image_url")
+  /// null = stok tidak dilacak
+  stock           Int?
+  sku             String?   @db.VarChar(64)
+  olseraProductId String?   @map("olsera_product_id") @db.VarChar(64)
+  isAvailable     Boolean   @default(true) @map("is_available")
+  isArchived      Boolean   @default(false) @map("is_archived")
+  sortOrder       Int       @default(0) @map("sort_order")
+  lastSyncedAt    DateTime? @map("last_synced_at") @db.Timestamptz
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet               Outlet                @relation(fields: [outletId], references: [id])
+  category             Category              @relation(fields: [categoryId], references: [id])
+  orderItems           OrderItem[]
+  promoItems           PromoItem[]
+  recommendationRules  RecommendationRule[]
+  recommendationEvents RecommendationEvent[]
+
+  @@unique([outletId, sku])
+  @@unique([outletId, olseraProductId])
+  @@index([categoryId])
+  @@map("menu_items")
+}
+
+model Order {
+  id               String        @id @default(uuid()) @db.Uuid
+  /// Format MTW-YYMMDD-XXXX
+  orderCode        String        @unique @map("order_code") @db.VarChar(20)
+  outletId         String        @map("outlet_id") @db.Uuid
+  /// null untuk riwayat yang diimpor dari Olsera
+  tableId          String?       @map("table_id") @db.Uuid
+  customerName     String        @map("customer_name") @db.VarChar(50)
+  customerPhone    String?       @map("customer_phone") @db.VarChar(16)
+  status           OrderStatus   @default(NEW)
+  paymentMethod    PaymentMethod @map("payment_method")
+  paymentStatus    PaymentStatus @map("payment_status")
+  subtotalAmount   Int           @map("subtotal_amount")
+  discountAmount   Int           @default(0) @map("discount_amount")
+  totalAmount      Int           @map("total_amount")
+  idempotencyKey   String?       @unique @map("idempotency_key") @db.Uuid
+  handledByUserId  String?       @map("handled_by_user_id") @db.Uuid
+  paidByUserId     String?       @map("paid_by_user_id") @db.Uuid
+  cancelReason     String?       @map("cancel_reason") @db.VarChar(200)
+  source           OrderSource   @default(DIGITAL)
+  /// ID transaksi asal Olsera (untuk source = OLSERA_IMPORT, cegah impor ganda)
+  externalRef      String?       @map("external_ref") @db.VarChar(64)
+  paidAt           DateTime?     @map("paid_at") @db.Timestamptz
+  exportedToPosAt  DateTime?     @map("exported_to_pos_at") @db.Timestamptz
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet               Outlet                @relation(fields: [outletId], references: [id])
+  table                DiningTable?          @relation(fields: [tableId], references: [id])
+  handledBy            User?                 @relation("OrderHandledBy", fields: [handledByUserId], references: [id])
+  paidBy               User?                 @relation("OrderPaidBy", fields: [paidByUserId], references: [id])
+  items                OrderItem[]
+  payments             Payment[]
+  recommendationEvents RecommendationEvent[]
+
+  @@unique([outletId, externalRef])
+  @@index([outletId, createdAt])
+  @@index([outletId, status])
+  @@index([tableId, createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                 String   @id @default(uuid()) @db.Uuid
+  orderId            String   @map("order_id") @db.Uuid
+  menuItemId         String   @map("menu_item_id") @db.Uuid
+  promoId            String?  @map("promo_id") @db.Uuid
+  itemNameSnapshot   String   @map("item_name_snapshot") @db.VarChar(100)
+  quantity           Int      @db.SmallInt
+  unitPrice          Int      @map("unit_price")
+  discountAmount     Int      @default(0) @map("discount_amount")
+  lineTotal          Int      @map("line_total")
+  note               String?  @db.VarChar(120)
+  fromRecommendation Boolean  @default(false) @map("from_recommendation")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  order    Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+  promo    Promo?   @relation(fields: [promoId], references: [id])
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
+}
+
+model Payment {
+  id          String              @id @default(uuid()) @db.Uuid
+  orderId     String              @map("order_id") @db.Uuid
+  provider    PaymentProvider
+  providerRef String?             @unique @map("provider_ref") @db.VarChar(100)
+  snapToken   String?             @map("snap_token") @db.VarChar(100)
+  status      PaymentRecordStatus
+  amount      Int
+  expiresAt   DateTime?           @map("expires_at") @db.Timestamptz
+  rawResponse Json?               @map("raw_response")
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@map("payments")
+}
+
+model Promo {
+  id            String       @id @default(uuid()) @db.Uuid
+  outletId      String       @map("outlet_id") @db.Uuid
+  title         String       @db.VarChar(80)
+  description   String?      @db.VarChar(300)
+  bannerUrl     String?      @map("banner_url")
+  discountType  DiscountType @map("discount_type")
+  /// Persen (1-100) atau Rupiah
+  discountValue Int          @map("discount_value")
+  minPurchase   Int          @default(0) @map("min_purchase")
+  /// 1=Senin … 7=Minggu; kosong = setiap hari
+  activeDays    Int[]        @map("active_days") @db.SmallInt
+  startsOn      DateTime     @map("starts_on") @db.Date
+  endsOn        DateTime     @map("ends_on") @db.Date
+  isActive      Boolean      @default(true) @map("is_active")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet     Outlet      @relation(fields: [outletId], references: [id])
+  items      PromoItem[]
+  orderItems OrderItem[]
+
+  @@map("promos")
+}
+
+model PromoItem {
+  promoId    String @map("promo_id") @db.Uuid
+  menuItemId String @map("menu_item_id") @db.Uuid
+
+  promo    Promo    @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@id([promoId, menuItemId])
+  @@map("promo_items")
+}
+
+model PosSyncLog {
+  id                String        @id @default(uuid()) @db.Uuid
+  outletId          String        @map("outlet_id") @db.Uuid
+  /// olsera-csv | olsera-api | mock
+  adapter           String        @db.VarChar(20)
+  direction         SyncDirection
+  entity            SyncEntity
+  status            SyncStatus
+  successCount      Int           @default(0) @map("success_count")
+  failedCount       Int           @default(0) @map("failed_count")
+  /// [{ "row": 12, "reason": "harga kosong" }]
+  errors            Json?
+  /// Hasil pratinjau yang menunggu "Terapkan"
+  previewPayload    Json?         @map("preview_payload")
+  fileName          String?       @map("file_name") @db.VarChar(200)
+  triggeredByUserId String?       @map("triggered_by_user_id") @db.Uuid
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  outlet      Outlet @relation(fields: [outletId], references: [id])
+  triggeredBy User?  @relation(fields: [triggeredByUserId], references: [id])
+
+  @@index([outletId, createdAt])
+  @@map("pos_sync_logs")
+}
+
+model PosColumnMapping {
+  id        String        @id @default(uuid()) @db.Uuid
+  outletId  String        @map("outlet_id") @db.Uuid
+  entity    MappingEntity
+  /// { "Nama Produk": "name", "Harga Jual": "price" }
+  mapping   Json
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  outlet Outlet @relation(fields: [outletId], references: [id])
+
+  @@unique([outletId, entity])
+  @@map("pos_column_mappings")
+}
+
+model RecommendationRule {
+  id                String       @id @default(uuid()) @db.Uuid
+  outletId          String       @map("outlet_id") @db.Uuid
+  modelVersion      String       @map("model_version") @db.VarChar(30)
+  ruleType          RecoRuleType @map("rule_type")
+  antecedentItemIds String[]     @map("antecedent_item_ids") @db.Uuid
+  consequentItemId  String       @map("consequent_item_id") @db.Uuid
+  timeSlot          TimeSlot?    @map("time_slot")
+  support           Float?       @db.Real
+  confidence        Float?       @db.Real
+  lift              Float?       @db.Real
+  score             Float        @db.Real
+  isActive          Boolean      @default(true) @map("is_active")
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  outlet         Outlet   @relation(fields: [outletId], references: [id])
+  consequentItem MenuItem @relation(fields: [consequentItemId], references: [id])
+
+  @@index([outletId, isActive, ruleType])
+  @@map("recommendation_rules")
+}
+
+model RecommendationModel {
+  modelVersion     String   @id @map("model_version") @db.VarChar(30)
+  outletId         String   @map("outlet_id") @db.Uuid
+  transactionCount Int      @map("transaction_count")
+  ruleCount        Int      @map("rule_count")
+  params           Json
+  /// { hitRateAt3, precisionAt3, coverage, baselineHitRateAt3 }
+  metrics          Json
+  durationMs       Int      @map("duration_ms")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  outlet Outlet @relation(fields: [outletId], references: [id])
+
+  @@map("recommendation_models")
+}
+
+model RecommendationEvent {
+  id           String        @id @default(uuid()) @db.Uuid
+  outletId     String        @map("outlet_id") @db.Uuid
+  sessionId    String        @map("session_id") @db.VarChar(40)
+  menuItemId   String        @map("menu_item_id") @db.Uuid
+  orderId      String?       @map("order_id") @db.Uuid
+  source       RecoSource
+  eventType    RecoEventType @map("event_type")
+  modelVersion String?       @map("model_version") @db.VarChar(30)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz
+
+  outlet   Outlet   @relation(fields: [outletId], references: [id])
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@index([outletId, createdAt])
+  @@map("recommendation_events")
+}

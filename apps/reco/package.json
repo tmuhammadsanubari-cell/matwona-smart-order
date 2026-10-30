@@ -1,0 +1,12 @@
+{
+  "name": "reco",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Wrapper pnpm untuk AI service Python (dikelola dengan uv)",
+  "scripts": {
+    "setup": "uv sync",
+    "dev": "uv run fastapi dev app/main.py --port 8000",
+    "test": "uv run pytest",
+    "lint": "uv run ruff check ."
+  }
+}

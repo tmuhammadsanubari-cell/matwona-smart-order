@@ -1,0 +1,11 @@
+{
+  "name": "Matwona",
+  "short_name": "Matwona",
+  "description": "Pesan tuna & ayam kampung langsung dari meja.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffca",
+  "theme_color": "#106f4d",
+  "lang": "id",
+  "icons": []
+}

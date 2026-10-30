@@ -1,0 +1,27 @@
+{
+  "name": "matwona-smart-order",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Sistem pemesanan digital QR meja untuk Matwona (Computing Project Telkom University)",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter web --filter api dev",
+    "build": "pnpm -r --filter=!reco build",
+    "lint": "pnpm -r --filter=!reco lint",
+    "typecheck": "pnpm -r --filter=!reco typecheck",
+    "test": "pnpm -r --filter=!reco test",
+    "format": "prettier --write .",
+    "infra:up": "docker compose -f infra/docker-compose.yml up -d postgres redis",
+    "infra:down": "docker compose -f infra/docker-compose.yml down",
+    "db:migrate": "pnpm --filter api prisma:migrate",
+    "db:seed": "pnpm --filter api prisma:seed",
+    "db:studio": "pnpm --filter api prisma:studio"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.0",
+    "typescript": "~6.0.3"
+  }
+}
