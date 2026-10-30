@@ -2,12 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCode } from 'shared';
 import type { CreateOrderInput, PublicOrderDto } from 'shared';
 import { AppException } from '../../common/app.exception.js';
-import type { Order, OrderItem, Prisma } from '../../generated/prisma/client.js';
+import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RateLimitService } from '../../redis/rate-limit.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
 import { TablesService } from '../tables/tables.service.js';
 import { nextOrderCode, orderCodePrefix } from './order-code.js';
+import { orderInclude, toPublicOrderDto, type OrderWithItems } from './order.mapper.js';
 import { priceOrder, type PricedOrder } from './order-pricing.js';
 
 /** NFR-009: maks. 5 pesanan / 10 menit per token meja dan per IP (bisa diubah lewat env). */
@@ -27,36 +28,7 @@ export interface CreateOrderContext {
   ip: string;
 }
 
-type OrderWithItems = Order & { items: OrderItem[]; table: { label: string } | null };
-
 const isUniqueViolation = (e: unknown) => (e as { code?: string } | null)?.code === 'P2002';
-
-const toDto = (order: OrderWithItems): PublicOrderDto => ({
-  orderCode: order.orderCode,
-  table: order.table?.label ?? '',
-  customerName: order.customerName,
-  status: order.status,
-  paymentMethod: order.paymentMethod,
-  paymentStatus: order.paymentStatus,
-  subtotalAmount: order.subtotalAmount,
-  discountAmount: order.discountAmount,
-  totalAmount: order.totalAmount,
-  items: order.items.map((item) => ({
-    menuItemId: item.menuItemId,
-    name: item.itemNameSnapshot,
-    quantity: item.quantity,
-    unitPrice: item.unitPrice,
-    discountAmount: item.discountAmount,
-    lineTotal: item.lineTotal,
-    note: item.note,
-  })),
-  createdAt: order.createdAt.toISOString(),
-});
-
-const withItems = {
-  items: { orderBy: { createdAt: 'asc' } },
-  table: { select: { label: true } },
-} satisfies Prisma.OrderInclude;
 
 /** Pesanan tamu dari QR meja (FR-004, FR-006). Transisi status ada di order-status.machine.ts. */
 @Injectable()
@@ -93,7 +65,7 @@ export class OrdersService {
 
     if (created.stockChanged) await this.menu.invalidate(outlet.id);
     // TODO(S1-08): emit SocketEvent.ORDER_CREATED ke room kasir.
-    return toDto(created.order);
+    return toPublicOrderDto(created.order);
   }
 
   private async insertOrder(
@@ -142,7 +114,7 @@ export class OrdersService {
         idempotencyKey: ref.idempotencyKey,
         items: { create: priced.lines },
       },
-      include: withItems,
+      include: orderInclude,
     });
 
     return { order, stockChanged: priced.stockDecrements.size > 0 };
@@ -162,7 +134,7 @@ export class OrdersService {
   }
 
   private findByIdempotencyKey(idempotencyKey: string) {
-    return this.prisma.order.findUnique({ where: { idempotencyKey }, include: withItems });
+    return this.prisma.order.findUnique({ where: { idempotencyKey }, include: orderInclude });
   }
 
   /** PRD 4.5: DUPLICATE_REQUEST membawa response awal, hanya untuk meja yang sama. */
@@ -171,7 +143,7 @@ export class OrdersService {
     return new AppException(
       ErrorCode.DUPLICATE_REQUEST,
       'Pesanan ini sudah dikirim sebelumnya.',
-      sameTable ? { order: toDto(order) } : undefined,
+      sameTable ? { order: toPublicOrderDto(order) } : undefined,
     );
   }
 }

@@ -65,6 +65,34 @@ export interface PublicOrderDto {
   createdAt: string;
 }
 
+/** Pesanan untuk dashboard kasir & admin (FR-008). */
+export interface StaffOrderDto extends PublicOrderDto {
+  id: string;
+  customerPhone: string | null;
+  cancelReason: string | null;
+  paidAt: string | null;
+  updatedAt: string;
+  /** Status tujuan yang sah menurut state machine (termasuk CANCELLED); dipakai UI untuk tombol aksi. */
+  allowedNextStatuses: OrderStatus[];
+  /** true bila tombol "Tandai Lunas" boleh tampil. */
+  canMarkPaid: boolean;
+}
+
+/** Query GET /orders. Tanggal `YYYY-MM-DD` dalam WIB; tanpa from/to = hari ini. */
+export const orderListQuerySchema = z
+  .object({
+    status: z.enum(['NEW', 'CONFIRMED', 'PREPARING', 'SERVED', 'COMPLETED', 'CANCELLED']).optional(),
+    from: z.iso.date('Format tanggal YYYY-MM-DD').optional(),
+    to: z.iso.date('Format tanggal YYYY-MM-DD').optional(),
+    /** Kode pesanan (sebagian) atau label meja. */
+    q: z.string().trim().max(30).optional(),
+  })
+  .refine((v) => !v.from || !v.to || v.from <= v.to, {
+    message: 'Tanggal awal harus sebelum tanggal akhir',
+    path: ['to'],
+  });
+export type OrderListQuery = z.infer<typeof orderListQuerySchema>;
+
 export const updateOrderStatusSchema = z.object({
   status: z.enum(['CONFIRMED', 'PREPARING', 'SERVED', 'COMPLETED']),
 });
