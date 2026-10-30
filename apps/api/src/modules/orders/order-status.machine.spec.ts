@@ -1,6 +1,12 @@
 import { ErrorCode } from 'shared';
 import { AppException } from '../../common/app.exception.js';
-import { allowedNextStatuses, assertTransition, OrderStateSnapshot } from './order-status.machine.js';
+import {
+  allowedNextStatuses,
+  assertCanMarkPaid,
+  assertTransition,
+  canMarkPaid,
+  OrderStateSnapshot,
+} from './order-status.machine.js';
 
 const order = (overrides: Partial<OrderStateSnapshot> = {}): OrderStateSnapshot => ({
   status: 'NEW',
@@ -52,5 +58,22 @@ describe('order status machine [FR-008]', () => {
   it('status akhir tidak punya transisi', () => {
     expect(allowedNextStatuses(order({ status: 'COMPLETED', paymentStatus: 'PAID' }))).toEqual([]);
     expect(allowedNextStatuses(order({ status: 'CANCELLED' }))).toEqual([]);
+  });
+});
+
+describe('tandai lunas oleh kasir [FR-006]', () => {
+  it('hanya pesanan bayar di kasir yang belum lunas', () => {
+    expect(canMarkPaid(order())).toBe(true);
+    expect(canMarkPaid(order({ status: 'SERVED' }))).toBe(true);
+  });
+
+  it('menolak pesanan QRIS, yang sudah lunas, atau yang dibatalkan', () => {
+    for (const o of [
+      order({ paymentMethod: 'QRIS', paymentStatus: 'PENDING' }),
+      order({ paymentStatus: 'PAID' }),
+      order({ status: 'CANCELLED' }),
+    ]) {
+      expect(codeOf(() => assertCanMarkPaid(o))).toBe(ErrorCode.INVALID_STATUS_TRANSITION);
+    }
   });
 });

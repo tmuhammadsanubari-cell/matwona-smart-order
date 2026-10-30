@@ -64,11 +64,21 @@ Catatan implementasi (S1-06):
 ## Pesanan (FR-006, FR-008)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET | `/orders` | CASHIER, ADMIN |
-| ⬜ | GET | `/orders/:id` | CASHIER, ADMIN |
-| ⬜ | PATCH | `/orders/:id/status` | CASHIER, ADMIN |
-| ⬜ | POST | `/orders/:id/mark-paid` | CASHIER, ADMIN |
-| ⬜ | POST | `/orders/:id/cancel` | CASHIER, ADMIN |
+| ✅ | GET | `/orders` | CASHIER, ADMIN |
+| ✅ | GET | `/orders/:id` | CASHIER, ADMIN |
+| ✅ | PATCH | `/orders/:id/status` | CASHIER, ADMIN |
+| ✅ | POST | `/orders/:id/mark-paid` | CASHIER, ADMIN |
+| ✅ | POST | `/orders/:id/cancel` | CASHIER, ADMIN |
+
+Catatan implementasi (S1-07):
+- Semua endpoint mengembalikan `StaffOrderDto` = `PublicOrderDto` + `{ id, customerPhone, cancelReason, paidAt, updatedAt, allowedNextStatuses, canMarkPaid }`. UI kasir cukup menampilkan tombol sesuai `allowedNextStatuses` (sudah memperhitungkan syarat bayar) dan `canMarkPaid`.
+- Hanya pesanan outlet staf dengan `source = DIGITAL`; pesanan outlet lain → 404 `NOT_FOUND`.
+- `GET /orders?status=&from=YYYY-MM-DD&to=YYYY-MM-DD&q=` → terbaru dulu, maks. 200. Tanggal dalam WIB, inklusif; tanpa `from`/`to` = hari ini (WIB). `q` mencocokkan sebagian kode pesanan atau label meja persis (tanpa beda huruf besar/kecil). `from > to` → 400.
+- `PATCH /orders/:id/status` body `{ status: CONFIRMED|PREPARING|SERVED|COMPLETED }`. Aturan dari `order-status.machine.ts`: transisi tidak sah → 409 `INVALID_STATUS_TRANSITION`; QRIS belum lunas → CONFIRMED atau belum lunas → COMPLETED → 409 `PAYMENT_NOT_COMPLETED`. Kasir pertama yang memproses dicatat di `handledByUserId`.
+- `POST /orders/:id/mark-paid` (tanpa body) hanya untuk `paymentMethod = CASHIER`, `paymentStatus = UNPAID`, dan belum batal; selain itu 409 `INVALID_STATUS_TRANSITION`. Mengisi `paymentStatus = PAID`, `paidByUserId`, `paidAt`, dan mencatat baris `payments` (`provider = CASHIER`).
+- `POST /orders/:id/cancel` body `{ reason }` (5–200 karakter). Hanya dari NEW/CONFIRMED. Stok item yang dilacak dikembalikan dalam transaksi yang sama lalu cache menu di-invalidate. Status bayar tidak diubah (pembatalan transaksi Midtrans menyusul di S2).
+- Perubahan dilakukan bersyarat pada status saat dibaca: bila dua kasir mengubah pesanan yang sama bersamaan, yang kalah mendapat 409 `INVALID_STATUS_TRANSITION` ("muat ulang") dan stok tidak dikembalikan dua kali.
+- Event `order.updated` / `payment.updated` menyusul di S1-08.
 
 ## Menu (FR-010)
 | Status | Method | Endpoint | Auth |

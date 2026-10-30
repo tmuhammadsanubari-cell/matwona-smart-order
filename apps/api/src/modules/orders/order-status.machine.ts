@@ -61,3 +61,34 @@ export function assertTransition(order: OrderStateSnapshot, next: OrderStatus): 
 export function allowedNextStatuses(order: OrderStateSnapshot): OrderStatus[] {
   return TRANSITIONS[order.status].filter((next) => canTransition(order, next));
 }
+
+/**
+ * "Tandai Lunas" oleh kasir (FR-006): hanya pesanan bayar di kasir yang belum lunas dan belum batal.
+ * Pesanan QRIS dilunasi lewat webhook Midtrans (S2-02).
+ */
+export function assertCanMarkPaid(order: OrderStateSnapshot): void {
+  if (order.status === 'CANCELLED') {
+    throw new AppException(
+      ErrorCode.INVALID_STATUS_TRANSITION,
+      'Pesanan yang sudah dibatalkan tidak bisa ditandai lunas.',
+    );
+  }
+  if (order.paymentMethod !== 'CASHIER') {
+    throw new AppException(
+      ErrorCode.INVALID_STATUS_TRANSITION,
+      'Pesanan QRIS dibayar lewat aplikasi pembayaran, bukan ditandai lunas di kasir.',
+    );
+  }
+  if (order.paymentStatus !== 'UNPAID') {
+    throw new AppException(ErrorCode.INVALID_STATUS_TRANSITION, 'Pesanan ini sudah lunas.');
+  }
+}
+
+export function canMarkPaid(order: OrderStateSnapshot): boolean {
+  try {
+    assertCanMarkPaid(order);
+    return true;
+  } catch {
+    return false;
+  }
+}

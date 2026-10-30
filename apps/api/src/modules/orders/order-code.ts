@@ -1,14 +1,11 @@
-/** WIB = UTC+7, tanpa daylight saving. */
-const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+import { wibDate } from '../../common/wib.js';
+
 const MAX_DAILY_SEQUENCE = 9999;
 
 /** Prefix kode pesanan per hari WIB: `MTW-YYMMDD-`. */
 export function orderCodePrefix(now: Date): string {
-  const wib = new Date(now.getTime() + WIB_OFFSET_MS);
-  const yy = String(wib.getUTCFullYear() % 100).padStart(2, '0');
-  const mm = String(wib.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(wib.getUTCDate()).padStart(2, '0');
-  return `MTW-${yy}${mm}${dd}-`;
+  const [yyyy, mm, dd] = wibDate(now).split('-');
+  return `MTW-${yyyy!.slice(2)}${mm}${dd}-`;
 }
 
 /**
