@@ -35,7 +35,7 @@ Catatan implementasi (S1-01):
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
 | ⬜ | GET | `/public/outlets/:slug` | publik |
-| ⬜ | GET | `/public/outlets/:slug/menu` | publik |
+| ✅ | GET | `/public/outlets/:slug/menu` | publik |
 | ⬜ | GET | `/public/outlets/:slug/promos` | publik |
 | ✅ | GET | `/public/tables/:token` | publik |
 | ⬜ | POST | `/public/orders` | table token |
@@ -61,14 +61,23 @@ Catatan implementasi (S1-01):
 ## Menu (FR-010)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET/POST | `/categories` | ADMIN |
-| ⬜ | PUT/DELETE | `/categories/:id` | ADMIN |
-| ⬜ | PATCH | `/categories/reorder` | ADMIN |
-| ⬜ | GET | `/menu-items` | CASHIER, ADMIN |
-| ⬜ | POST | `/menu-items` | ADMIN |
-| ⬜ | PUT/DELETE | `/menu-items/:id` | ADMIN |
-| ⬜ | PATCH | `/menu-items/:id/availability` | CASHIER, ADMIN |
-| ⬜ | POST | `/menu-items/:id/image` | ADMIN |
+| ✅ | GET/POST | `/categories` | ADMIN |
+| ✅ | PUT/DELETE | `/categories/:id` | ADMIN |
+| ✅ | PATCH | `/categories/reorder` | ADMIN |
+| ✅ | GET | `/menu-items` | CASHIER, ADMIN |
+| ✅ | POST | `/menu-items` | ADMIN |
+| ✅ | PUT/DELETE | `/menu-items/:id` | ADMIN |
+| ✅ | PATCH | `/menu-items/:id/availability` | CASHIER, ADMIN |
+| ⬜ | POST | `/menu-items/:id/image` | ADMIN (S2-11) |
+
+Catatan implementasi (S1-03):
+- `GET /public/outlets/:slug/menu` → `PublicMenu`: `{ outlet, categories: [{ id, name, items: [{ id, name, description, price, imageUrl, isAvailable }] }] }`. Hanya kategori aktif yang punya item non-arsip; urut `sortOrder` lalu nama. `isAvailable = false` bila ditandai habis **atau** `stock = 0`. Harga promo menyusul di S3-08.
+- Cache Redis key `menu:v1:<slug>`, TTL 60 detik, di-invalidate setiap perubahan kategori/item. Bila Redis mati, API langsung membaca DB (tidak error).
+- `GET /categories` → `CategoryDto[]` (dengan `itemCount` item non-arsip). `POST` body `{ name, sortOrder?, isActive? }`. `PUT /categories/:id` parsial. `PATCH /categories/reorder` body `{ ids: [...] }` wajib memuat **semua** kategori outlet; `sortOrder` = posisi. `DELETE` hanya untuk kategori tanpa item (termasuk arsip) → selain itu 409 `CATEGORY_NOT_EMPTY`.
+- `GET /menu-items?categoryId=&archived=true|false` (default non-arsip) → `MenuItemDto[]`, termasuk `olseraProductId` & `lastSyncedAt` untuk ikon "tersinkron Olsera".
+- `POST /menu-items` body `{ categoryId, name, price, description?, stock?, sku?, isAvailable?, sortOrder? }`; `PUT /menu-items/:id` parsial (field yang tidak dikirim tidak berubah). Harga integer Rupiah ≥ 0. SKU unik per outlet → 409 `SKU_TAKEN`. Kategori outlet lain → 404.
+- `PATCH /menu-items/:id/availability` body `{ isAvailable }`; item arsip → 404.
+- `DELETE /menu-items/:id` **mengarsipkan** (`isArchived = true`), tidak menghapus permanen; response `MenuItemDto`.
 
 ## Meja & QR (FR-011)
 | Status | Method | Endpoint | Auth |

@@ -8,10 +8,9 @@ import type {
   PublicTableInfo,
   UpdateTableInput,
 } from 'shared';
-import { z } from 'zod';
 import { Public, Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
+import { uuidParam, ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { TablesService } from './tables.service.js';
 
 /** Validasi token QR saat pelanggan membuka /m/<outlet>/t/<token> (FR-001). */
@@ -48,7 +47,7 @@ export class TablesController {
   @Put(':id')
   async update(
     @CurrentUser() user: AuthUser,
-    @Param('id', new ZodValidationPipe(z.uuid())) id: string,
+    @Param('id', uuidParam()) id: string,
     @Body(new ZodValidationPipe(updateTableSchema)) body: UpdateTableInput,
   ): Promise<ApiSuccess<DiningTableDto>> {
     return { success: true, data: await this.tables.update(user.outletId, id, body) };
