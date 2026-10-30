@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import type { PublicMenu } from 'shared';
+import type { PublicMenu, PublicMenuItem } from 'shared';
+import { CartBar } from '@/components/cart/cart-bar';
+import { CartSheet } from '@/components/cart/cart-sheet';
 import { Button } from '@/components/ui';
 import { filterMenu } from '@/lib/menu';
-import { loadCartForTable, useCart } from '@/stores/cart';
+import { loadCartForTable, summarizeCart, useCart } from '@/stores/cart';
 import { CategoryTabs } from './category-tabs';
 import { MenuItemCard } from './menu-item-card';
 
@@ -17,25 +19,36 @@ export interface MenuViewProps {
 
 const sectionId = (categoryId: string) => `kategori-${categoryId}`;
 
-/** Menu digital pelanggan (FR-001, FR-002): header meja, pencarian, tab kategori, kartu menu. */
+/** Menu digital pelanggan (FR-001…003): header meja, pencarian, tab kategori, kartu menu, keranjang. */
 export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps) {
   const [query, setQuery] = useState('');
   const [activeId, setActiveId] = useState<string | null>(menu.categories[0]?.id ?? null);
   const [cartReady, setCartReady] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const lines = useCart((s) => s.lines);
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
 
   const categories = useMemo(() => filterMenu(menu.categories, query), [menu.categories, query]);
   const resultCount = categories.reduce((n, c) => n + c.items.length, 0);
+  const menuItems = useMemo(
+    () => new Map<string, PublicMenuItem>(menu.categories.flatMap((c) => c.items.map((i) => [i.id, i] as const))),
+    [menu.categories],
+  );
+  const summary = summarizeCart(cartReady ? lines : [], menuItems);
 
   useEffect(() => {
     let cancelled = false;
-    void loadCartForTable(token).then(() => !cancelled && setCartReady(true));
+    void loadCartForTable(token).then(() => {
+      if (cancelled) return;
+      // Harga & nama mengikuti menu terbaru; item habis ditandai di keranjang.
+      useCart.getState().syncWithMenu(menuItems);
+      setCartReady(true);
+    });
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, menuItems]);
 
   // Tab aktif mengikuti kategori yang sedang terlihat di bawah tab sticky.
   useEffect(() => {
@@ -63,7 +76,7 @@ export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps)
   };
 
   return (
-    <main className="mx-auto min-h-dvh max-w-md pb-24">
+    <main className="mx-auto min-h-dvh max-w-md pb-28">
       <header className="bg-primary px-4 pt-4 pb-5 text-primary-foreground">
         <p className="text-sm text-cream">{outletName}</p>
         <h1 className="text-2xl font-bold">Meja {tableLabel}</h1>
@@ -127,6 +140,17 @@ export function MenuView({ token, tableLabel, outletName, menu }: MenuViewProps)
           ))}
         </div>
       )}
+
+      {cartReady && lines.length > 0 && (
+        <CartBar itemCount={summary.itemCount} total={summary.total} onOpen={() => setCartOpen(true)} />
+      )}
+      <CartSheet
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        tableLabel={tableLabel}
+        menuItems={menuItems}
+        checkoutHref={`/m/${menu.outlet.slug}/t/${encodeURIComponent(token)}/checkout`}
+      />
     </main>
   );
 }

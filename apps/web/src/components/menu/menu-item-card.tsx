@@ -3,8 +3,7 @@ import { formatRupiah } from 'shared';
 import type { PublicMenuItem } from 'shared';
 import { Badge, Button, Card } from '@/components/ui';
 import { cloudinaryLoader } from '@/lib/cloudinary-loader';
-
-export const MAX_QTY_PER_LINE = 20;
+import { QuantityStepper } from './quantity-stepper';
 
 export interface MenuItemCardProps {
   item: PublicMenuItem;
@@ -51,27 +50,7 @@ export function MenuItemCard({ item, quantity, onAdd, onQuantityChange }: MenuIt
             Tambah
           </Button>
         ) : (
-          <div className="flex items-center gap-1" role="group" aria-label={`Jumlah ${item.name}`}>
-            <Button
-              variant="secondary"
-              className="w-11 px-0 text-lg"
-              aria-label={`Kurangi ${item.name}`}
-              onClick={() => onQuantityChange(quantity - 1)}
-            >
-              −
-            </Button>
-            <span className="w-7 text-center font-bold" aria-live="polite">
-              {quantity}
-            </span>
-            <Button
-              className="w-11 px-0 text-lg"
-              aria-label={`Tambah satu ${item.name}`}
-              disabled={quantity >= MAX_QTY_PER_LINE}
-              onClick={() => onQuantityChange(quantity + 1)}
-            >
-              +
-            </Button>
-          </div>
+          <QuantityStepper itemName={item.name} quantity={quantity} onChange={onQuantityChange} />
         )}
       </div>
     </Card>
