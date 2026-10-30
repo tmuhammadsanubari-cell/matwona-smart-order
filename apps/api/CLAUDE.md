@@ -22,10 +22,11 @@ test/fixtures/              CSV contoh Olsera (fiktif)
 - `modules/pos-sync/adapters/*` → interface `PosSyncAdapter`, `MockOlseraAdapter`, kerangka `OlseraCsvAdapter`
 - Format error global sesuai PRD 4.5
 - `modules/auth` → login/refresh/logout/me, guard global `JwtAuthGuard` → `RolesGuard` → `CsrfGuard`. **Semua endpoint wajib login kecuali ditandai `@Public()`**; batasi role dengan `@Roles('ADMIN')`; ambil staf dengan `@CurrentUser()`. Saat menonaktifkan akun (S2-12) panggil `AuthService.revokeAllForUser`.
+- `modules/tables` → `GET /public/tables/:token`, CRUD meja admin. Untuk validasi header `X-Table-Token` (S1-06) pakai `TablesService.resolveToken`; token baru dari `generateTableToken()`.
 
 ## Belum Ada (lihat docs/BACKLOG.md)
 
-users, tables, menu, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
+users, menu, orders (service/controller), payments, realtime, promos, analytics, recommendations, controller pos-sync.
 
 ## Catatan Teknis
 
