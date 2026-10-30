@@ -3,6 +3,7 @@ import type { AuthUser } from 'shared';
 import { AppException } from '../../common/app.exception.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { PublicMenuService } from '../menu/public-menu.service.js';
+import type { RealtimeService } from '../realtime/realtime.service.js';
 import { StaffOrdersService } from './staff-orders.service.js';
 
 const OUTLET = 'outlet-1';
@@ -49,8 +50,13 @@ function setup(order = stored()) {
     $transaction: vi.fn(async (fn: (t: typeof tx) => unknown) => fn(tx)),
   };
   const menu = { invalidate: vi.fn() };
-  const service = new StaffOrdersService(prisma as unknown as PrismaService, menu as unknown as PublicMenuService);
-  return { tx, prisma, menu, service };
+  const realtime = { orderUpdated: vi.fn(), paymentUpdated: vi.fn() };
+  const service = new StaffOrdersService(
+    prisma as unknown as PrismaService,
+    menu as unknown as PublicMenuService,
+    realtime as unknown as RealtimeService,
+  );
+  return { tx, prisma, menu, realtime, service };
 }
 
 async function expectAppError(promise: Promise<unknown>, code: ErrorCode) {
@@ -88,8 +94,9 @@ describe('StaffOrdersService (FR-006, FR-008)', () => {
   });
 
   it('updateStatus: transisi sah disimpan bersyarat status lama + mencatat kasir', async () => {
-    const { service, tx } = setup();
+    const { service, tx, realtime } = setup();
     await service.updateStatus(KASIR, 'order-1', { status: 'CONFIRMED' });
+    expect(realtime.orderUpdated).toHaveBeenCalledWith(OUTLET, expect.objectContaining({ id: 'order-1' }));
     expect(tx.order.updateMany).toHaveBeenCalledWith({
       where: { id: 'order-1', status: 'NEW', paymentStatus: 'UNPAID' },
       data: { status: 'CONFIRMED', handledByUserId: 'kasir-1' },
@@ -97,9 +104,10 @@ describe('StaffOrdersService (FR-006, FR-008)', () => {
   });
 
   it('updateStatus: transisi tidak sah ditolak sebelum menyentuh DB', async () => {
-    const { service, prisma } = setup();
+    const { service, prisma, realtime } = setup();
     await expectAppError(service.updateStatus(KASIR, 'order-1', { status: 'SERVED' }), ErrorCode.INVALID_STATUS_TRANSITION);
     expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(realtime.orderUpdated).not.toHaveBeenCalled();
   });
 
   it('updateStatus: QRIS belum lunas tidak bisa dikonfirmasi', async () => {
@@ -114,8 +122,9 @@ describe('StaffOrdersService (FR-006, FR-008)', () => {
   });
 
   it('markPaid: PAID + paidBy + paidAt, mencatat payment CASHIER sebesar total', async () => {
-    const { service, tx } = setup();
+    const { service, tx, realtime } = setup();
     await service.markPaid(KASIR, 'order-1');
+    expect(realtime.paymentUpdated).toHaveBeenCalledWith(OUTLET, expect.objectContaining({ id: 'order-1' }));
     const { data } = tx.order.updateMany.mock.calls[0]![0];
     expect(data).toMatchObject({ paymentStatus: 'PAID', paidByUserId: 'kasir-1' });
     expect(data.paidAt).toBeInstanceOf(Date);
@@ -131,8 +140,9 @@ describe('StaffOrdersService (FR-006, FR-008)', () => {
   });
 
   it('cancel: simpan alasan, kembalikan stok per menu (dijumlah), invalidate cache menu', async () => {
-    const { service, tx, menu } = setup();
+    const { service, tx, menu, realtime } = setup();
     await service.cancel(KASIR, 'order-1', 'Pelanggan batal pesan');
+    expect(realtime.orderUpdated).toHaveBeenCalledTimes(1);
     expect(tx.order.updateMany.mock.calls[0]![0].data).toEqual({
       status: 'CANCELLED',
       cancelReason: 'Pelanggan batal pesan',

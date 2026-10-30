@@ -6,9 +6,10 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RateLimitService } from '../../redis/rate-limit.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
+import { RealtimeService } from '../realtime/realtime.service.js';
 import { TablesService } from '../tables/tables.service.js';
-import { nextOrderCode, orderCodePrefix } from './order-code.js';
-import { orderInclude, toPublicOrderDto, type OrderWithItems } from './order.mapper.js';
+import { nextOrderCode, ORDER_CODE_PATTERN, orderCodePrefix } from './order-code.js';
+import { orderInclude, toPublicOrderDto, toStaffOrderDto, type OrderWithItems } from './order.mapper.js';
 import { priceOrder, type PricedOrder } from './order-pricing.js';
 
 /** NFR-009: maks. 5 pesanan / 10 menit per token meja dan per IP (bisa diubah lewat env). */
@@ -38,6 +39,7 @@ export class OrdersService {
     @Inject(TablesService) private readonly tables: TablesService,
     @Inject(PublicMenuService) private readonly menu: PublicMenuService,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
+    @Inject(RealtimeService) private readonly realtime: RealtimeService,
   ) {}
 
   async create(input: CreateOrderInput, ctx: CreateOrderContext): Promise<PublicOrderDto> {
@@ -64,8 +66,21 @@ export class OrdersService {
     }
 
     if (created.stockChanged) await this.menu.invalidate(outlet.id);
-    // TODO(S1-08): emit SocketEvent.ORDER_CREATED ke room kasir.
+    this.realtime.orderCreated(outlet.id, toStaffOrderDto(created.order));
     return toPublicOrderDto(created.order);
+  }
+
+  /**
+   * Status pesanan untuk pelanggan (FR-007). Hanya bisa dibuka dengan token meja tempat pesanan
+   * dibuat; kode milik meja lain dijawab NOT_FOUND agar tidak bocor (PRD 2.2.4).
+   */
+  async getForTable(orderCode: string, tableToken: string): Promise<PublicOrderDto> {
+    const { table } = await this.tables.resolveToken(tableToken);
+    const order = ORDER_CODE_PATTERN.test(orderCode)
+      ? await this.prisma.order.findFirst({ where: { orderCode, tableId: table.id }, include: orderInclude })
+      : null;
+    if (!order) throw new AppException(ErrorCode.NOT_FOUND, 'Pesanan tidak ditemukan.');
+    return toPublicOrderDto(order);
   }
 
   private async insertOrder(

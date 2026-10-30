@@ -4,6 +4,7 @@ import { AppException } from '../../common/app.exception.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { RateLimitService } from '../../redis/rate-limit.service.js';
 import type { PublicMenuService } from '../menu/public-menu.service.js';
+import type { RealtimeService } from '../realtime/realtime.service.js';
 import type { TablesService } from '../tables/tables.service.js';
 import { orderRateLimitKeys, OrdersService } from './orders.service.js';
 
@@ -37,6 +38,9 @@ function storedOrder(overrides: Record<string, unknown> = {}) {
     totalAmount: 90000,
     idempotencyKey: KEY,
     createdAt: new Date('2026-11-05T05:12:44Z'),
+    updatedAt: new Date('2026-11-05T05:12:44Z'),
+    paidAt: null,
+    cancelReason: null,
     table: { label: TABLE.label },
     items: [
       {
@@ -78,13 +82,15 @@ function setup() {
   const tables = { resolveToken: vi.fn().mockResolvedValue({ table: TABLE, outlet: OUTLET }) };
   const menu = { invalidate: vi.fn() };
   const rateLimit = { hit: vi.fn().mockResolvedValue(true) };
+  const realtime = { orderCreated: vi.fn() };
   const service = new OrdersService(
     prisma as unknown as PrismaService,
     tables as unknown as TablesService,
     menu as unknown as PublicMenuService,
     rateLimit as unknown as RateLimitService,
+    realtime as unknown as RealtimeService,
   );
-  return { tx, prisma, tables, menu, rateLimit, service };
+  return { tx, prisma, tables, menu, rateLimit, realtime, service };
 }
 
 async function expectAppError(promise: Promise<unknown>, code: ErrorCode) {
@@ -96,7 +102,7 @@ async function expectAppError(promise: Promise<unknown>, code: ErrorCode) {
 
 describe('OrdersService.create (FR-004, FR-006)', () => {
   it('bayar di kasir: status NEW + UNPAID, harga dari DB, stok dikurangi, cache menu di-invalidate', async () => {
-    const { service, tx, menu, tables } = setup();
+    const { service, tx, menu, tables, realtime } = setup();
     const order = await service.create(input({ customerPhone: '081234567890' }), CTX);
 
     expect(tables.resolveToken).toHaveBeenCalledWith('token');
@@ -117,6 +123,11 @@ describe('OrdersService.create (FR-004, FR-006)', () => {
     expect(String(data.orderCode)).toMatch(/^MTW-\d{6}-0042$/);
     expect(menu.invalidate).toHaveBeenCalledWith(OUTLET.id);
     expect(order).toMatchObject({ table: 'A3', status: 'NEW', paymentStatus: 'UNPAID', totalAmount: 90000 });
+    // NFR-002: kasir menerima kartu pesanan lengkap (termasuk no. HP & aksi yang tersedia).
+    expect(realtime.orderCreated).toHaveBeenCalledWith(
+      OUTLET.id,
+      expect.objectContaining({ customerPhone: '081234567890', allowedNextStatuses: ['CONFIRMED', 'CANCELLED'] }),
+    );
   });
 
   it('QRIS dibuat dengan payment_status PENDING', async () => {
@@ -167,7 +178,7 @@ describe('OrdersService.create (FR-004, FR-006)', () => {
   });
 
   it('item habis: error dari transaksi diteruskan, stok tidak dikurangi', async () => {
-    const { service, tx, menu } = setup();
+    const { service, tx, menu, realtime } = setup();
     tx.menuItem.findMany.mockResolvedValue([
       { id: TUNA, name: 'Tuna Sambal Matah', price: 45000, stock: 1, isAvailable: true, isArchived: false },
     ]);
@@ -175,6 +186,7 @@ describe('OrdersService.create (FR-004, FR-006)', () => {
     expect(tx.menuItem.update).not.toHaveBeenCalled();
     expect(tx.order.create).not.toHaveBeenCalled();
     expect(menu.invalidate).not.toHaveBeenCalled();
+    expect(realtime.orderCreated).not.toHaveBeenCalled();
   });
 
   it('token meja tidak valid ditolak sebelum apa pun', async () => {
@@ -182,5 +194,25 @@ describe('OrdersService.create (FR-004, FR-006)', () => {
     tables.resolveToken.mockRejectedValue(new AppException(ErrorCode.INVALID_TABLE_TOKEN, 'x'));
     await expectAppError(service.create(input(), CTX), ErrorCode.INVALID_TABLE_TOKEN);
     expect(prisma.order.findUnique).not.toHaveBeenCalled();
+  });
+});
+
+describe('OrdersService.getForTable (FR-007)', () => {
+  it('mengembalikan pesanan bila dibuat dari meja token tersebut', async () => {
+    const { service, prisma } = setup();
+    Object.assign(prisma.order, { findFirst: vi.fn().mockResolvedValue(storedOrder()) });
+    const order = await service.getForTable('MTW-261105-0001', 'token');
+    expect(order.orderCode).toBe('MTW-261105-0001');
+    expect((prisma.order as unknown as { findFirst: ReturnType<typeof vi.fn> }).findFirst.mock.calls[0]![0].where).toEqual({
+      orderCode: 'MTW-261105-0001',
+      tableId: TABLE.id,
+    });
+  });
+
+  it('pesanan meja lain atau kode tidak valid → NOT_FOUND', async () => {
+    const { service, prisma } = setup();
+    Object.assign(prisma.order, { findFirst: vi.fn().mockResolvedValue(null) });
+    await expectAppError(service.getForTable('MTW-261105-0001', 'token'), ErrorCode.NOT_FOUND);
+    await expectAppError(service.getForTable('bukan-kode', 'token'), ErrorCode.NOT_FOUND);
   });
 });
