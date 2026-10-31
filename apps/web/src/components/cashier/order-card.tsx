@@ -2,16 +2,7 @@ import { formatRupiah, ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from 'shared';
 import type { OrderStatus, StaffOrderDto } from 'shared';
 import { Badge, Button, Card, cx } from '@/components/ui';
 import { ACTION_LABEL, primaryNextStatus, timeWib } from '@/lib/cashier-board';
-
-const PAYMENT_TONE = { PAID: 'success', UNPAID: 'danger', PENDING: 'neutral', FAILED: 'danger', EXPIRED: 'danger' } as const;
-const STATUS_TONE: Record<OrderStatus, 'neutral' | 'primary' | 'success' | 'danger' | 'cream'> = {
-  NEW: 'cream',
-  CONFIRMED: 'primary',
-  PREPARING: 'primary',
-  SERVED: 'success',
-  COMPLETED: 'neutral',
-  CANCELLED: 'danger',
-};
+import { ORDER_STATUS_TONE, PAYMENT_STATUS_TONE } from '@/lib/status-tone';
 
 export interface OrderCardProps {
   order: StaffOrderDto;
@@ -45,7 +36,7 @@ export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onC
             Masuk {timeWib(order.createdAt)} · <span className="font-semibold text-ink">Meja {order.table}</span>
           </p>
         </div>
-        <Badge tone={STATUS_TONE[order.status]}>{ORDER_STATUS_LABEL[order.status]}</Badge>
+        <Badge tone={ORDER_STATUS_TONE[order.status]}>{ORDER_STATUS_LABEL[order.status]}</Badge>
       </div>
 
       <p className="text-sm">
@@ -69,7 +60,7 @@ export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onC
         <p className="font-bold whitespace-nowrap text-ink">{formatRupiah(order.totalAmount)}</p>
         <p className="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
           {order.paymentMethod === 'CASHIER' ? 'Bayar di kasir' : 'QRIS'}
-          <Badge tone={PAYMENT_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
+          <Badge tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
         </p>
       </div>
 

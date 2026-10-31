@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { StaffOrderDto } from 'shared';
 import { useStaffSession } from '@/components/auth/use-staff-session';
-import { Button, cx } from '@/components/ui';
+import { Button, ConnectionBanner, cx } from '@/components/ui';
 import { ApiClientError } from '@/lib/api';
 import { COLUMNS, groupByColumn, todayWib, type ColumnId } from '@/lib/cashier-board';
 import { playNewOrderSound, readSoundPreference, unlockSound, writeSoundPreference } from '@/lib/notification-sound';
@@ -114,9 +114,7 @@ export function CashierDashboard() {
       </header>
 
       {!connected && (
-        <p role="status" className="bg-danger-soft px-4 py-2 text-sm font-semibold text-danger">
-          Koneksi terputus, mencoba menyambung…
-        </p>
+        <ConnectionBanner>Koneksi terputus, mencoba menyambung…</ConnectionBanner>
       )}
 
       <section

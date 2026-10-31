@@ -3,7 +3,7 @@ import { cx } from './cx';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   /**
-   * `muted` = item tidak tersedia (mis. menu "Habis", FR-002): latar abu-abu, teks muted, foto grayscale.
+   * `muted` = item tidak tersedia (mis. menu "Habis", FR-002): teks muted, foto grayscale.
    * Sengaja tanpa `opacity` agar teks & badge "Habis" di dalamnya tetap kontras ≥ 4,5:1 (NFR-014).
    */
   muted?: boolean;
@@ -15,8 +15,9 @@ export function Card({ muted = false, className, ...props }: CardProps) {
     <div
       aria-disabled={muted || undefined}
       className={cx(
-        'rounded-card border border-line p-4',
-        muted ? 'bg-line text-muted [&_img]:grayscale' : 'bg-surface shadow-sm',
+        // Desain: kartu rata dengan border tipis; bayangan (shadow-card) hanya untuk elemen yang melayang.
+        'rounded-card border border-line bg-surface p-4',
+        muted && 'text-muted [&_img]:grayscale',
         className,
       )}
       {...props}

@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { formatRupiah } from 'shared';
-import { Badge, Button, Textarea } from '@/components/ui';
-import { QuantityStepper } from '@/components/menu/quantity-stepper';
-import { MAX_NOTE_LENGTH, type CartLine } from '@/stores/cart';
+import { Badge, Button, QuantityStepper, Textarea } from '@/components/ui';
+import { MAX_NOTE_LENGTH, MAX_QTY_PER_LINE, type CartLine } from '@/stores/cart';
 
 export interface CartLineRowProps {
   line: CartLine;
@@ -28,7 +27,7 @@ export function CartLineRow({ line, available, onQuantityChange, onNoteChange }:
             {formatRupiah(line.unitPrice)} × {line.quantity}
           </p>
           {!available && (
-            <Badge tone="danger" className="mt-1">
+            <Badge tone="danger-solid" className="mt-1">
               Habis
             </Badge>
           )}
@@ -45,7 +44,12 @@ export function CartLineRow({ line, available, onQuantityChange, onNoteChange }:
           ) : (
             <span />
           )}
-          <QuantityStepper itemName={line.name} quantity={line.quantity} onChange={onQuantityChange} />
+          <QuantityStepper
+            itemName={line.name}
+            quantity={line.quantity}
+            max={MAX_QTY_PER_LINE}
+            onChange={onQuantityChange}
+          />
         </div>
       ) : (
         <Button variant="secondary" className="self-end" onClick={() => onQuantityChange(0)}>

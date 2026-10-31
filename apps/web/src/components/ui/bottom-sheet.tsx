@@ -82,13 +82,14 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cx(
-          'relative flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-card bg-surface shadow-xl',
+          'relative flex max-h-[85dvh] w-full max-w-md flex-col rounded-t-sheet bg-surface shadow-xl',
           'motion-safe:animate-[sheet-up_200ms_ease-out] focus:outline-none',
           className,
         )}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2">
-          <h2 id={titleId} className="text-lg font-bold text-ink">
+        <div aria-hidden="true" className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-line-strong" />
+        <div className="flex items-center justify-between gap-2 border-b border-line px-4 pb-2">
+          <h2 id={titleId} className="text-lg font-extrabold text-ink">
             {title}
           </h2>
           <button

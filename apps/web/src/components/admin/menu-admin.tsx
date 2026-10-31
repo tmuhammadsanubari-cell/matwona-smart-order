@@ -195,7 +195,7 @@ export function MenuAdmin() {
                     <div className="flex flex-wrap gap-1">
                       {item.olseraProductId && <Badge tone="cream">🔄 Tersinkron Olsera</Badge>}
                       {item.isArchived && <Badge>Diarsipkan</Badge>}
-                      {!item.isArchived && !item.isAvailable && <Badge tone="danger">Habis</Badge>}
+                      {!item.isArchived && !item.isAvailable && <Badge tone="danger-solid">Habis</Badge>}
                       {!item.isArchived && item.isAvailable && soldOutByStock && <Badge tone="danger">Stok 0 · tampil Habis</Badge>}
                     </div>
                     <p className="text-sm text-muted">

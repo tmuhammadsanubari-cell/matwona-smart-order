@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import { formatRupiah } from 'shared';
 import type { PublicMenuItem } from 'shared';
-import { Badge, Button, Card } from '@/components/ui';
+import { Badge, Button, Card, QuantityStepper } from '@/components/ui';
 import { cloudinaryLoader } from '@/lib/cloudinary-loader';
-import { QuantityStepper } from './quantity-stepper';
+import { MAX_QTY_PER_LINE } from '@/stores/cart';
 
 export interface MenuItemCardProps {
   item: PublicMenuItem;
@@ -23,7 +23,7 @@ export function MenuItemCard({ item, quantity, onAdd, onQuantityChange }: MenuIt
         {item.description && <p className="line-clamp-2 text-sm text-muted">{item.description}</p>}
         <p className="mt-auto font-bold text-primary">{formatRupiah(item.price)}</p>
         {soldOut && (
-          <Badge tone="danger" className="self-start">
+          <Badge tone="danger-solid" className="self-start">
             Habis
           </Badge>
         )}
@@ -50,7 +50,12 @@ export function MenuItemCard({ item, quantity, onAdd, onQuantityChange }: MenuIt
             Tambah
           </Button>
         ) : (
-          <QuantityStepper itemName={item.name} quantity={quantity} onChange={onQuantityChange} />
+          <QuantityStepper
+            itemName={item.name}
+            quantity={quantity}
+            max={MAX_QTY_PER_LINE}
+            onChange={onQuantityChange}
+          />
         )}
       </div>
     </Card>
