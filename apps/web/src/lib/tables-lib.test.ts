@@ -41,7 +41,8 @@ describe('downloadTablesQr', () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  const pdf = () => new Response(new Blob(['%PDF-1.3'], { type: 'application/pdf' }), { status: 200 });
+  // Body string, bukan Blob jsdom: Response Node 22 butuh Blob.stream() yang tidak dimiliki Blob jsdom.
+  const pdf = () => new Response('%PDF-1.3', { status: 200, headers: { 'Content-Type': 'application/pdf' } });
 
   it('mengunduh file PDF dengan ids & layout', async () => {
     fetchMock.mockResolvedValue(pdf());
