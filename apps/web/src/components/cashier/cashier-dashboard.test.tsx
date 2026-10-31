@@ -116,6 +116,12 @@ describe('Dashboard kasir (FR-008)', () => {
     expect(within(c).getByText('Rp 98.000')).toBeTruthy();
     expect(within(c).getByText('Belum bayar')).toBeTruthy();
     expect(within(c).getByText('Bayar di kasir')).toBeTruthy();
+    // NFR-011: no. HP pelanggan disamarkan di dashboard.
+    expect(within(c).getByText('0812****7890')).toBeTruthy();
+    expect(within(c).queryByText(/081234567890/)).toBeNull();
+    // Penghitung kolom & jumlah pesanan hari ini.
+    expect(within(column('Baru')).getByLabelText('1 pesanan')).toBeTruthy();
+    expect(screen.getByText('2 pesanan hari ini')).toBeTruthy();
   });
 
   it('pesanan baru via realtime masuk kolom Baru, disorot, dan berbunyi', async () => {
@@ -127,14 +133,16 @@ describe('Dashboard kasir (FR-008)', () => {
     const c = await screen.findByRole('article', { name: 'Pesanan MTW-261105-0007' });
     expect(column('Baru').contains(c)).toBe(true);
     expect(c.className).toContain('ring-accent');
+    expect(within(c).getByText('BARU')).toBeTruthy();
     expect(playNewOrderSound).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Pesanan baru dari Meja 5')).toBeTruthy();
   });
 
   it('suara bisa dimatikan dan preferensi disimpan', async () => {
     orders = [];
     renderDashboard();
-    fireEvent.click(await screen.findByRole('button', { name: '🔔 Suara aktif' }));
-    expect(screen.getByRole('button', { name: '🔕 Suara mati' }).getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(await screen.findByRole('button', { name: 'Suara notifikasi: Aktif' }));
+    expect(screen.getByRole('button', { name: 'Suara notifikasi: Mati' }).getAttribute('aria-pressed')).toBe('false');
     expect(localStorage.getItem('matwona-cashier-sound')).toBe('off');
     socket.emitFromServer(SocketEvent.ORDER_CREATED, order('8'));
     await screen.findByText('MTW-261105-0008');
@@ -181,14 +189,15 @@ describe('Dashboard kasir (FR-008)', () => {
     });
     renderDashboard();
     fireEvent.click(await screen.findByRole('button', { name: 'Batalkan' }));
-    const sheet = screen.getByRole('dialog', { name: 'Batalkan MTW-261105-0001' });
+    const sheet = screen.getByRole('dialog', { name: 'Batalkan pesanan MTW-261105-0001?' });
+    expect(within(sheet).getByText('Stok item akan dikembalikan')).toBeTruthy();
 
     fireEvent.change(within(sheet).getByLabelText('Alasan pembatalan'), { target: { value: 'ga' } });
-    fireEvent.click(within(sheet).getByRole('button', { name: 'Batalkan pesanan' }));
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Batalkan Pesanan' }));
     expect(within(sheet).getByText('Alasan minimal 5 karakter')).toBeTruthy();
 
     fireEvent.change(within(sheet).getByLabelText('Alasan pembatalan'), { target: { value: 'Pelanggan batal pesan' } });
-    fireEvent.click(within(sheet).getByRole('button', { name: 'Batalkan pesanan' }));
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Batalkan Pesanan' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(within(column('Selesai')).getByText('Dibatalkan: Pelanggan batal pesan')).toBeTruthy();
   });
@@ -207,11 +216,13 @@ describe('Dashboard kasir (FR-008)', () => {
   it('banner koneksi terputus; tersambung → banner hilang & data diambil ulang', async () => {
     renderDashboard();
     await screen.findByText('MTW-261105-0001');
-    expect(screen.getByRole('status').textContent).toBe('Koneksi terputus, mencoba menyambung…');
+    // Dua region status: banner koneksi & wadah toast.
+    expect(screen.getByText('Koneksi terputus, mencoba menyambung…').getAttribute('role')).toBe('status');
     const before = fetchMock.mock.calls.filter((c) => String(c[0]).startsWith('/orders?')).length;
 
     socket.emitFromServer('connect');
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByText('Koneksi terputus, mencoba menyambung…')).toBeNull();
+    expect(screen.getByText('Terhubung')).toBeTruthy();
     await waitFor(() =>
       expect(fetchMock.mock.calls.filter((c) => String(c[0]).startsWith('/orders?')).length).toBeGreaterThan(before),
     );

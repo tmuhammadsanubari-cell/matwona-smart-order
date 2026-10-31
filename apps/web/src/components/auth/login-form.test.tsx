@@ -80,3 +80,17 @@ describe('Login staf (FR-009)', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 });
+
+describe('Login staf — tampilan (desain K1)', () => {
+  it('judul "Masuk Dashboard" dan tombol tampilkan/sembunyikan password', () => {
+    renderLogin();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Masuk Dashboard');
+    const password = screen.getByLabelText('Password') as HTMLInputElement;
+    expect(password.type).toBe('password');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tampilkan password' }));
+    expect(password.type).toBe('text');
+    fireEvent.click(screen.getByRole('button', { name: 'Sembunyikan password' }));
+    expect(password.type).toBe('password');
+  });
+});

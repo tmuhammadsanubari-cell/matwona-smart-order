@@ -81,7 +81,8 @@ for (const step of opts.steps) {
     await shot(`klik-${step.click.replace(/\W+/g, '-').toLowerCase()}`);
   } else if (step.fill) {
     const [label, ...rest] = step.fill.split('=');
-    await page.getByLabel(label).fill(rest.join('='));
+    // exact: label "Password" tidak boleh ikut cocok dengan tombol "Tampilkan password".
+    await page.getByLabel(label, { exact: true }).fill(rest.join('='));
     await page.waitForTimeout(300);
     await shot(`isi-${label.replace(/\W+/g, '-').toLowerCase()}`);
   } else {
