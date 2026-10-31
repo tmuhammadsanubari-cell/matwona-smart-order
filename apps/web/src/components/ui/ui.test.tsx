@@ -270,6 +270,27 @@ describe('ProgressSteps', () => {
   });
 });
 
+describe('ProgressSteps vertikal (desain C6)', () => {
+  it('timeline: label, jam, aria-current & nama daftar', () => {
+    render(
+      <ProgressSteps
+        orientation="vertical"
+        aria-label="Progres pesanan"
+        steps={[
+          { label: 'Menunggu kasir', state: 'done', time: '12:10' },
+          { label: 'Sedang disiapkan', state: 'current', time: 'Sekarang' },
+          { label: 'Disajikan', state: 'todo' },
+        ]}
+      />,
+    );
+    const items = screen.getAllByRole('listitem');
+    expect(screen.getByRole('list', { name: 'Progres pesanan' })).toBeTruthy();
+    expect(items[0]!.textContent).toBe('Menunggu kasir (selesai)12:10');
+    expect(items[1]!.getAttribute('aria-current')).toBe('step');
+    expect(items[2]!.textContent).toBe('Disajikan');
+  });
+});
+
 describe('Toast', () => {
   afterEach(() => vi.useRealTimers());
 
