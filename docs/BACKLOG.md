@@ -13,7 +13,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 |---|----|------|-----|------|-------|------------|
 | [x] | S0-01 | Scaffold monorepo, CLAUDE.md, docs, docker compose | – | 🔴 | BE | – |
 | [x] | S0-02 | `pnpm install` lulus; `pnpm dev` menjalankan web & api kosong; `/health` API 200 | NFR-017 | 🔴 | BE | S0-01 |
-| [ ] | S0-03 | CI GitHub Actions: lint, typecheck, test (Node) + ruff & pytest (reco) | NFR-019 | 🔴 | BE | S0-02 |
+| [x] | S0-03 | CI GitHub Actions: lint, typecheck, test (Node) + ruff & pytest (reco) | NFR-019 | 🔴 | BE | S0-02 |
 | [x] | S0-04 | Prisma migrate pertama dari `schema.prisma` + seed (outlet, admin, kasir, kategori, menu contoh, 10 meja) | 4.2 | 🔴 | BE | S0-02 |
 | [x] | S0-05 | Design token brand di `globals.css` + komponen dasar (Button, Card, Badge, Input, BottomSheet) | 4.9, NFR-014 | 🔴 | FE1 | S0-02 |
 | [ ] | S0-06 | Wireframe & mockup Figma: menu, keranjang, checkout, status, kasir, admin menu | FR-001…008 | 🔴 | FE1 | – |

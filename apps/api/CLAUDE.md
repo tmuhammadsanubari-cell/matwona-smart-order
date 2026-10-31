@@ -47,5 +47,5 @@ users, payments, promos, analytics, recommendations, controller pos-sync.
 - **Midtrans:** pakai `midtrans-client` (Snap). Signature webhook diverifikasi manual (PRD 2.2.3).
 - **Panggilan ke AI service:** `fetch` dengan `AbortSignal.timeout(RECO_TIMEOUT_MS)`; fallback ke query terlaris saat gagal.
 - Setiap query bisnis wajib filter `outletId` (siap multi-outlet, NFR-016).
-- Test unit di samping file (`*.spec.ts`); e2e di `test/*.e2e-spec.ts` memakai database test.
+- Test unit di samping file (`*.spec.ts`); e2e di `test/*.e2e-spec.ts` memakai database test. CI (`.github/workflows/ci.yml`, job `api-e2e`) menjalankan e2e dengan Postgres + Redis sungguhan pada database kosong (`prisma migrate deploy`), jadi e2e wajib membuat datanya sendiri (outlet/staf/meja unik per run) dan tidak boleh bergantung pada seed.
 - Catatan Vitest + DI NestJS: Vitest (esbuild) tidak mengeluarkan metadata decorator. Untuk test yang memakai `Test.createTestingModule` dengan injeksi via tipe constructor, gunakan `@Inject(Token)` eksplisit atau tambahkan `unplugin-swc` di `vitest.config.ts`. Unit test murni (service tanpa DI) tidak terpengaruh.

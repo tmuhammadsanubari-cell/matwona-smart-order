@@ -6,8 +6,32 @@ on:
   push:
     branches: [develop, main]
 
+# Push baru ke PR yang sama membatalkan run sebelumnya.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Lint, typecheck, unit test (api + web + shared). Tidak butuh database.
   node:
+    runs-on: ubuntu-latest
+    env:
+      # prisma.config.ts mewajibkan DATABASE_URL saat `prisma generate` (postinstall); tidak dipakai untuk koneksi.
+      DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter shared build
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+
+  # E2E API dengan Postgres + Redis sungguhan: transaksi stok, idempotency, rate limit, realtime (NFR-002).
+  api-e2e:
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -19,21 +43,28 @@ jobs:
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U matwona" --health-interval 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s --health-retries 10
     env:
       DATABASE_URL: postgresql://matwona:matwona@localhost:5432/matwona_test
+      REDIS_URL: redis://localhost:6379
+      # Secret khusus CI; e2e juga punya default bila tidak di-set.
+      JWT_ACCESS_SECRET: ci-access-secret
+      JWT_REFRESH_SECRET: ci-refresh-secret
+      BCRYPT_COST: "4"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter shared build
-      - run: pnpm --filter api prisma:generate
       - run: pnpm --filter api exec prisma migrate deploy
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
+      - run: pnpm --filter api test:e2e
 
   reco:
     runs-on: ubuntu-latest
@@ -41,7 +72,7 @@ jobs:
       run:
         working-directory: apps/reco
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
       - run: uv run ruff check .
