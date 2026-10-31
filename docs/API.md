@@ -15,7 +15,7 @@ Header khusus:
 ## Health
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET | `/health` | publik |
+| ✅ | GET | `/health` | publik |
 
 ## Auth (FR-009)
 | Status | Method | Endpoint | Auth |
@@ -109,13 +109,18 @@ Catatan implementasi (S1-03):
 |---|---|---|---|
 | ✅ | GET/POST | `/tables` | ADMIN |
 | ✅ | PUT | `/tables/:id` | ADMIN |
-| ⬜ | POST | `/tables/:id/regenerate-token` | ADMIN (S2-04) |
-| ⬜ | GET | `/tables/qr.pdf` | ADMIN (S2-04) |
+| ✅ | POST | `/tables/:id/regenerate-token` | ADMIN |
+| ✅ | GET | `/tables/qr.pdf` | ADMIN |
 
 Catatan implementasi (S1-02):
 - `GET /tables` → `DiningTableDto[]` (`id, label, capacity, qrToken, isActive`) milik outlet admin, diurutkan natural (`2` sebelum `10`).
 - `POST /tables` body `{ label, capacity? }` atau bulk `{ labels: ["A1","A2"] }` (maks. 100) → 201 `DiningTableDto[]`. Label di-trim, maks. 20 karakter, unik per outlet; bentrok → 409 `TABLE_LABEL_TAKEN` (`details.labels`).
 - `PUT /tables/:id` body parsial `{ label?, capacity?, isActive? }` (minimal satu field). Meja outlet lain → 404 `NOT_FOUND`. Meja tidak dihapus; nonaktifkan dengan `isActive: false`.
+
+Catatan implementasi (S2-04):
+- `POST /tables/:id/regenerate-token` (tanpa body) → `DiningTableDto` dengan `qrToken` baru (acak 128-bit base62). Token lama langsung ditolak `GET /public/tables/:token` (400 `INVALID_TABLE_TOKEN`); QR lama harus dicetak ulang. Pesanan yang sudah ada tidak terpengaruh. Meja outlet lain → 404.
+- `GET /tables/qr.pdf?ids=<uuid,uuid>&layout=a6|a4grid` → **file PDF** (`Content-Type: application/pdf`, `Content-Disposition: attachment`), bukan JSON. Default semua meja **aktif** outlet admin, layout `a6` (satu kartu A6 per halaman); `a4grid` = 4 kartu A6 per lembar A4 dengan garis potong. Meja nonaktif & meja outlet lain tidak dicetak; bila tidak ada yang tersisa → 404 `NOT_FOUND` (JSON). Query salah → 400.
+- Isi QR: `<PUBLIC_WEB_URL>/m/<slug>/t/<token>`; `PUBLIC_WEB_URL` kosong → origin pertama `WEB_ORIGIN`. Kartu memuat nama Matwona + tagline (logo SVG resmi menyusul), "Meja <label>" (font mengecil otomatis untuk label panjang), "Scan untuk pesan", warna brand.
 
 ## Promo & Staf (FR-020, FR-021)
 | Status | Method | Endpoint | Auth |
@@ -158,7 +163,7 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 ## AI service internal (`apps/reco`, port 8000)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET | `/health` | publik |
+| ✅ | GET | `/health` | publik |
 | ⬜ | GET | `/internal/recommend` | X-Internal-Key |
 | ⬜ | POST | `/internal/train` | X-Internal-Key / OIDC |
 
