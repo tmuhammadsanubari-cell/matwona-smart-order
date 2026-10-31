@@ -50,6 +50,12 @@ function renderPage() {
 }
 const body = (call: number) => JSON.parse(fetchMock.mock.calls[call]![1]!.body as string);
 const callTo = (path: string) => fetchMock.mock.calls.findIndex((c) => c[0] === path);
+/** Baris tabel menu (desain A2) bernama sesuai nama menu. */
+const row = (name: string) => screen.findByRole('row', { name });
+const openCategories = async () => {
+  fireEvent.click(await screen.findByRole('button', { name: 'Kelola Kategori' }));
+  return screen.getByRole('dialog', { name: 'Kelola kategori' });
+};
 
 beforeEach(() => {
   user = ADMIN;
@@ -76,15 +82,31 @@ describe('Admin kelola menu (FR-010)', () => {
     expect(await screen.findByText('Halaman ini khusus admin/owner.')).toBeTruthy();
   });
 
-  it('menampilkan kategori (jumlah menu) dan menu dengan harga, stok, Habis, ikon Olsera', async () => {
+  it('tabel menu: harga, stok, SKU, Habis, ikon Olsera; panel kategori dengan jumlah menu', async () => {
     renderPage();
-    const tuna = await screen.findByRole('article', { name: 'Tuna Sambal Matah' });
-    expect(screen.getByText('2 menu')).toBeTruthy();
+    const tuna = await row('Tuna Sambal Matah');
     expect(within(tuna).getByText('Rp 45.000')).toBeTruthy();
-    expect(within(tuna).getByText('Stok: 10 · SKU TN-SMT')).toBeTruthy();
-    expect(within(tuna).getByText('🔄 Tersinkron Olsera')).toBeTruthy();
-    const geprek = screen.getByRole('article', { name: 'Tuna Geprek' });
-    expect(within(geprek).getByText('Habis', { selector: 'span' })).toBeTruthy();
+    expect(within(tuna).getByText('10')).toBeTruthy();
+    expect(within(tuna).getByText('TN-SMT')).toBeTruthy();
+    expect(within(tuna).getByText('Tersinkron Olsera')).toBeTruthy();
+    expect(within(tuna).getByText('Olahan Tuna')).toBeTruthy();
+    const geprek = screen.getByRole('row', { name: 'Tuna Geprek' });
+    expect(within(geprek).getByText('Habis')).toBeTruthy();
+    // Panel kategori = filter; tiap kategori menampilkan jumlah menu.
+    const filter = screen.getByRole('button', { name: 'Olahan Tuna, 2 menu' });
+    expect(filter.getAttribute('aria-pressed')).toBe('false');
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Kelola Menu');
+  });
+
+  it('filter kategori & cari nama/SKU', async () => {
+    renderPage();
+    await row('Tuna Sambal Matah');
+    fireEvent.click(screen.getByRole('button', { name: 'Minuman, 0 menu' }));
+    expect(screen.getByText('Belum ada menu di kategori ini.')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Semua kategori' }));
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cari menu' }), { target: { value: 'tn-smt' } });
+    expect(screen.getByRole('row', { name: 'Tuna Sambal Matah' })).toBeTruthy();
+    expect(screen.queryByRole('row', { name: 'Tuna Geprek' })).toBeNull();
   });
 
   it('toggle Tersedia/Habis sekali klik → PATCH availability', async () => {
@@ -99,7 +121,7 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('tambah menu: validasi lalu POST dengan harga integer Rupiah', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: '+ Menu' }));
+    fireEvent.click(await screen.findByRole('button', { name: '+ Tambah Menu' }));
     const sheet = screen.getByRole('dialog', { name: 'Tambah menu' });
     fireEvent.change(within(sheet).getByLabelText('Harga (Rupiah)'), { target: { value: '12000,5' } });
     fireEvent.click(within(sheet).getByRole('button', { name: 'Simpan' }));
@@ -120,8 +142,8 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('ubah menu Olsera: peringatan muncul, hanya field berubah yang dikirim (PUT)', async () => {
     renderPage();
-    const tuna = await screen.findByRole('article', { name: 'Tuna Sambal Matah' });
-    fireEvent.click(within(tuna).getByRole('button', { name: 'Ubah' }));
+    const tuna = await row('Tuna Sambal Matah');
+    fireEvent.click(within(tuna).getByRole('button', { name: 'Ubah Tuna Sambal Matah' }));
     const sheet = screen.getByRole('dialog', { name: 'Ubah Tuna Sambal Matah' });
     expect(within(sheet).getByText(/tersinkron dari Olsera/)).toBeTruthy();
 
@@ -139,8 +161,8 @@ describe('Admin kelola menu (FR-010)', () => {
       return undefined;
     };
     renderPage();
-    const geprek = await screen.findByRole('article', { name: 'Tuna Geprek' });
-    fireEvent.click(within(geprek).getByRole('button', { name: 'Ubah' }));
+    const geprek = await row('Tuna Geprek');
+    fireEvent.click(within(geprek).getByRole('button', { name: 'Ubah Tuna Geprek' }));
     const sheet = screen.getByRole('dialog');
     fireEvent.change(within(sheet).getByLabelText('SKU'), { target: { value: 'TN-SMT' } });
     fireEvent.click(within(sheet).getByRole('button', { name: 'Simpan' }));
@@ -150,8 +172,8 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('arsipkan dengan konfirmasi → DELETE (tidak dihapus permanen)', async () => {
     renderPage();
-    const geprek = await screen.findByRole('article', { name: 'Tuna Geprek' });
-    fireEvent.click(within(geprek).getByRole('button', { name: 'Arsipkan' }));
+    const geprek = await row('Tuna Geprek');
+    fireEvent.click(within(geprek).getByRole('button', { name: 'Arsipkan Tuna Geprek' }));
     const sheet = screen.getByRole('dialog', { name: 'Arsipkan Tuna Geprek?' });
     expect(within(sheet).getByText(/tidak dihapus permanen/)).toBeTruthy();
     fireEvent.click(within(sheet).getByRole('button', { name: 'Arsipkan' }));
@@ -167,8 +189,9 @@ describe('Admin kelola menu (FR-010)', () => {
       return undefined;
     };
     renderPage();
-    await screen.findByRole('button', { name: 'Turunkan Olahan Tuna' });
-    fireEvent.click(screen.getAllByRole('button', { name: 'Hapus' })[0]!);
+    const manager = await openCategories();
+    expect(within(manager).getByText('2 menu')).toBeTruthy();
+    fireEvent.click(within(manager).getAllByRole('button', { name: 'Hapus' })[0]!);
     const sheet = screen.getByRole('dialog', { name: 'Hapus kategori Olahan Tuna?' });
     fireEvent.click(within(sheet).getByRole('button', { name: 'Hapus' }));
     expect((await within(sheet).findByRole('alert')).textContent).toBe('Kategori masih berisi 2 menu.');
@@ -176,7 +199,8 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('urutkan kategori → PATCH reorder dengan seluruh id', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Turunkan Olahan Tuna' }));
+    await openCategories();
+    fireEvent.click(screen.getByRole('button', { name: 'Turunkan Olahan Tuna' }));
     await waitFor(() => expect(callTo('/categories/reorder')).toBeGreaterThan(-1));
     expect(body(callTo('/categories/reorder'))).toEqual({ ids: [CAT_MINUM, CAT_TUNA] });
     expect((screen.getByRole('button', { name: 'Naikkan Olahan Tuna' }) as HTMLButtonElement).disabled).toBe(true);
@@ -184,7 +208,8 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('tambah kategori → POST', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: '+ Kategori' }));
+    const manager = await openCategories();
+    fireEvent.click(within(manager).getByRole('button', { name: '+ Kategori' }));
     const sheet = screen.getByRole('dialog', { name: 'Tambah kategori' });
     fireEvent.change(within(sheet).getByLabelText('Nama kategori'), { target: { value: 'Paket Hemat' } });
     fireEvent.click(within(sheet).getByRole('button', { name: 'Simpan' }));
@@ -195,8 +220,9 @@ describe('Admin kelola menu (FR-010)', () => {
 
   it('lihat arsip: menu diarsipkan tampil tanpa tombol aksi', async () => {
     renderPage();
-    fireEvent.click(await screen.findByRole('button', { name: 'Lihat arsip' }));
-    const old = await screen.findByRole('article', { name: 'Tuna Lama' });
+    fireEvent.click(await screen.findByRole('button', { name: 'Diarsipkan' }));
+    expect(screen.getByRole('button', { name: 'Diarsipkan' }).getAttribute('aria-pressed')).toBe('true');
+    const old = await row('Tuna Lama');
     expect(within(old).getByText('Diarsipkan')).toBeTruthy();
     expect(within(old).queryByRole('button')).toBeNull();
   });

@@ -11,4 +11,5 @@ export { Logo, type LogoProps } from './logo';
 export { PhotoPlaceholder, type PhotoTone } from './photo-placeholder';
 export { ProgressSteps, type ProgressStep, type ProgressStepsProps, type ProgressStepState } from './progress-steps';
 export { QuantityStepper, type QuantityStepperProps } from './quantity-stepper';
+export { Switch, type SwitchProps } from './switch';
 export { Toast, Toaster, toast, TOAST_DURATION_MS } from './toast';

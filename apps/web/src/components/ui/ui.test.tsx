@@ -12,6 +12,7 @@ import {
   PhotoPlaceholder,
   ProgressSteps,
   QuantityStepper,
+  Switch,
   Textarea,
   toast,
   Toaster,
@@ -337,5 +338,21 @@ describe('EmptyState, ConnectionBanner, PhotoPlaceholder, Logo', () => {
     render(<Logo variant="green" width={150} />);
     const logo = screen.getByRole('img', { name: 'Matwona' });
     expect(logo.getAttribute('src')).toContain('matwona-logo-green.png');
+  });
+});
+
+describe('Switch (desain A2/A3)', () => {
+  it('role switch dengan aria-checked; klik mengirim nilai kebalikannya', () => {
+    const onChange = vi.fn();
+    const { rerender } = render(<Switch checked aria-label="Tersedia: Tuna" onChange={onChange} />);
+    const sw = screen.getByRole('switch', { name: 'Tersedia: Tuna' });
+    expect(sw.getAttribute('aria-checked')).toBe('true');
+    expect(sw.className).toContain('size-11');
+    fireEvent.click(sw);
+    expect(onChange).toHaveBeenCalledWith(false);
+
+    rerender(<Switch checked={false} disabled aria-label="Tersedia: Tuna" onChange={onChange} />);
+    expect(sw.getAttribute('aria-checked')).toBe('false');
+    expect((sw as HTMLButtonElement).disabled).toBe(true);
   });
 });
