@@ -1,9 +1,10 @@
-// Dashboard kasir realtime (FR-008; task S1-10). Hanya role CASHIER/ADMIN.
+import type { Metadata } from 'next';
+import { CashierDashboard } from '@/components/cashier/cashier-dashboard';
+
+export const metadata: Metadata = { title: 'Dashboard Kasir', robots: { index: false } };
+
+// Dashboard kasir realtime (FR-008; task S1-10). Hanya role CASHIER/ADMIN; sesi dicek di klien
+// karena cookie sesi milik domain API.
 export default function CashierPage() {
-  return (
-    <main className="min-h-dvh p-6">
-      <h1 className="text-2xl font-bold text-primary">Dashboard Kasir</h1>
-      <p className="mt-2 text-muted">Sedang dibangun (S1-10): kolom Baru · Diproses · Disajikan · Selesai.</p>
-    </main>
-  );
+  return <CashierDashboard />;
 }

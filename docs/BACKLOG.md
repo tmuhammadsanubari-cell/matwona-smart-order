@@ -33,7 +33,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S1-07 | `order-status.machine.ts` + endpoint `PATCH /orders/:id/status`, `mark-paid`, `cancel` (kembalikan stok) | FR-006, FR-008 | 🔴 | BE | S1-06 |
 | [x] | S1-08 | Gateway Socket.IO `/realtime` (auth handshake JWT, room kasir & order) + event `order.created/updated` | FR-008, NFR-002 | 🔴 | BE | S1-06 |
 | [x] | S1-09 | Halaman checkout (nama, HP opsional, pilih metode) + halaman status pesanan realtime | FR-004, FR-007 | 🔴 | FE1 | S1-06, S1-08 |
-| [ ] | S1-10 | Dashboard kasir: login, kolom status, kartu pesanan, suara notifikasi, tandai lunas, batal, banner koneksi | FR-008 | 🔴 | FE2 | S1-07, S1-08 |
+| [x] | S1-10 | Dashboard kasir: login, kolom status, kartu pesanan, suara notifikasi, tandai lunas, batal, banner koneksi | FR-008 | 🔴 | FE2 | S1-07, S1-08 |
 | [ ] | S1-11 | Admin: halaman kelola menu (CRUD, toggle) | FR-010 | 🔴 | FE2 | S1-03 |
 | [ ] | S1-12 | EDA data transaksi Olsera + PoC FP-Growth di notebook | FR-015 | 🔴 | AI | S0-08 |
 | [ ] | S1-13 | Deploy staging (Vercel + Cloud Run + DB) dan demo MVP end-to-end | – | 🔴 | BE | S1-01…S1-11 |
