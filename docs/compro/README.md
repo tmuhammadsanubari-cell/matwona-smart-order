@@ -7,6 +7,7 @@ Kerangka dokumen yang dinilai (lihat Panduan Computing Project 2026 dan `docs/PR
 | `BRS.md` | Proposal: BRS | 5% | Minggu 9 |
 | `SRS.md` | SRS: Requirement Analysis | 10% | Minggu 9 |
 | `SDD.md` | Technical Document: SDD | 5% | Minggu 9 |
+| `PROGRESS-W9.md` | Progress Report/Presentation (kerangka slide, skenario demo, bank tanya-jawab) | 5% | Minggu 9 |
 | `UAT.md` | UAT Document: Testing & QA | 5% | Minggu 14–15 |
 | `LOGBOOK.md` | Bukti Collaboration with Mitra & Individual Contribution | 5% + 15% | Sepanjang semester |
 
