@@ -20,14 +20,14 @@ const MENU: PublicMenu = {
   ],
 };
 
-const renderMenu = () => render(<MenuView token={TOKEN} tableLabel="5" outletName="Matwona" menu={MENU} />);
+const renderMenu = () => render(<MenuView token={TOKEN} tableLabel="5" menu={MENU} />);
 
 function saveCart(lines: object[]) {
   localStorage.setItem('matwona-cart', JSON.stringify({ state: { tableToken: TOKEN, lines }, version: 0 }));
 }
 
 async function openCart() {
-  fireEvent.click(await screen.findByRole('button', { name: 'Lihat keranjang' }));
+  fireEvent.click(await screen.findByRole('button', { name: /^Lihat keranjang/ }));
   return screen.getByRole('dialog', { name: 'Keranjang · Meja 5' });
 }
 
@@ -41,7 +41,8 @@ describe('Keranjang (FR-003)', () => {
     renderMenu();
     fireEvent.click(await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' }));
     fireEvent.click(screen.getByRole('button', { name: 'Tambah Es Teh Serai' }));
-    expect(screen.queryByRole('button', { name: 'Lihat keranjang' })).toBeTruthy();
+    const bar = screen.getByRole('button', { name: /^Lihat keranjang/ });
+    expect(bar.getAttribute('aria-label')).toBe('Lihat keranjang, 2 item, total Rp 53.000');
     expect(screen.getByText('2 item')).toBeTruthy();
     expect(screen.getAllByText('Rp 53.000').length).toBeGreaterThan(0);
   });
@@ -49,7 +50,7 @@ describe('Keranjang (FR-003)', () => {
   it('tidak ada bar saat keranjang kosong', async () => {
     renderMenu();
     await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' });
-    expect(screen.queryByRole('button', { name: 'Lihat keranjang' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Lihat keranjang/ })).toBeNull();
   });
 
   it('bottom sheet: rincian, subtotal & total, ubah jumlah 1–20, tombol lanjut ke checkout', async () => {
@@ -66,7 +67,7 @@ describe('Keranjang (FR-003)', () => {
     fireEvent.click(within(sheet).getByRole('button', { name: 'Tambah satu Tuna Sambal Matah' }));
     expect(within(sheet).getByText('Total').nextElementSibling!.textContent).toBe('Rp 135.000');
 
-    const link = within(sheet).getByRole('link', { name: 'Lanjut ke pembayaran' });
+    const link = within(sheet).getByRole('link', { name: 'Lanjut ke Pembayaran' });
     expect(link.getAttribute('href')).toBe(`/m/matwona/t/${TOKEN}/checkout`);
   });
 
@@ -80,7 +81,12 @@ describe('Keranjang (FR-003)', () => {
     expect(note.getAttribute('maxlength')).toBe('120');
     fireEvent.change(note, { target: { value: 'sambal dipisah' } });
     expect(useCart.getState().lines[0]!.note).toBe('sambal dipisah');
-    expect(within(sheet).getByText('14/120 karakter')).toBeTruthy();
+    expect(within(sheet).getByText('14/120')).toBeTruthy();
+
+    // "Selesai" menutup editor; catatan tampil sebagai teks dan tombol berubah jadi "Edit catatan".
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Selesai' }));
+    expect(within(sheet).getByText('Catatan: sambal dipisah')).toBeTruthy();
+    expect(within(sheet).getByRole('button', { name: 'Edit catatan' })).toBeTruthy();
   });
 
   it('menghapus item terakhir menampilkan keranjang kosong', async () => {
@@ -88,7 +94,7 @@ describe('Keranjang (FR-003)', () => {
     renderMenu();
     const sheet = await openCart();
     fireEvent.click(within(sheet).getByRole('button', { name: 'Hapus Es Teh Serai' }));
-    expect(within(sheet).getByText('Keranjangmu masih kosong.')).toBeTruthy();
+    expect(within(sheet).getByText('Keranjangmu masih kosong')).toBeTruthy();
     expect(useCart.getState().lines).toEqual([]);
   });
 
@@ -100,13 +106,15 @@ describe('Keranjang (FR-003)', () => {
     renderMenu();
     const sheet = await openCart();
 
-    expect(within(sheet).getByText('Habis')).toBeTruthy();
+    expect(within(sheet).getByText('Habis · tidak bisa dipesan')).toBeTruthy();
     expect(within(sheet).getByText('Total').nextElementSibling!.textContent).toBe('Rp 45.000');
-    expect(within(sheet).getByRole('alert').textContent).toContain('Hapus menu yang habis');
-    expect((within(sheet).getByRole('button', { name: 'Lanjut ke pembayaran' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(sheet).getByRole('alert').textContent).toBe('Tuna Asap baru saja habis. Hapus dari keranjang untuk lanjut.');
+    expect((within(sheet).getByRole('button', { name: 'Lanjut ke Pembayaran' }) as HTMLButtonElement).disabled).toBe(true);
+    // Item habis tidak punya stepper, hanya tombol hapus.
+    expect(within(sheet).queryByRole('group', { name: 'Jumlah Tuna Asap' })).toBeNull();
 
-    fireEvent.click(within(sheet).getByRole('button', { name: 'Hapus dari keranjang' }));
-    expect(within(sheet).getByRole('link', { name: 'Lanjut ke pembayaran' })).toBeTruthy();
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Hapus Tuna Asap dari keranjang' }));
+    expect(within(sheet).getByRole('link', { name: 'Lanjut ke Pembayaran' })).toBeTruthy();
   });
 
   it('harga di keranjang mengikuti menu terbaru', async () => {

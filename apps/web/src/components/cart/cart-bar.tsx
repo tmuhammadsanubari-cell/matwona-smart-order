@@ -1,5 +1,4 @@
 import { formatRupiah } from 'shared';
-import { Button } from '@/components/ui';
 
 export interface CartBarProps {
   itemCount: number;
@@ -7,19 +6,26 @@ export interface CartBarProps {
   onOpen: () => void;
 }
 
-/** Bar keranjang di bawah layar: jumlah item & total selalu terlihat saat keranjang berisi (PRD 4.9). */
+/** Bar keranjang melayang di bawah layar (desain C1): jumlah item & total selalu terlihat (PRD 4.9). */
 export function CartBar({ itemCount, total, onOpen }: CartBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface shadow-[0_-4px_16px_rgb(0_0_0/0.08)]">
-      <div className="mx-auto flex max-w-md items-center justify-between gap-3 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <div>
-          <p className="text-sm text-muted">{itemCount} item</p>
-          <p className="text-lg font-bold text-ink">{formatRupiah(total)}</p>
-        </div>
-        <Button size="lg" onClick={onOpen}>
-          Lihat keranjang
-        </Button>
-      </div>
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={`Lihat keranjang, ${itemCount} item, total ${formatRupiah(total)}`}
+        className="pointer-events-auto mx-auto flex h-15 w-full max-w-md items-center justify-between gap-3 rounded-card bg-primary px-4 text-primary-foreground shadow-float transition-colors hover:bg-primary-hover"
+      >
+        <span className="rounded-full bg-cream px-2.5 py-0.5 text-[13px] font-extrabold whitespace-nowrap text-primary">
+          {itemCount} item
+        </span>
+        <span className="flex items-center gap-3 text-[15px]">
+          <span className="font-extrabold whitespace-nowrap">{formatRupiah(total)}</span>
+          <span className="font-bold whitespace-nowrap">
+            Lihat Keranjang <span aria-hidden="true">→</span>
+          </span>
+        </span>
+      </button>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import type { PublicMenu } from 'shared';
 import { useCart } from '@/stores/cart';
 import { InvalidQr } from './invalid-qr';
@@ -8,7 +8,7 @@ const TOKEN = 'TokenMejaLima0000000000';
 const item = (id: string, name: string, price: number, isAvailable = true) => ({
   id,
   name,
-  description: null,
+  description: null as string | null,
   price,
   imageUrl: null,
   isAvailable,
@@ -25,7 +25,7 @@ const MENU: PublicMenu = {
   ],
 };
 
-const renderMenu = () => render(<MenuView token={TOKEN} tableLabel="5" outletName="Matwona" menu={MENU} />);
+const renderMenu = () => render(<MenuView token={TOKEN} tableLabel="5" menu={MENU} />);
 const tabs = () => within(screen.getByRole('navigation', { name: 'Kategori menu' })).getAllByRole('button');
 
 beforeEach(() => {
@@ -34,10 +34,10 @@ beforeEach(() => {
 });
 
 describe('MenuView (FR-001, FR-002)', () => {
-  it('header menampilkan "Meja <nomor>" dan nama outlet', () => {
+  it('header menampilkan logo dan "Meja <nomor>"', () => {
     renderMenu();
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Meja 5');
-    expect(screen.getByText('Matwona')).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Matwona' })).toBeTruthy();
   });
 
   it('kategori & item terurut sesuai server; tab kategori aktif pertama', () => {
@@ -56,7 +56,8 @@ describe('MenuView (FR-001, FR-002)', () => {
     renderMenu();
     const soldOut = screen.getByRole('button', { name: 'Tuna Asap habis' }) as HTMLButtonElement;
     expect(soldOut.disabled).toBe(true);
-    expect(screen.getByText('Habis')).toBeTruthy();
+    // Label "Habis" di foto + teks tombol nonaktif.
+    expect(screen.getAllByText('Habis')).toHaveLength(2);
   });
 
   it('klik tab memilih kategori', () => {
@@ -88,6 +89,7 @@ describe('MenuView (FR-001, FR-002)', () => {
       tableToken: TOKEN,
       lines: [{ menuItemId: 't1', name: 'Tuna Sambal Matah', unitPrice: 45000, quantity: 1 }],
     });
+    expect(screen.getByRole('status').textContent).toBe('Ditambahkan ke keranjang');
 
     const group = await screen.findByRole('group', { name: 'Jumlah Tuna Sambal Matah' });
     fireEvent.click(within(group).getByRole('button', { name: 'Tambah satu Tuna Sambal Matah' }));
@@ -128,13 +130,13 @@ describe('InvalidQr (FR-001)', () => {
 });
 
 describe('Banner pesanan aktif (FR-007)', () => {
-  it('menampilkan "Lihat pesanan aktif" untuk pesanan meja ini yang belum selesai', async () => {
+  it('menampilkan banner "Ada pesanan aktif" untuk pesanan meja ini yang belum selesai', async () => {
     localStorage.setItem(
       'matwona-orders',
       JSON.stringify([{ code: 'MTW-261105-0042', outlet: 'matwona', tableToken: TOKEN, createdAt: new Date().toISOString() }]),
     );
     renderMenu();
-    const link = await screen.findByRole('link', { name: /Lihat pesanan aktif/ });
+    const link = await screen.findByRole('link', { name: /pesanan aktif MTW-261105-0042/ });
     expect(link.getAttribute('href')).toBe('/m/matwona/order/MTW-261105-0042');
   });
 
@@ -145,6 +147,47 @@ describe('Banner pesanan aktif (FR-007)', () => {
     );
     renderMenu();
     await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' });
-    expect(screen.queryByRole('link', { name: /Lihat pesanan aktif/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /pesanan aktif/ })).toBeNull();
+  });
+});
+
+describe('Detail menu (FR-002, FR-003, desain C2)', () => {
+  it('ketuk kartu membuka detail; catatan & jumlah ikut masuk keranjang lalu sheet tertutup', async () => {
+    renderMenu();
+    fireEvent.click(await screen.findByRole('button', { name: 'Lihat detail Tuna Sambal Matah' }));
+    const sheet = screen.getByRole('dialog', { name: 'Tuna Sambal Matah' });
+
+    // Di sheet detail jumlah minimal 1: tombol − nonaktif, bukan "Hapus".
+    expect((within(sheet).getByRole('button', { name: 'Kurangi Tuna Sambal Matah' }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.change(within(sheet).getByLabelText('Catatan (opsional)'), { target: { value: ' sambal dipisah ' } });
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Tambah satu Tuna Sambal Matah' }));
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Tambah ke Keranjang · Rp 90.000' }));
+
+    expect(useCart.getState().lines).toEqual([
+      { menuItemId: 't1', name: 'Tuna Sambal Matah', unitPrice: 45000, quantity: 2, note: 'sambal dipisah' },
+    ]);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('Ditambahkan ke keranjang');
+  });
+
+  it('membuka lagi item yang sudah di keranjang: catatan lama terisi, jumlah ditambahkan', async () => {
+    renderMenu();
+    fireEvent.click(await screen.findByRole('button', { name: 'Tambah Tuna Sambal Matah' }));
+    act(() => useCart.getState().setNote('t1', 'tidak pedas'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Lihat detail Tuna Sambal Matah' }));
+    const sheet = screen.getByRole('dialog', { name: 'Tuna Sambal Matah' });
+    expect((within(sheet).getByLabelText('Catatan (opsional)') as HTMLTextAreaElement).value).toBe('tidak pedas');
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Tambah ke Keranjang · Rp 45.000' }));
+    expect(useCart.getState().lines[0]).toMatchObject({ quantity: 2, note: 'tidak pedas' });
+  });
+
+  it('item habis: detail tetap bisa dilihat tetapi tombol tambah nonaktif', async () => {
+    renderMenu();
+    fireEvent.click(await screen.findByRole('button', { name: 'Lihat detail Tuna Asap' }));
+    const sheet = screen.getByRole('dialog', { name: 'Tuna Asap' });
+    expect(within(sheet).getByText('Menu ini sedang habis.')).toBeTruthy();
+    expect((within(sheet).getByRole('button', { name: 'Habis' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(within(sheet).queryByLabelText('Catatan (opsional)')).toBeNull();
   });
 });
