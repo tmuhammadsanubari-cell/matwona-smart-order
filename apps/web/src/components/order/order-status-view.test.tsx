@@ -79,13 +79,24 @@ describe('Status pesanan (FR-007)', () => {
     expect(fetchMock).toHaveBeenCalledWith(`/public/orders/${CODE}`, expect.objectContaining({ tableToken: TOKEN }));
     expect(connectRealtime).toHaveBeenCalledWith({ tableToken: TOKEN, orderCode: CODE });
 
+    // Header (desain C6): kode, meja & nama; kalimat pendukung di bawah headline.
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(`Pesanan ${CODE}`);
+    expect(screen.getByText('Meja 5 · Rina')).toBeTruthy();
+    expect(screen.getByText('Kasir akan mengecek pesananmu sebentar lagi.')).toBeTruthy();
+
     const steps = within(screen.getByRole('list', { name: 'Progres pesanan' })).getAllByRole('listitem');
-    expect(steps.map((s) => s.textContent)).toEqual(['Menunggu kasir', 'Diterima kasir', 'Sedang disiapkan', 'Disajikan']);
+    expect(steps).toHaveLength(4);
+    ['Menunggu kasir', 'Diterima kasir', 'Sedang disiapkan', 'Disajikan'].forEach((label, i) =>
+      expect(steps[i]!.textContent).toContain(label),
+    );
     expect(steps[0]!.getAttribute('aria-current')).toBe('step');
+    // Jam pesanan dibuat (WIB) di langkah pertama; langkah berikutnya "Sebentar lagi".
+    expect(steps[0]!.textContent).toContain('12.12'); // format id-ID, sama dengan dashboard kasir
+    expect(steps[1]!.textContent).toContain('Sebentar lagi');
     expect(screen.getByText('Belum bayar')).toBeTruthy();
     expect(screen.getByText(/Bayar di kasir sebesar Rp 98.000/)).toBeTruthy();
     expect(screen.getByText('Catatan: pedas')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Pesan menu lain' }).getAttribute('href')).toBe(`/m/matwona/t/${TOKEN}`);
+    expect(screen.getByRole('link', { name: 'Kembali ke menu' }).getAttribute('href')).toBe(`/m/matwona/t/${TOKEN}`);
   });
 
   it('event realtime memperbarui status & pembayaran tanpa refresh', async () => {
@@ -129,5 +140,15 @@ describe('Status pesanan (FR-007)', () => {
     fetchMock.mockRejectedValue(new ApiClientError(404, { code: ErrorCode.NOT_FOUND, message: 'Pesanan tidak ditemukan.' }));
     renderStatus();
     expect(await screen.findByText('Pesanan tidak ditemukan di perangkat ini')).toBeTruthy();
+  });
+});
+
+describe('Status pesanan dibatalkan', () => {
+  it('tanpa timeline, headline menyebut dibatalkan', async () => {
+    rememberOrder({ code: CODE, outlet: 'matwona', tableToken: TOKEN, createdAt: new Date().toISOString() });
+    fetchMock.mockResolvedValue({ ...ORDER, status: 'CANCELLED' });
+    renderStatus();
+    expect(await screen.findByText(/Pesanan dibatalkan/)).toBeTruthy();
+    expect(screen.queryByRole('list', { name: 'Progres pesanan' })).toBeNull();
   });
 });

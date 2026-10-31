@@ -5,6 +5,8 @@ export type StepState = 'done' | 'current' | 'todo';
 export interface OrderProgress {
   /** Kalimat utama untuk pelanggan (nada santai, BRAND.md). */
   headline: string;
+  /** Kalimat pendukung di bawah headline (desain C6), mis. "Dapur lagi memasak. Duduk santai, ya!". */
+  subline: string;
   /** Kosong untuk pesanan yang dibatalkan. */
   steps: { label: string; state: StepState }[];
   /** Pesanan selesai/dibatalkan: tidak akan berubah lagi. */
@@ -21,6 +23,7 @@ export function orderProgress(order: Pick<PublicOrderDto, 'status' | 'paymentMet
   if (order.status === 'CANCELLED') {
     return {
       headline: 'Pesanan dibatalkan. Silakan hubungi kasir bila ada pertanyaan.',
+      subline: 'Pembayaran yang sudah masuk akan diurus kasir.',
       steps: [],
       final: true,
     };
@@ -44,5 +47,18 @@ export function orderProgress(order: Pick<PublicOrderDto, 'status' | 'paymentMet
     COMPLETED: 'Pesanan selesai. Terima kasih sudah makan di Matwona!',
   };
 
-  return { headline: headlines[order.status]!, steps, final: order.status === 'COMPLETED' };
+  const sublines: Record<string, string> = {
+    NEW: awaitingQris ? 'Pesanan diteruskan ke kasir setelah pembayaran diterima.' : 'Kasir akan mengecek pesananmu sebentar lagi.',
+    CONFIRMED: 'Sebentar lagi dapur mulai memasak.',
+    PREPARING: 'Dapur lagi memasak. Duduk santai, ya!',
+    SERVED: 'Semoga cocok di lidah. Selamat menikmati!',
+    COMPLETED: 'Sampai jumpa lagi di Matwona.',
+  };
+
+  return {
+    headline: headlines[order.status]!,
+    subline: sublines[order.status]!,
+    steps,
+    final: order.status === 'COMPLETED',
+  };
 }

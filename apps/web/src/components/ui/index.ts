@@ -9,6 +9,6 @@ export { EmptyState, type EmptyStateProps } from './empty-state';
 export { Input, Textarea, type InputProps, type TextareaProps } from './input';
 export { Logo, type LogoProps } from './logo';
 export { PhotoPlaceholder, type PhotoTone } from './photo-placeholder';
-export { ProgressSteps, type ProgressStep, type ProgressStepState } from './progress-steps';
+export { ProgressSteps, type ProgressStep, type ProgressStepsProps, type ProgressStepState } from './progress-steps';
 export { QuantityStepper, type QuantityStepperProps } from './quantity-stepper';
 export { Toast, Toaster, toast, TOAST_DURATION_MS } from './toast';

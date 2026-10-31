@@ -55,6 +55,7 @@ describe('orderProgress (FR-007)', () => {
     expect(states(p)).toEqual(['current', 'todo', 'todo', 'todo']);
     expect(states(orderProgress({ ...cashier, status: 'PREPARING' }))).toEqual(['done', 'done', 'current', 'todo']);
     expect(orderProgress({ ...cashier, status: 'CONFIRMED' }).headline).toBe('Pesananmu sudah diterima kasir 🙌');
+    expect(orderProgress({ ...cashier, status: 'PREPARING' }).subline).toBe('Dapur lagi memasak. Duduk santai, ya!');
   });
 
   it('QRIS belum lunas: langkah pertama "Menunggu pembayaran"', () => {

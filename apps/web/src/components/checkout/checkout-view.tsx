@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { createOrderSchema, ErrorCode, formatRupiah } from 'shared';
 import type { PaymentMethod, PublicMenu, PublicMenuItem } from 'shared';
-import { Button, buttonClassName, Card, cx, Input } from '@/components/ui';
+import { Button, buttonClassName, Card, cx, EmptyState, Input } from '@/components/ui';
 import { ApiClientError } from '@/lib/api';
 import { placeOrder } from '@/lib/place-order';
 import { rememberOrder } from '@/lib/placed-orders';
@@ -22,11 +22,54 @@ interface ItemProblem {
   unitPrice?: number;
 }
 
-const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; description: string; disabled?: boolean }[] = [
-  { value: 'CASHIER', label: 'Bayar di kasir', description: 'Tunai, debit, atau QRIS outlet setelah pesanan dikirim.' },
+function CashierIcon() {
+  return (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="11" width="18" height="9" rx="2" />
+      <path d="M6 11V5h8v6M17 8h2M7 15h4M15 15h2" />
+    </svg>
+  );
+}
+
+function QrisIcon() {
+  return (
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3" />
+    </svg>
+  );
+}
+
+function BackIcon() {
+  return (
+    <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  );
+}
+
+const PAYMENT_OPTIONS: {
+  value: PaymentMethod;
+  label: string;
+  description: string;
+  icon: () => React.JSX.Element;
+  disabled?: boolean;
+}[] = [
+  {
+    value: 'CASHIER',
+    label: 'Bayar di Kasir',
+    description: 'Tunai, kartu, atau QRIS outlet di kasir setelah pesanan dikirim.',
+    icon: CashierIcon,
+  },
   // QRIS online (Midtrans) menyusul di S2-01/S2-03.
-  { value: 'QRIS', label: 'QRIS dari HP', description: 'Segera tersedia.', disabled: true },
+  { value: 'QRIS', label: 'QRIS', description: 'Bayar dari meja pakai e-wallet atau m-banking. Segera tersedia.', icon: QrisIcon, disabled: true },
 ];
+
+/** Langkah alur pelanggan: menu → keranjang → checkout → status (desain C4). */
+const FLOW_STEP = 3;
+const FLOW_STEPS = 4;
 
 export interface CheckoutViewProps {
   token: string;
@@ -136,12 +179,16 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
 
   if (ready && lines.length === 0) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-4 p-6 text-center">
-        <h1 className="text-xl font-bold text-ink">Keranjangmu masih kosong</h1>
-        <p className="text-muted">Pilih menu dulu, lalu kembali ke sini untuk memesan.</p>
-        <Link href={menuHref} className={buttonClassName({ size: 'lg' })}>
-          Lihat menu
-        </Link>
+      <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center p-6">
+        <EmptyState
+          title="Keranjangmu masih kosong"
+          description="Pilih menu dulu, lalu kembali ke sini untuk memesan."
+          action={
+            <Link href={menuHref} className={buttonClassName({ size: 'lg' })}>
+              Lihat menu
+            </Link>
+          }
+        />
       </main>
     );
   }
@@ -149,86 +196,68 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
   const blocked = summary.unavailable.length > 0;
 
   return (
-    <main className="mx-auto min-h-dvh max-w-md pb-36">
-      <header className="bg-primary px-4 pt-3 pb-5 text-primary-foreground">
-        <Link href={menuHref} className="-ml-2 inline-flex min-h-11 items-center px-2 text-sm text-cream">
-          ← Kembali ke menu
-        </Link>
-        <h1 className="text-2xl font-bold">Checkout · Meja {tableLabel}</h1>
+    <main className="mx-auto min-h-dvh max-w-md pb-40">
+      <header className="flex h-16 items-center justify-between gap-2 border-b border-line pr-4 pl-2">
+        <div className="flex min-w-0 items-center gap-1">
+          <Link
+            href={menuHref}
+            aria-label="Kembali ke menu"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink hover:bg-line"
+          >
+            <BackIcon />
+          </Link>
+          <div className="flex min-w-0 flex-col">
+            <h1 className="text-lg leading-tight font-extrabold text-ink">Checkout</h1>
+            <p className="text-xs font-semibold text-muted">Meja {tableLabel}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2" aria-label={`Langkah ${FLOW_STEP} dari ${FLOW_STEPS}`} role="img">
+          <div className="flex gap-1" aria-hidden="true">
+            {Array.from({ length: FLOW_STEPS }, (_, i) => (
+              <span key={i} className={cx('h-1 w-4 rounded-full', i < FLOW_STEP ? 'bg-primary' : 'bg-line-strong')} />
+            ))}
+          </div>
+          <span aria-hidden="true" className="text-[13px] font-extrabold text-primary">
+            {FLOW_STEP}/{FLOW_STEPS}
+          </span>
+        </div>
       </header>
 
-      <form id="checkout" noValidate onSubmit={submit} className="flex flex-col gap-4 p-4">
-        <Card>
-          <h2 className="mb-2 font-bold text-ink">Pesananmu</h2>
-          <ul className="flex flex-col gap-2">
-            {lines.map((line) => {
-              const available = menuItems.get(line.menuItemId)?.isAvailable === true;
-              return (
-                <li key={line.menuItemId} className="flex justify-between gap-3 text-sm">
-                  <div className="min-w-0">
-                    <p className={cx('font-semibold', available ? 'text-ink' : 'text-muted line-through')}>
-                      {line.name} × {line.quantity}
-                    </p>
-                    {line.note && <p className="text-muted">Catatan: {line.note}</p>}
-                    {!available && <p className="text-danger">Habis</p>}
-                  </div>
-                  <p className="shrink-0 font-semibold">{available ? formatRupiah(line.unitPrice * line.quantity) : '–'}</p>
-                </li>
-              );
-            })}
-          </ul>
-          <dl className="mt-3 flex flex-col gap-1 border-t border-line pt-3 text-sm">
-            <div className="flex justify-between text-muted">
-              <dt>Subtotal</dt>
-              <dd>{formatRupiah(summary.subtotal)}</dd>
-            </div>
-            {summary.discount > 0 && (
-              <div className="flex justify-between text-primary">
-                <dt>Diskon promo</dt>
-                <dd>−{formatRupiah(summary.discount)}</dd>
-              </div>
-            )}
-            <div className="flex justify-between text-base font-bold text-ink">
-              <dt>Total</dt>
-              <dd>{formatRupiah(summary.total)}</dd>
-            </div>
-          </dl>
-        </Card>
+      <form id="checkout" noValidate onSubmit={submit} className="flex flex-col gap-5 px-4 py-5">
+        <Input
+          label="Nama kamu"
+          hint="Kami panggil nama ini saat pesanan siap."
+          autoComplete="name"
+          maxLength={50}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          error={fieldErrors.customerName}
+        />
+        <Input
+          label="No. HP (opsional)"
+          placeholder="08xxxxxxxxxx"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={16}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          error={fieldErrors.customerPhone}
+        />
 
-        <Card className="flex flex-col gap-3">
-          <h2 className="font-bold text-ink">Data pemesan</h2>
-          <Input
-            label="Nama"
-            hint="Untuk memanggilmu saat pesanan siap."
-            autoComplete="name"
-            maxLength={50}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            error={fieldErrors.customerName}
-          />
-          <Input
-            label="No. HP"
-            hint="Opsional, mis. 0812xxxxxxxx."
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            maxLength={16}
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            error={fieldErrors.customerPhone}
-          />
-        </Card>
-
-        <Card>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-2 font-bold text-ink">Metode pembayaran</legend>
-            {PAYMENT_OPTIONS.map((option) => (
+        <fieldset className="flex flex-col gap-2.5">
+          <legend className="mb-2.5 text-sm font-bold text-ink">Metode pembayaran</legend>
+          {PAYMENT_OPTIONS.map((option) => {
+            const selected = !option.disabled && method === option.value;
+            const Icon = option.icon;
+            return (
               <label
                 key={option.value}
                 className={cx(
-                  'flex min-h-11 items-start gap-3 rounded-xl border-2 p-3',
-                  option.disabled ? 'cursor-not-allowed border-line text-muted' : 'cursor-pointer',
-                  !option.disabled && method === option.value ? 'border-primary bg-primary-soft' : 'border-line',
+                  'flex items-start gap-3.5 rounded-card bg-surface p-4',
+                  option.disabled ? 'cursor-not-allowed border-[1.5px] border-line' : 'cursor-pointer',
+                  selected && 'border-2 border-primary shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-primary)_12%,transparent)]',
+                  !option.disabled && !selected && 'border-[1.5px] border-line',
                 )}
               >
                 <input
@@ -238,33 +267,103 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
                   checked={method === option.value}
                   disabled={option.disabled}
                   onChange={() => setMethod(option.value)}
-                  className="mt-1 size-5 accent-primary"
+                  className="mt-0.5 size-5 shrink-0 accent-primary"
                 />
-                <span>
-                  <span className="block font-semibold">{option.label}</span>
-                  <span className="block text-sm text-muted">{option.description}</span>
+                <span
+                  className={cx(
+                    'flex size-11 shrink-0 items-center justify-center rounded-control',
+                    selected ? 'bg-primary-soft text-primary' : 'bg-neutral-soft text-muted',
+                  )}
+                >
+                  <Icon />
+                </span>
+                <span className="flex flex-col gap-1">
+                  <span className={cx('text-base font-extrabold', option.disabled ? 'text-muted' : 'text-ink')}>
+                    {option.label}
+                  </span>
+                  <span className="text-[13px] leading-snug text-muted">{option.description}</span>
                 </span>
               </label>
-            ))}
-          </fieldset>
+            );
+          })}
+        </fieldset>
+
+        <Card padding="none" className="overflow-hidden">
+          <details open className="group">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 p-4 [&::-webkit-details-marker]:hidden">
+              <span className="text-[15px] font-extrabold text-ink">Ringkasan pesanan · {summary.itemCount} item</span>
+              <span className="flex items-center gap-1.5 font-extrabold whitespace-nowrap text-ink">
+                {formatRupiah(summary.total)}
+                <svg
+                  aria-hidden="true"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  className="transition-transform group-open:rotate-180"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </span>
+            </summary>
+            <div className="flex flex-col gap-2 px-4 pb-4 text-sm">
+              <ul className="flex flex-col gap-2">
+                {lines.map((line) => {
+                  const available = menuItems.get(line.menuItemId)?.isAvailable === true;
+                  return (
+                    <li key={line.menuItemId} className="flex justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className={cx(available ? 'text-ink' : 'text-muted line-through')}>
+                          {line.quantity}× {line.name}
+                        </p>
+                        {line.note && <p className="text-xs break-words text-muted italic">Catatan: {line.note}</p>}
+                        {!available && <p className="text-xs font-extrabold text-danger">Habis</p>}
+                      </div>
+                      <p className="shrink-0 font-bold whitespace-nowrap">
+                        {available ? formatRupiah(line.unitPrice * line.quantity) : '–'}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+              <dl className="mt-1 flex flex-col gap-1.5 border-t border-line pt-3">
+                <div className="flex justify-between">
+                  <dt className="text-muted">Subtotal</dt>
+                  <dd className="font-bold">{formatRupiah(summary.subtotal)}</dd>
+                </div>
+                {summary.discount > 0 && (
+                  <div className="flex justify-between">
+                    <dt className="text-muted">Diskon promo</dt>
+                    <dd className="font-bold text-primary">−{formatRupiah(summary.discount)}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between text-base">
+                  <dt className="font-extrabold">Total</dt>
+                  <dd className="font-extrabold">{formatRupiah(summary.total)}</dd>
+                </div>
+              </dl>
+            </div>
+          </details>
         </Card>
 
         {(formError || blocked) && (
-          <p role="alert" className="rounded-xl bg-danger-soft p-3 text-sm text-danger">
+          <p
+            role="alert"
+            className="rounded-control border border-danger/30 bg-danger-soft p-3 text-sm leading-snug font-semibold text-danger-strong"
+          >
             {formError ?? 'Ada menu yang sudah habis. Kembali ke menu untuk menghapusnya dari keranjang.'}
           </p>
         )}
       </form>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface">
-        <div className="mx-auto flex max-w-md items-center justify-between gap-3 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div>
-            <p className="text-sm text-muted">Total</p>
-            <p className="text-lg font-bold text-ink">{formatRupiah(summary.total)}</p>
-          </div>
-          <Button type="submit" form="checkout" size="lg" loading={submitting} disabled={!ready || blocked}>
-            {submitting ? 'Mengirim…' : 'Kirim pesanan'}
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-cream">
+        <div className="mx-auto flex max-w-md flex-col items-center gap-2 px-4 pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <Button type="submit" form="checkout" size="lg" fullWidth loading={submitting} disabled={!ready || blocked}>
+            {submitting ? 'Mengirim pesanan…' : `Pesan Sekarang · ${formatRupiah(summary.total)}`}
           </Button>
+          <p className="text-xs font-semibold text-muted">Harga dicek ulang saat pesanan dikirim</p>
         </div>
       </div>
     </main>

@@ -122,10 +122,13 @@ describe('MenuView (FR-001, FR-002)', () => {
 });
 
 describe('InvalidQr (FR-001)', () => {
-  it('menampilkan pesan QR tidak dikenali tanpa menu', () => {
+  it('menampilkan pesan QR tidak dikenali + hubungi kasir, tanpa menu & tanpa tombol pesan', () => {
     render(<InvalidQr />);
-    expect(screen.getByRole('heading').textContent).toBe('QR tidak dikenali, silakan hubungi kasir');
+    expect(screen.getByRole('heading').textContent).toBe('QR tidak dikenali');
+    expect(screen.getByText(/Silakan hubungi kasir/)).toBeTruthy();
+    expect(screen.getByRole('img', { name: 'Matwona' })).toBeTruthy();
     expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.queryByRole('link')).toBeNull();
   });
 });
 

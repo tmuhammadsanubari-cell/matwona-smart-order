@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { ErrorCode, formatRupiah, PAYMENT_STATUS_LABEL, SocketEvent } from 'shared';
 import type { OrderUpdatedEvent, PaymentUpdatedEvent, PublicOrderDto } from 'shared';
-import { Badge, Button, buttonClassName, Card, ConnectionBanner, cx } from '@/components/ui';
+import { BADGE_TONES, Button, Card, ConnectionBanner, cx, Logo, ProgressSteps, type ProgressStep } from '@/components/ui';
 import { ApiClientError, apiFetch } from '@/lib/api';
+import { timeWib } from '@/lib/cashier-board';
 import { orderProgress } from '@/lib/order-progress';
 import { markOrderDone, parsePlacedOrders, readPlacedOrdersRaw, subscribePlacedOrders } from '@/lib/placed-orders';
 import { connectRealtime } from '@/lib/socket';
 import { PAYMENT_STATUS_TONE } from '@/lib/status-tone';
+import { BowlIllustration } from './illustrations';
 
 /** Polling saat WebSocket putus (PRD 2.2.4). */
 export const POLL_INTERVAL_MS = 10_000;
@@ -78,7 +80,8 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
   if (notFound || (!order && query.error)) {
     return (
       <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-3 p-6 text-center">
-        <h1 className="text-xl font-bold text-ink">{notFound ? 'Pesanan tidak ditemukan di perangkat ini' : 'Status pesanan belum bisa dimuat'}</h1>
+        <Logo variant="green" width={120} />
+        <h1 className="mt-4 text-xl font-extrabold text-primary">{notFound ? 'Pesanan tidak ditemukan di perangkat ini' : 'Status pesanan belum bisa dimuat'}</h1>
         <p className="text-muted">
           {notFound
             ? 'Status pesanan hanya bisa dibuka dari HP yang dipakai memesan. Tanyakan ke kasir dengan menyebut kode pesananmu.'
@@ -95,52 +98,50 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
 
   if (!order || !progress || !placed) return null;
   const menuHref = `/m/${outlet}/t/${encodeURIComponent(placed.tableToken)}`;
+  const currentIndex = progress.steps.findIndex((step) => step.state === 'current');
+  const steps: ProgressStep[] = progress.steps.map((step, index) => ({
+    ...step,
+    // API publik hanya punya waktu pesanan dibuat; langkah lain tanpa jam.
+    time: index === 0 ? timeWib(order.createdAt) : step.state === 'current' ? 'Sekarang' : step.state === 'todo' && index === currentIndex + 1 ? 'Sebentar lagi' : undefined,
+  }));
 
   return (
     <main className="mx-auto min-h-dvh max-w-md pb-8">
-      <header className="bg-primary px-4 pt-4 pb-5 text-primary-foreground">
-        <p className="text-sm text-cream">Meja {order.table}</p>
-        <h1 className="text-2xl font-bold">
-          Pesanan <span className="whitespace-nowrap">{order.orderCode}</span>
-        </h1>
-      </header>
-
       {!connected && !progress.final && (
         <ConnectionBanner>Koneksi terputus, mencoba menyambung… Status tetap diperbarui tiap 10 detik.</ConnectionBanner>
       )}
 
-      <div className="flex flex-col gap-4 p-4">
-        <Card className="flex flex-col gap-4">
-          <p className="text-lg font-bold text-ink" aria-live="polite">
+      <header className="flex flex-col gap-1 bg-primary px-4 pt-[18px] pb-[22px] text-primary-foreground">
+        <Logo width={96} className="mb-2" />
+        <h1 className="text-lg font-extrabold">
+          Pesanan <span className="whitespace-nowrap">{order.orderCode}</span>
+        </h1>
+        <p className="text-sm font-semibold text-cream">
+          Meja {order.table} · {order.customerName}
+        </p>
+      </header>
+
+      <div className="-mt-1.5 flex flex-col gap-3.5 p-4">
+        <section className="flex flex-col items-center gap-2 rounded-sheet border-[1.5px] border-primary bg-cream p-5 text-center">
+          {order.status !== 'CANCELLED' && <BowlIllustration />}
+          <p className="text-xl leading-snug font-extrabold text-primary" aria-live="polite">
             {progress.headline}
           </p>
-          {progress.steps.length > 0 && (
-            <ol className="flex flex-col gap-3" aria-label="Progres pesanan">
-              {progress.steps.map((step) => (
-                <li key={step.label} className="flex items-center gap-3" aria-current={step.state === 'current' ? 'step' : undefined}>
-                  <span
-                    aria-hidden="true"
-                    className={cx(
-                      'flex size-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold',
-                      step.state === 'done' && 'border-primary bg-primary text-primary-foreground',
-                      step.state === 'current' && 'border-primary bg-primary-soft text-primary',
-                      step.state === 'todo' && 'border-line bg-surface text-muted',
-                    )}
-                  >
-                    {step.state === 'done' ? '✓' : ''}
-                  </span>
-                  <span className={cx(step.state === 'todo' ? 'text-muted' : 'font-semibold text-ink')}>{step.label}</span>
-                </li>
-              ))}
-            </ol>
-          )}
-        </Card>
+          <p className="text-sm text-muted">{progress.subline}</p>
+        </section>
 
-        <Card className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-bold text-ink">Pembayaran</h2>
-            <Badge tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <p
+            className={cx(
+              'inline-flex items-center gap-2 self-start rounded-full px-3.5 py-2 text-[13px] font-extrabold',
+              BADGE_TONES[PAYMENT_STATUS_TONE[order.paymentStatus]],
+            )}
+          >
+            <span aria-hidden="true" className="size-2 rounded-full bg-current" />
+            <span>
+              <span>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</span> · {order.paymentMethod === 'CASHIER' ? 'Kasir' : 'QRIS'}
+            </span>
+          </p>
           <p className="text-sm text-muted">
             {order.paymentMethod === 'CASHIER'
               ? order.paymentStatus === 'PAID'
@@ -148,31 +149,52 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
                 : `Bayar di kasir sebesar ${formatRupiah(order.totalAmount)} dengan menyebut kode pesananmu.`
               : 'QRIS'}
           </p>
-        </Card>
+        </div>
 
-        <Card>
-          <h2 className="mb-2 font-bold text-ink">Rincian</h2>
-          <ul className="flex flex-col gap-2 text-sm">
+        {steps.length > 0 && (
+          <Card className="pb-1.5">
+            <ProgressSteps steps={steps} orientation="vertical" aria-label="Progres pesanan" />
+          </Card>
+        )}
+
+        <Card className="flex flex-col gap-2.5 text-sm">
+          <h2 className="text-[15px] font-extrabold text-ink">Detail pesanan</h2>
+          <ul className="flex flex-col gap-2.5">
             {order.items.map((item) => (
-              <li key={item.menuItemId + (item.note ?? '')} className="flex justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-semibold text-ink">
-                    {item.name} × {item.quantity}
+              <li key={item.menuItemId + (item.note ?? '')} className="flex flex-col gap-0.5">
+                <div className="flex justify-between gap-3">
+                  <p className="min-w-0 text-ink">
+                    {item.quantity}× {item.name}
                   </p>
-                  {item.note && <p className="text-muted">Catatan: {item.note}</p>}
+                  <p className="shrink-0 font-bold whitespace-nowrap">{formatRupiah(item.lineTotal)}</p>
                 </div>
-                <p className="shrink-0">{formatRupiah(item.lineTotal)}</p>
+                {item.note && <p className="text-xs break-words text-muted italic">Catatan: {item.note}</p>}
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex justify-between border-t border-line pt-3 font-bold text-ink">
-            <span>Total</span>
-            <span>{formatRupiah(order.totalAmount)}</span>
-          </div>
+          <dl className="flex flex-col gap-1.5 border-t border-line pt-2.5">
+            <div className="flex justify-between">
+              <dt className="text-muted">Subtotal</dt>
+              <dd className="font-bold">{formatRupiah(order.subtotalAmount)}</dd>
+            </div>
+            {order.discountAmount > 0 && (
+              <div className="flex justify-between">
+                <dt className="text-muted">Diskon</dt>
+                <dd className="font-bold text-primary">−{formatRupiah(order.discountAmount)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between text-[17px]">
+              <dt className="font-extrabold">Total</dt>
+              <dd className="font-extrabold">{formatRupiah(order.totalAmount)}</dd>
+            </div>
+          </dl>
         </Card>
 
-        <Link href={menuHref} className={buttonClassName({ variant: 'secondary', fullWidth: true })}>
-          Pesan menu lain
+        <Link
+          href={menuHref}
+          className="inline-flex min-h-11 items-center self-center px-3 text-[15px] font-bold text-primary hover:text-primary-hover"
+        >
+          Kembali ke menu
         </Link>
       </div>
     </main>

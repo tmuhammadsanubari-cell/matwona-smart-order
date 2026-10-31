@@ -76,6 +76,16 @@
   }
 }
 
+/* Denyut titik langkah aktif di timeline status pesanan (desain C6); dipakai lewat motion-safe:. */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-accent) 0%, transparent);
+  }
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
