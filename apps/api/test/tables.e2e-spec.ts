@@ -139,4 +139,57 @@ describe('Tables (e2e) — FR-001, FR-011', () => {
     expect((await admin.post('/api/tables', { label: '' })).body.error.code).toBe(ErrorCode.VALIDATION_ERROR);
     expect((await admin.put('/api/tables/bukan-uuid', { isActive: false })).status).toBe(400);
   });
+
+  it('ganti token QR: URL lama langsung ditolak, token baru berlaku (FR-011)', async () => {
+    const admin = await staff('admin-a');
+    const [table] = (await admin.post('/api/tables', { label: 'QR-Lama' })).body.data as DiningTableDto[];
+    const res = await admin.post(`/api/tables/${table!.id}/regenerate-token`, {});
+    expect(res.status).toBe(201);
+    const fresh: DiningTableDto = res.body.data;
+    expect(fresh.qrToken).not.toBe(table!.qrToken);
+
+    const old = await request(app.getHttpServer()).get(`/api/public/tables/${table!.qrToken}`);
+    expect(old.status).toBe(400);
+    expect(old.body.error.code).toBe(ErrorCode.INVALID_TABLE_TOKEN);
+    expect((await request(app.getHttpServer()).get(`/api/public/tables/${fresh.qrToken}`)).status).toBe(200);
+
+    const adminB = await staff('admin-b');
+    expect((await adminB.post(`/api/tables/${table!.id}/regenerate-token`, {})).status).toBe(404);
+  });
+
+  it('unduh PDF QR: application/pdf, A6 per meja aktif, grid A4 empat per halaman', async () => {
+    const admin = await staff('admin-a');
+    const created = (await admin.post('/api/tables', { labels: ['P1', 'P2', 'P3', 'P4', 'P5'] })).body.data as DiningTableDto[];
+    await admin.put(`/api/tables/${created[4]!.id}`, { isActive: false });
+    const ids = created.map((t) => t.id).join(',');
+    const pages = (body: Buffer) => (body.toString('latin1').match(/\/Type \/Page\b/g) ?? []).length;
+    const download = (query: string) => admin.get(`/api/tables/qr.pdf?${query}`).buffer(true).parse((res, cb) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => cb(null, Buffer.concat(chunks)));
+    });
+
+    const a6 = await download(`ids=${ids}`);
+    expect(a6.status).toBe(200);
+    expect(a6.headers['content-type']).toBe('application/pdf');
+    expect(a6.headers['content-disposition']).toContain('qr-meja-a6.pdf');
+    expect(pages(a6.body as Buffer)).toBe(4); // P5 nonaktif tidak dicetak
+
+    const grid = await download(`ids=${ids}&layout=a4grid`);
+    expect(pages(grid.body as Buffer)).toBe(1);
+  });
+
+  it('PDF QR: meja outlet lain tidak dicetak, kasir ditolak, query salah 400', async () => {
+    const adminA = await staff('admin-a');
+    const [own] = (await adminA.post('/api/tables', { label: 'Milik-A' })).body.data as DiningTableDto[];
+    const adminB = await staff('admin-b');
+    const other = await adminB.get(`/api/tables/qr.pdf?ids=${own!.id}`);
+    expect(other.status).toBe(404);
+    expect(other.body.error.code).toBe(ErrorCode.NOT_FOUND);
+
+    const kasir = await staff('kasir');
+    expect((await kasir.get('/api/tables/qr.pdf')).status).toBe(403);
+    expect((await kasir.post(`/api/tables/${own!.id}/regenerate-token`, {})).status).toBe(403);
+    expect((await adminA.get('/api/tables/qr.pdf?layout=a3')).status).toBe(400);
+  });
 });

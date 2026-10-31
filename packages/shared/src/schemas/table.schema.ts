@@ -27,6 +27,21 @@ export const updateTableSchema = z
   .refine((v) => Object.values(v).some((x) => x !== undefined), 'Tidak ada data yang diubah');
 export type UpdateTableInput = z.infer<typeof updateTableSchema>;
 
+/** Layout PDF QR (PRD 2.2.8): satu QR per halaman A6, atau 4 kartu A6 per lembar A4. */
+export const TABLE_QR_LAYOUTS = ['a6', 'a4grid'] as const;
+export type TableQrLayout = (typeof TABLE_QR_LAYOUTS)[number];
+
+/** Query GET /tables/qr.pdf: `ids` dipisah koma (kosong = semua meja aktif). */
+export const tablesQrQuerySchema = z.object({
+  ids: z
+    .string()
+    .optional()
+    .transform((v) => (v ? v.split(',').map((id) => id.trim()).filter(Boolean) : undefined))
+    .pipe(z.array(z.uuid('ID meja tidak valid')).max(200).optional()),
+  layout: z.enum(TABLE_QR_LAYOUTS).default('a6'),
+});
+export type TablesQrQuery = z.infer<typeof tablesQrQuerySchema>;
+
 /** Data meja untuk admin. */
 export interface DiningTableDto {
   id: string;

@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCode } from 'shared';
-import type { CreateTablesInput, DiningTableDto, PublicTableInfo, UpdateTableInput } from 'shared';
+import type { CreateTablesInput, DiningTableDto, PublicTableInfo, TablesQrQuery, UpdateTableInput } from 'shared';
 import { AppException } from '../../common/app.exception.js';
 import type { DiningTable } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { renderTablesQrPdf } from './qr-pdf.js';
 import { generateTableToken, TABLE_TOKEN_PATTERN } from './table-token.js';
 
 const labelCollator = new Intl.Collator('id', { numeric: true, sensitivity: 'base' });
@@ -99,4 +100,41 @@ export class TablesService {
       throw e;
     }
   }
+
+  /**
+   * Ganti token QR meja (FR-011, NFR-010): URL QR lama langsung ditolak `resolveToken`.
+   * Pesanan yang sudah ada tidak terpengaruh (terikat ke tableId, bukan token).
+   */
+  async regenerateToken(outletId: string, id: string): Promise<DiningTableDto> {
+    const table = await this.prisma.diningTable.findFirst({ where: { id, outletId }, select: { id: true } });
+    if (!table) throw new AppException(ErrorCode.NOT_FOUND, 'Meja tidak ditemukan.');
+    return toDto(await this.prisma.diningTable.update({ where: { id }, data: { qrToken: generateTableToken() } }));
+  }
+
+  /** PDF QR siap cetak untuk meja aktif outlet ini (semua, atau `ids` terpilih). */
+  async qrPdf(outletId: string, query: TablesQrQuery): Promise<Buffer> {
+    const outlet = await this.prisma.outlet.findUniqueOrThrow({ where: { id: outletId }, select: { name: true, slug: true } });
+    const tables = await this.prisma.diningTable.findMany({
+      where: { outletId, isActive: true, ...(query.ids && { id: { in: query.ids } }) },
+      select: { label: true, qrToken: true },
+    });
+    if (tables.length === 0) {
+      throw new AppException(ErrorCode.NOT_FOUND, 'Tidak ada meja aktif untuk dicetak.');
+    }
+    return renderTablesQrPdf({
+      outletName: outlet.name,
+      outletSlug: outlet.slug,
+      webBaseUrl: publicWebUrl(),
+      layout: query.layout,
+      tables: tables.sort((a, b) => labelCollator.compare(a.label, b.label)),
+    });
+  }
+}
+
+/**
+ * Alamat web yang dicetak di QR. `PUBLIC_WEB_URL` (mis. https://matwona.id); bila kosong memakai origin
+ * pertama `WEB_ORIGIN`. Untuk uji di HP lewat hotspot laptop: http://192.168.137.1:3000.
+ */
+export function publicWebUrl(env: NodeJS.ProcessEnv = process.env): string {
+  return env.PUBLIC_WEB_URL?.trim() || env.WEB_ORIGIN?.split(',')[0]?.trim() || 'http://localhost:3000';
 }

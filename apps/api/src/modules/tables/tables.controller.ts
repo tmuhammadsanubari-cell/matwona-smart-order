@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Inject, Param, Post, Put } from '@nestjs/common';
-import { createTablesSchema, updateTableSchema } from 'shared';
+import { Body, Controller, Get, Inject, Param, Post, Put, Query, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import { createTablesSchema, tablesQrQuerySchema, updateTableSchema } from 'shared';
 import type {
   ApiSuccess,
   AuthUser,
   CreateTablesInput,
   DiningTableDto,
   PublicTableInfo,
+  TablesQrQuery,
   UpdateTableInput,
 } from 'shared';
 import { Public, Roles } from '../../common/decorators/auth.decorators.js';
@@ -25,7 +27,7 @@ export class PublicTablesController {
   }
 }
 
-/** Kelola meja oleh admin (FR-011). Regenerate token & PDF QR menyusul di S2-04. */
+/** Kelola meja, ganti token QR & cetak PDF QR oleh admin (FR-011). */
 @Roles('ADMIN')
 @Controller('tables')
 export class TablesController {
@@ -42,6 +44,32 @@ export class TablesController {
     @Body(new ZodValidationPipe(createTablesSchema)) body: CreateTablesInput,
   ): Promise<ApiSuccess<DiningTableDto[]>> {
     return { success: true, data: await this.tables.create(user.outletId, body) };
+  }
+
+  /** PDF QR siap cetak: `?ids=<uuid,uuid>&layout=a6|a4grid` (default semua meja aktif, A6). */
+  @Get('qr.pdf')
+  async qrPdf(
+    @CurrentUser() user: AuthUser,
+    @Query(new ZodValidationPipe(tablesQrQuerySchema)) query: TablesQrQuery,
+    @Res() res: Response,
+  ): Promise<void> {
+    const pdf = await this.tables.qrPdf(user.outletId, query);
+    res
+      .status(200)
+      .set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="qr-meja-${query.layout}.pdf"`,
+        'Cache-Control': 'no-store',
+      })
+      .send(pdf);
+  }
+
+  @Post(':id/regenerate-token')
+  async regenerateToken(
+    @CurrentUser() user: AuthUser,
+    @Param('id', uuidParam()) id: string,
+  ): Promise<ApiSuccess<DiningTableDto>> {
+    return { success: true, data: await this.tables.regenerateToken(user.outletId, id) };
   }
 
   @Put(':id')

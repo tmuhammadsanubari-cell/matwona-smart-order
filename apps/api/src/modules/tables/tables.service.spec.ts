@@ -30,8 +30,9 @@ function setup() {
     createManyAndReturn: vi.fn(),
     update: vi.fn(),
   };
-  const service = new TablesService({ diningTable } as unknown as PrismaService);
-  return { service, diningTable };
+  const outletRepo = { findUniqueOrThrow: vi.fn().mockResolvedValue(outlet) };
+  const service = new TablesService({ diningTable, outlet: outletRepo } as unknown as PrismaService);
+  return { service, diningTable, outletRepo };
 }
 
 async function expectAppError(promise: Promise<unknown>, code: ErrorCode) {
@@ -193,5 +194,43 @@ describe('skema meja (shared)', () => {
   it('update wajib berisi minimal satu field', () => {
     expect(updateTableSchema.safeParse({}).success).toBe(false);
     expect(updateTableSchema.safeParse({ capacity: null }).success).toBe(true);
+  });
+});
+
+describe('TablesService QR (FR-011, NFR-010)', () => {
+  it('regenerateToken: token baru 128-bit base62 untuk meja outlet ini', async () => {
+    const { service, diningTable } = setup();
+    const old = makeTable();
+    diningTable.findFirst.mockResolvedValue({ id: old.id });
+    diningTable.update.mockImplementation(async ({ data }) => ({ ...old, ...data }));
+
+    const result = await service.regenerateToken(OUTLET, old.id);
+    expect(diningTable.findFirst).toHaveBeenCalledWith({ where: { id: old.id, outletId: OUTLET }, select: { id: true } });
+    expect(result.qrToken).toMatch(TABLE_TOKEN_PATTERN);
+    expect(result.qrToken).not.toBe(old.qrToken);
+  });
+
+  it('regenerateToken: meja outlet lain → NOT_FOUND', async () => {
+    const { service, diningTable } = setup();
+    diningTable.findFirst.mockResolvedValue(null);
+    await expectAppError(service.regenerateToken(OUTLET, 'x'), ErrorCode.NOT_FOUND);
+    expect(diningTable.update).not.toHaveBeenCalled();
+  });
+
+  it('qrPdf: hanya meja aktif outlet ini (dan ids terpilih) yang dicetak', async () => {
+    const { service, diningTable } = setup();
+    diningTable.findMany.mockResolvedValue([makeTable({ label: '10' }), makeTable({ label: '2' })]);
+    const pdf = await service.qrPdf(OUTLET, { ids: ['a', 'b'], layout: 'a6' });
+    expect(diningTable.findMany).toHaveBeenCalledWith({
+      where: { outletId: OUTLET, isActive: true, id: { in: ['a', 'b'] } },
+      select: { label: true, qrToken: true },
+    });
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  });
+
+  it('qrPdf: tidak ada meja aktif → NOT_FOUND', async () => {
+    const { service, diningTable } = setup();
+    diningTable.findMany.mockResolvedValue([]);
+    await expectAppError(service.qrPdf(OUTLET, { layout: 'a6' }), ErrorCode.NOT_FOUND);
   });
 });
