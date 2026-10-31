@@ -49,3 +49,13 @@ export const todayWib = (now = new Date()) => wibDateFormat.format(now);
 
 /** Jam masuk pesanan dalam WIB, mis. "12.05". */
 export const timeWib = (iso: string) => wibTimeFormat.format(new Date(iso));
+
+/**
+ * Samarkan no. HP pelanggan di dashboard kasir (NFR-011, desain K3): "081234567890" → "0812****7890".
+ * Nomor pendek hanya menampilkan 2 digit awal.
+ */
+export function maskPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length >= 10) return `${digits.slice(0, 4)}****${digits.slice(-4)}`;
+  return `${digits.slice(0, 2)}${'*'.repeat(Math.max(digits.length - 2, 3))}`;
+}

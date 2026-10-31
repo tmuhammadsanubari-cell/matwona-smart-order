@@ -2,7 +2,7 @@ import { ErrorCode } from 'shared';
 import type { StaffOrderDto } from 'shared';
 import { safeNextPath } from '@/components/auth/login-form';
 import { ApiClientError, apiFetch } from './api';
-import { columnOf, groupByColumn, primaryNextStatus, timeWib, todayWib, upsertOrder } from './cashier-board';
+import { columnOf, groupByColumn, maskPhone, primaryNextStatus, timeWib, todayWib, upsertOrder } from './cashier-board';
 import { staffFetch } from './staff-api';
 
 vi.mock('./api', async (importOriginal) => ({ ...(await importOriginal<typeof import('./api')>()), apiFetch: vi.fn() }));
@@ -94,5 +94,17 @@ describe('safeNextPath (login ?next=)', () => {
     expect(safeNextPath('//evil.example', '/x')).toBe('/x');
     expect(safeNextPath('https://evil.example', '/x')).toBe('/x');
     expect(safeNextPath(null, '/cashier')).toBe('/cashier');
+  });
+});
+
+describe('maskPhone (NFR-011)', () => {
+  it('menyisakan 4 digit awal & akhir', () => {
+    expect(maskPhone('081234567890')).toBe('0812****7890');
+    expect(maskPhone('+62 812-3456-7890')).toBe('6281****7890');
+  });
+
+  it('nomor pendek tidak bocor utuh', () => {
+    expect(maskPhone('0812345')).toBe('08*****');
+    expect(maskPhone('12')).toBe('12***');
   });
 });

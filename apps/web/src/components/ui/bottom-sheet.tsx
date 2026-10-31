@@ -96,7 +96,7 @@ export function BottomSheet({ open, onClose, title, children, footer, className 
             type="button"
             aria-label="Tutup"
             onClick={() => onCloseRef.current()}
-            className="inline-flex size-11 items-center justify-center rounded-full text-2xl leading-none text-muted hover:bg-line"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-2xl leading-none text-muted hover:bg-line"
           >
             ×
           </button>

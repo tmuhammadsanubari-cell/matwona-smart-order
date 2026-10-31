@@ -439,8 +439,7 @@ Admin unggah file export produk → pemetaan kolom (tersimpan di `pos_column_map
 | Manipulasi harga | Harga & total dihitung ulang dari DB; harga klien diabaikan | [Terimplementasi] NFR-007 |
 | Pesanan ganda / spam | `Idempotency-Key` unik; rate limit 5 pesanan / 10 menit per meja & per IP (Redis, fallback in-memory; `trust proxy` untuk IP asli di Cloud Run) | [Terimplementasi] NFR-009 |
 | Menebak QR | Token acak 128-bit base62; dapat diganti (`regenerate-token`), meja nonaktif ditolak | [Terimplementasi] NFR-010 |
-| Kebocoran data pelanggan | Room pelanggan tanpa data pribadi; status pesanan hanya dengan kode + token meja yang cocok; data pelanggan minimal (nama, HP opsional) | [Terimplementasi] NFR-011 (sebagian) |
-| — | **Gap:** NFR-011 meminta no. HP disamarkan di tampilan kasir; dashboard kasir saat ini menampilkan nomor utuh | **[Terbuka]** perbaikan kecil di web |
+| Kebocoran data pelanggan | Room pelanggan tanpa data pribadi; status pesanan hanya dengan kode + token meja yang cocok; data pelanggan minimal (nama, HP opsional); no. HP disamarkan di dashboard kasir (`0812****7890`, `maskPhone`) | [Terimplementasi] NFR-011 |
 | Header & transport | Helmet, CORS hanya `WEB_ORIGIN` (+ LAN hanya di luar produksi), cookie `Secure` di produksi | [Terimplementasi] / HTTPS saat deploy |
 | Webhook palsu | Verifikasi signature SHA512 + idempoten | [Direncanakan] NFR-008 |
 | Audit keamanan | OWASP ZAP baseline, `pnpm audit`, `pip-audit` | [Direncanakan] S4-03 |
@@ -449,12 +448,13 @@ Admin unggah file export produk → pemetaan kolom (tersimpan di `pos_column_map
 
 ## 9. Desain Antarmuka Pengguna
 
-- **Brand:** token warna di `apps/web/src/app/globals.css` (primary `#106f4d`, accent `#069d70`, cream `#ffffca`, ink `#1f2a24`, danger `#c0392b`, plus `primary-soft`, `danger-soft`). Komponen hanya memakai kelas token (`docs/design/BRAND.md`). Font Mosvita belum tersedia → fallback Plus Jakarta Sans.
+- **Mockup (S0-06):** 20 artboard di kanvas Claude Design (design system, menu pelanggan C1–C7, landing L1–L2, kasir K1–K3, admin A1–A7; tautan di `docs/design/BRAND.md`). Penyelarasan kode dilacak di task S2-13.
+- **Brand:** token warna di `apps/web/src/app/globals.css` (primary `#106f4d`, accent `#069d70`, cream `#ffffca`, ink `#1f2a24`, danger `#c0392b`, palet badge status `success`/`warning`/`info`/`neutral`/`danger` + `-soft`, `disabled`, placeholder foto per jenis menu, skala heading, radius & bayangan). Komponen hanya memakai kelas token (`docs/design/BRAND.md`). Font Mosvita belum tersedia → fallback Plus Jakarta Sans.
 - **Aksesibilitas (NFR-014):** setiap pasangan teks/latar yang dipakai komponen diuji otomatis ≥ 4,5:1 (`contrast.test.ts`). Temuan: `accent`/`success` hanya 3,46:1 di atas putih → tidak dipakai untuk teks kecil.
 - **Mobile-first (NFR-012):** lebar minimum 360 px, target sentuh ≥ 44 px; diperiksa otomatis dengan `pnpm --filter web ui:check` (Playwright: screenshot, overflow horizontal, target kecil, error console) dan di HP Android sungguhan.
-- **Komponen dasar:** `Button` (varian primary/secondary/ghost/danger/danger-ghost/inverse), `Card`, `Badge`, `Input`/`Textarea` (label, hint, error ber-ARIA), `BottomSheet` (dialog modal, fokus terjebak & dikembalikan, kunci scroll).
-- **Layar utama terimplementasi:** menu meja (tab kategori sticky, pencarian, label Habis), keranjang (bottom sheet + bar total), checkout, status pesanan realtime, login staf, dashboard kasir (4 kolom/tab, bunyi notifikasi), admin menu, admin meja & QR, PDF QR meja.
-- **[Terbuka]** Mockup Figma (S0-06) belum tersedia; desain mengikuti PRD 4.9 & BRAND.md dan akan disesuaikan setelah validasi mitra. Screenshot setiap layar dapat dibuat ulang dengan `ui:check` untuk lampiran.
+- **Komponen dasar:** `Button` (varian primary/secondary/ghost/danger/danger-ghost/inverse), `Card` (padding none/sm/md), `Badge` (tone status), `Input`/`Textarea` (label, hint, error ber-ARIA, penghitung karakter), `BottomSheet` (dialog modal, fokus terjebak & dikembalikan, kunci scroll), `QuantityStepper`, `ProgressSteps` (mendatar/vertikal), `Toast`, `EmptyState`, `ConnectionBanner`, `PhotoPlaceholder`, `Logo`. Katalog di `/dev/ui` (mode dev).
+- **Layar utama terimplementasi:** menu meja (logo + chip meja, tab kategori sticky, pencarian, sheet detail menu, label Habis), keranjang (bottom sheet + bar melayang), checkout (kartu metode bayar), status pesanan realtime (timeline vertikal), QR tidak dikenali, login staf, dashboard kasir (4 kolom/tab, bunyi & toast pesanan baru), admin menu, admin meja & QR, PDF QR meja. Alur pelanggan, login, dan kasir sudah mengikuti mockup; admin menu & meja menyusul (S2-13 bagian 4).
+- Screenshot setiap layar dapat dibuat ulang dengan `ui:check` untuk lampiran.
 
 ---
 
@@ -496,7 +496,6 @@ Target NFR-018 (coverage ≥ 60% pada modul inti) terpenuhi untuk `orders` dan `
 |---|---|---|
 | Keputusan domain staging/production | Login staf & realtime kasir di staging | Tim / PM |
 | Data export Olsera (S0-08) | Impor menu, analitik, PoC & model AI | PM (mitra) |
-| Mockup Figma (S0-06) & logo SVG resmi | Penyesuaian UI, PDF QR, landing | FE1 (mitra) |
-| Masking no. HP di dashboard kasir (NFR-011) | Kepatuhan privasi | FE |
+| Logo SVG resmi (mockup S0-06 sudah ada di kanvas Claude Design; logo saat ini PNG dari kanvas) | Ketajaman logo di PDF QR & layar besar | FE1 (mitra) |
 | Logout publik vs PRD 4.3 | Konsistensi dokumen | Tim |
 | Event `menu.updated` (menu habis langsung berubah di HP pelanggan) | UX; belum ada task | Tim |

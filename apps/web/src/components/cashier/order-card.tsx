@@ -1,7 +1,7 @@
 import { formatRupiah, ORDER_STATUS_LABEL, PAYMENT_STATUS_LABEL } from 'shared';
 import type { OrderStatus, StaffOrderDto } from 'shared';
-import { Badge, Button, Card, cx } from '@/components/ui';
-import { ACTION_LABEL, primaryNextStatus, timeWib } from '@/lib/cashier-board';
+import { Badge, BADGE_TONES, Button, Card, cx } from '@/components/ui';
+import { ACTION_LABEL, maskPhone, primaryNextStatus, timeWib } from '@/lib/cashier-board';
 import { ORDER_STATUS_TONE, PAYMENT_STATUS_TONE } from '@/lib/status-tone';
 
 export interface OrderCardProps {
@@ -14,9 +14,21 @@ export interface OrderCardProps {
   onCancel: () => void;
 }
 
+/** Status yang tidak terbaca dari judul kolom (kolom berisi dua status) → tampilkan badge. */
+const SHOW_STATUS_BADGE: OrderStatus[] = ['CONFIRMED', 'PREPARING', 'COMPLETED', 'CANCELLED'];
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
 /**
- * Kartu pesanan kasir (PRD 2.2.5): kode, meja, nama, item + catatan, total, metode & status bayar,
- * waktu masuk. Tombol mengikuti `allowedNextStatuses`/`canMarkPaid` dari server (state machine).
+ * Kartu pesanan kasir (PRD 2.2.5, desain K2): meja & nama besar, kode & jam, item + catatan, status bayar,
+ * total. Tombol mengikuti `allowedNextStatuses`/`canMarkPaid` dari server (state machine).
+ * No. HP disamarkan (NFR-011).
  */
 export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onCancel }: OrderCardProps) {
   const next = primaryNextStatus(order);
@@ -27,63 +39,96 @@ export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onC
     <Card
       role="article"
       aria-label={`Pesanan ${order.orderCode}`}
-      className={cx('flex flex-col gap-3', highlighted && 'ring-4 ring-accent motion-safe:animate-pulse')}
+      className={cx(
+        'relative flex flex-col gap-2.5',
+        highlighted && 'border-accent ring-4 ring-accent/25 motion-safe:animate-pulse',
+      )}
     >
+      {highlighted && (
+        <Badge tone="danger-solid" className="absolute -top-2.5 right-3.5 tracking-wider">
+          BARU
+        </Badge>
+      )}
+
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-bold text-ink">{order.orderCode}</p>
-          <p className="text-sm text-muted">
-            Masuk {timeWib(order.createdAt)} · <span className="font-semibold text-ink">Meja {order.table}</span>
-          </p>
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <p className="text-2xl leading-none font-extrabold text-primary">Meja {order.table}</p>
+          <p className="text-sm font-bold break-words text-ink">{order.customerName}</p>
+          {order.customerPhone && <p className="text-xs font-semibold text-muted">{maskPhone(order.customerPhone)}</p>}
         </div>
-        <Badge tone={ORDER_STATUS_TONE[order.status]}>{ORDER_STATUS_LABEL[order.status]}</Badge>
+        <div className="flex shrink-0 flex-col items-end gap-0.5 text-xs text-muted">
+          <p className="font-bold">{order.orderCode}</p>
+          <p className="font-semibold">Masuk {timeWib(order.createdAt)}</p>
+          {SHOW_STATUS_BADGE.includes(order.status) && (
+            <Badge tone={ORDER_STATUS_TONE[order.status]} className="mt-1">
+              {ORDER_STATUS_LABEL[order.status]}
+            </Badge>
+          )}
+        </div>
       </div>
 
-      <p className="text-sm">
-        <span className="text-muted">Atas nama </span>
-        <span className="font-semibold text-ink">{order.customerName}</span>
-        {order.customerPhone && <span className="text-muted"> · {order.customerPhone}</span>}
-      </p>
-
-      <ul className="flex flex-col gap-1 border-y border-line py-2 text-sm">
+      <ul className="flex flex-col gap-1.5 border-y border-dashed border-line py-2.5 text-sm">
         {order.items.map((item, i) => (
           <li key={`${item.menuItemId}-${i}`}>
-            <span className="font-semibold text-ink">
+            <span className="font-bold text-ink">
               {item.quantity}× {item.name}
             </span>
-            {item.note && <p className="text-muted">Catatan: {item.note}</p>}
+            {item.note && <p className="text-muted italic">Catatan: {item.note}</p>}
           </li>
         ))}
       </ul>
 
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <p className="font-bold whitespace-nowrap text-ink">{formatRupiah(order.totalAmount)}</p>
-        <p className="flex items-center gap-2 text-sm whitespace-nowrap text-muted">
-          {order.paymentMethod === 'CASHIER' ? 'Bayar di kasir' : 'QRIS'}
-          <Badge tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p
+          className={cx(
+            'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-extrabold whitespace-nowrap',
+            BADGE_TONES[PAYMENT_STATUS_TONE[order.paymentStatus]],
+          )}
+        >
+          <span>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</span>
+          <span>&nbsp;·&nbsp;</span>
+          <span>{order.paymentMethod === 'CASHIER' ? 'Bayar di kasir' : 'QRIS'}</span>
         </p>
+        <p className="text-base font-extrabold whitespace-nowrap text-ink">{formatRupiah(order.totalAmount)}</p>
       </div>
 
-      {awaitingQris && <p className="text-sm text-muted">Menunggu pembayaran QRIS sebelum bisa diproses.</p>}
+      {awaitingQris && <p className="text-xs font-semibold text-muted">Pesanan QRIS belum lunas, belum bisa dikonfirmasi.</p>}
       {order.status === 'CANCELLED' && order.cancelReason && (
-        <p className="text-sm text-danger">Dibatalkan: {order.cancelReason}</p>
+        <p className="text-sm font-semibold text-danger">Dibatalkan: {order.cancelReason}</p>
       )}
 
       {(next || order.canMarkPaid || canCancel) && (
-        <div className="flex flex-wrap gap-2">
-          {order.canMarkPaid && (
-            <Button variant={next ? 'secondary' : 'primary'} disabled={busy} onClick={onMarkPaid}>
-              Tandai lunas
-            </Button>
-          )}
+        // Urutan: aksi utama + batal selalu sebaris; "Tandai lunas" turun ke baris penuh bila kolom sempit.
+        <div className="flex flex-wrap items-center gap-2">
           {next && (
-            <Button disabled={busy} onClick={() => onAdvance(next)}>
+            <Button
+              variant={next === 'COMPLETED' ? 'secondary' : 'primary'}
+              disabled={busy}
+              onClick={() => onAdvance(next)}
+              className="flex-1 basis-28 whitespace-nowrap"
+            >
               {ACTION_LABEL[next]}
             </Button>
           )}
           {canCancel && (
-            <Button variant="danger-ghost" disabled={busy} onClick={onCancel}>
-              Batalkan
+            <button
+              type="button"
+              aria-label="Batalkan"
+              disabled={busy}
+              onClick={onCancel}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-control border-[1.5px] border-danger/40 bg-surface text-danger hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <CloseIcon />
+            </button>
+          )}
+          {order.canMarkPaid && (
+            <Button
+              variant={next ? 'secondary' : 'primary'}
+              disabled={busy}
+              onClick={onMarkPaid}
+              className="flex-1 basis-28 whitespace-nowrap"
+            >
+              Tandai lunas
             </Button>
           )}
         </div>

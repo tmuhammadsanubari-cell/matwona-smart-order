@@ -59,20 +59,32 @@ function Field({
 
 export interface InputProps extends FieldProps, Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   ref?: Ref<HTMLInputElement>;
+  /** Tombol ikon 44 px di sisi kanan field, mis. "Tampilkan password". */
+  trailing?: ReactNode;
 }
 
 /** Input berlabel. Font 16 px agar iOS tidak auto-zoom; tinggi 48 px (NFR-012). */
-export function Input({ label, hint, error, id, className, ...props }: InputProps) {
+export function Input({ label, hint, error, id, className, trailing, ...props }: InputProps) {
   const ids = useFieldIds(id, hint, error);
+  const input = (
+    <input
+      id={ids.fieldId}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={ids.describedBy}
+      className={cx(control(Boolean(error)), 'min-h-12', trailing ? 'pr-13' : undefined, className)}
+      {...props}
+    />
+  );
   return (
     <Field {...ids} label={label} hint={hint} error={error}>
-      <input
-        id={ids.fieldId}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={ids.describedBy}
-        className={cx(control(Boolean(error)), 'min-h-12', className)}
-        {...props}
-      />
+      {trailing ? (
+        <div className="relative">
+          {input}
+          <div className="absolute inset-y-0 right-0.5 flex items-center">{trailing}</div>
+        </div>
+      ) : (
+        input
+      )}
     </Field>
   );
 }
