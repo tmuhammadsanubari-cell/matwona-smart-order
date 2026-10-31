@@ -28,6 +28,8 @@ Baca `CLAUDE.md` root dan `docs/design/BRAND.md` dulu.
 - Checkout `/m/[outlet]/t/[token]/checkout` (S1-09): `CheckoutView` validasi nama/HP dengan `createOrderSchema.pick(...)`, `placeOrder` (`src/lib/place-order.ts`) dengan satu `Idempotency-Key` per halaman (`uuidV4`, aman di HTTP non-secure), `DUPLICATE_REQUEST` = sukses, `ITEM_UNAVAILABLE` → item dihapus, `PRICE_CHANGED` → harga diperbarui. QRIS tampil nonaktif sampai S2-03. Sukses → `rememberOrder` + kosongkan keranjang → status.
 - Status `/m/[outlet]/order/[code]` (S1-09): `OrderStatusView` membaca token meja dari `src/lib/placed-orders.ts` (localStorage, via `useSyncExternalStore`), TanStack Query + `connectRealtime` (`src/lib/socket.ts`); event memperbarui cache, polling 10 dtk saat socket putus. Progres di `src/lib/order-progress.ts`. Menu menampilkan banner "Lihat pesanan aktif".
 - `Providers` (TanStack Query) di `src/app/providers.tsx`, dipasang di root layout.
+- Staf (S1-10): `/login` (`LoginForm`, `?next=` hanya path internal). Halaman staf memakai `useStaffSession(roles)` (`src/components/auth`) → belum login/sesi habis diarahkan ke `/login?next=…`. Panggil API staf dengan `staffFetch` (`src/lib/staff-api.ts`): 401 → `POST /auth/refresh` sekali lalu ulangi. `apiFetch` otomatis mengirim `X-CSRF-Token` dari cookie `mtw_csrf` untuk POST/PUT/PATCH/DELETE.
+- Dashboard kasir `/cashier` (S1-10) di `src/components/cashier`: `useCashierOrders` (GET /orders + socket room kasir; event memperbarui cache tampilan "hari ini", filter lain diambil ulang; refetch saat reconnect; polling 15 dtk saat putus), `useOrderAction`, `OrderCard` (tombol dari `allowedNextStatuses`/`canMarkPaid` server), `CancelOrderSheet`. Logika kolom/WIB di `src/lib/cashier-board.ts`, bunyi di `src/lib/notification-sound.ts` (Web Audio, aktif setelah interaksi pertama).
 - Uji di HP tanpa ubah `.env`: `resolveDevUrl` (`src/lib/dev-url.ts`) mengganti host localhost di URL API/socket dengan host halaman saat `next dev`; pasangannya CORS LAN di `apps/api/src/common/cors.ts`.
 - Halaman placeholder untuk rute lain (status pesanan, kasir, admin, landing)
 
@@ -39,6 +41,7 @@ Baca `CLAUDE.md` root dan `docs/design/BRAND.md` dulu.
 - Validasi form memakai skema Zod dari `shared` (mis. `createOrderSchema`).
 - Format uang: `formatRupiah` dari `shared`. Label status: `ORDER_STATUS_LABEL`, `PAYMENT_STATUS_LABEL`.
 - Mobile-first: desain di 360 px dulu, target sentuh ≥ 44 px, keranjang sebagai bottom sheet.
+- Jangan menimpa warna varian `Button` lewat `className` (mis. `variant="ghost" className="text-danger"`): urutan kelas di CSS Tailwind yang menentukan, bukan urutan di atribut, sehingga hasilnya tak terduga. Pakai varian: `inverse` (latar hijau gelap/header), `danger-ghost` (aksi batal/hapus ringan).
 - Tidak boleh hex warna di komponen; gunakan kelas token (`bg-primary`, `text-cream`, `text-muted`, `border-line`, `rounded-card`). `accent`/`success` jangan untuk teks kecil (kontras ±3,5:1); untuk status "berhasil" pakai `Badge tone="success"` (teks primary di `primary-soft`).
 - Teks UI bahasa Indonesia, nada santai dan sopan.
 - Gambar menu via `next/image` dari `res.cloudinary.com` (sudah diizinkan di `next.config.ts`).

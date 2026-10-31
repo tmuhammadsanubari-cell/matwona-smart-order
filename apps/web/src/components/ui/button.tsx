@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, Ref } from 'react';
 import { cx } from './cx';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-ghost' | 'inverse';
 export type ButtonSize = 'md' | 'lg';
 
 const VARIANTS: Record<ButtonVariant, string> = {
@@ -9,6 +9,9 @@ const VARIANTS: Record<ButtonVariant, string> = {
   secondary: 'border-2 border-primary bg-surface text-primary hover:bg-primary-soft',
   ghost: 'bg-transparent text-primary hover:bg-primary-soft',
   danger: 'bg-danger text-primary-foreground hover:opacity-90',
+  'danger-ghost': 'bg-transparent text-danger hover:bg-danger-soft',
+  // Untuk latar hijau gelap (header): jangan menimpa warna varian lain lewat className, urutan CSS Tailwind tidak dijamin.
+  inverse: 'border-2 border-cream bg-transparent text-cream hover:bg-primary-hover',
 };
 
 // Tinggi minimal 44 px (md) / 52 px (lg) agar mudah disentuh (NFR-012).
