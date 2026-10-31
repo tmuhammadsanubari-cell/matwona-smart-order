@@ -8,9 +8,10 @@
  * pakai untuk ikon, garis, latar besar, atau teks ≥ 24 px.
  */
 @theme {
+  /* Nilai mengikuti artboard "Design System Matwona" di kanvas Claude Design (lihat BRAND.md). */
   --color-primary: #106f4d; /* sea green */
-  --color-primary-hover: #0c5a3e; /* primary lebih gelap untuk hover/active */
-  --color-primary-soft: #e3f2ea; /* latar lembut untuk badge/teks primary */
+  --color-primary-hover: #0b5a3e; /* primary lebih gelap untuk hover/active, juga teks badge sukses */
+  --color-primary-soft: #e1f2ea; /* latar lembut untuk banner/teks primary */
   --color-primary-foreground: #ffffff;
   --color-accent: #069d70; /* teal old green */
   --color-cream: #ffffca; /* soft shade of yellow */
@@ -18,13 +19,48 @@
   --color-muted: #5b6b62;
   --color-surface: #ffffff;
   --color-line: #e3e8d9;
+  --color-line-strong: #d5dccb; /* border input & stepper */
   --color-danger: #c0392b;
-  --color-danger-soft: #fbe8e6; /* latar lembut untuk badge/teks danger */
+  --color-danger-strong: #a12d22; /* teks badge "Dibatalkan" di danger-soft */
+  --color-danger-soft: #fbe3e0;
   --color-success: #069d70; /* = accent; bukan untuk teks kecil */
+  --color-success-soft: #ddf3e9; /* latar badge "Lunas" */
+  --color-warning: #7a4a00; /* teks badge "Belum Bayar", latar banner koneksi */
+  --color-warning-soft: #fff0d1;
+  --color-info: #1d4f7a; /* teks badge "Diproses" */
+  --color-info-soft: #e2eef9;
+  --color-neutral: #46534b; /* teks badge netral & tombol disabled */
+  --color-neutral-soft: #eceee8;
+  /* Desain memakai teks #8a968f (±2,4:1); diganti neutral agar lolos NFR-014. */
+  --color-disabled: #dde3d7;
+
+  /* Placeholder foto menu per jenis (hanya latar + ikon dekoratif, tanpa teks). */
+  --color-photo-tuna: #f4dcc8;
+  --color-photo-tuna-ink: #7e5e49;
+  --color-photo-chicken: #eed9ae;
+  --color-photo-chicken-ink: #7a5c2e;
+  --color-photo-drink: #d6ebdd;
+  --color-photo-drink-ink: #3f6b54;
+  --color-photo-none: #dcdcd6;
+  --color-photo-none-ink: #6e6e68;
 
   --font-sans: var(--font-brand), ui-sans-serif, system-ui, sans-serif;
 
+  /* Skala heading desain; ukuran lain memakai bawaan Tailwind (text-lg 18, text-base 16, text-sm 14, text-xs 12). */
+  --text-display: 2.25rem;
+  --text-display--line-height: 1.1;
+  --text-h1: 1.75rem;
+  --text-h1--line-height: 1.2;
+  --text-h2: 1.375rem;
+  --text-h2--line-height: 1.25;
+
   --radius-card: 1rem;
+  --radius-control: 0.75rem; /* tombol, input, stepper */
+  --radius-sheet: 1.25rem;
+
+  --shadow-card: 0 6px 20px rgb(16 111 77 / 0.12);
+  --shadow-float: 0 10px 28px rgb(16 111 77 / 0.4); /* bar keranjang melayang */
+  --shadow-toast: 0 8px 24px rgb(0 0 0 / 0.18);
 }
 
 /* Animasi BottomSheet; dipakai lewat motion-safe: agar menghormati prefers-reduced-motion. */

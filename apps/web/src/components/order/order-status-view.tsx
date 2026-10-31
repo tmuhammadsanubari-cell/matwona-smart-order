@@ -5,16 +5,15 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { ErrorCode, formatRupiah, PAYMENT_STATUS_LABEL, SocketEvent } from 'shared';
 import type { OrderUpdatedEvent, PaymentUpdatedEvent, PublicOrderDto } from 'shared';
-import { Badge, Button, buttonClassName, Card, cx } from '@/components/ui';
+import { Badge, Button, buttonClassName, Card, ConnectionBanner, cx } from '@/components/ui';
 import { ApiClientError, apiFetch } from '@/lib/api';
 import { orderProgress } from '@/lib/order-progress';
 import { markOrderDone, parsePlacedOrders, readPlacedOrdersRaw, subscribePlacedOrders } from '@/lib/placed-orders';
 import { connectRealtime } from '@/lib/socket';
+import { PAYMENT_STATUS_TONE } from '@/lib/status-tone';
 
 /** Polling saat WebSocket putus (PRD 2.2.4). */
 export const POLL_INTERVAL_MS = 10_000;
-
-const PAYMENT_TONE = { PAID: 'success', UNPAID: 'danger', PENDING: 'neutral', FAILED: 'danger', EXPIRED: 'danger' } as const;
 
 export interface OrderStatusViewProps {
   outlet: string;
@@ -107,9 +106,7 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
       </header>
 
       {!connected && !progress.final && (
-        <p role="status" className="bg-line px-4 py-2 text-sm text-ink">
-          Koneksi terputus, mencoba menyambung… Status tetap diperbarui tiap 10 detik.
-        </p>
+        <ConnectionBanner>Koneksi terputus, mencoba menyambung… Status tetap diperbarui tiap 10 detik.</ConnectionBanner>
       )}
 
       <div className="flex flex-col gap-4 p-4">
@@ -142,7 +139,7 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
         <Card className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-bold text-ink">Pembayaran</h2>
-            <Badge tone={PAYMENT_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
+            <Badge tone={PAYMENT_STATUS_TONE[order.paymentStatus]}>{PAYMENT_STATUS_LABEL[order.paymentStatus]}</Badge>
           </div>
           <p className="text-sm text-muted">
             {order.paymentMethod === 'CASHIER'

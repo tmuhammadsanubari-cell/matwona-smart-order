@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, type InputHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
+import { useId, useState, type ChangeEvent, type InputHTMLAttributes, type ReactNode, type Ref, type TextareaHTMLAttributes } from 'react';
 import { cx } from './cx';
 
 interface FieldProps {
@@ -13,9 +13,9 @@ interface FieldProps {
 
 const control = (invalid: boolean) =>
   cx(
-    'w-full rounded-xl border-2 bg-surface px-3 text-base text-ink placeholder:text-muted',
-    'focus:border-primary focus:outline-none disabled:opacity-60',
-    invalid ? 'border-danger' : 'border-line',
+    'w-full rounded-control border-[1.5px] bg-surface px-3.5 text-base text-ink placeholder:text-muted',
+    'focus:border-primary focus:outline-none disabled:bg-disabled disabled:text-neutral',
+    invalid ? 'border-danger' : 'border-line-strong',
   );
 
 function useFieldIds(id: string | undefined, hint: unknown, error: unknown) {
@@ -33,23 +33,25 @@ function Field({
   label,
   hint,
   error,
+  counter,
   children,
-}: FieldProps & { fieldId: string; hintId?: string; errorId?: string; children: ReactNode }) {
+}: FieldProps & { fieldId: string; hintId?: string; errorId?: string; counter?: ReactNode; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={fieldId} className="text-sm font-semibold text-ink">
+    <div className="flex flex-col gap-1.5">
+      <label htmlFor={fieldId} className="text-sm font-bold text-ink">
         {label}
       </label>
       {children}
       {error && (
-        <p id={errorId} role="alert" className="text-sm text-danger">
+        <p id={errorId} role="alert" className="text-xs font-semibold text-danger">
           {error}
         </p>
       )}
-      {hint && (
-        <p id={hintId} className="text-sm text-muted">
-          {hint}
-        </p>
+      {(hint || counter) && (
+        <div className="flex items-start justify-between gap-3 text-xs text-muted">
+          {hint && <p id={hintId}>{hint}</p>}
+          {counter}
+        </div>
       )}
     </div>
   );
@@ -79,17 +81,34 @@ export interface TextareaProps extends FieldProps, TextareaHTMLAttributes<HTMLTe
   ref?: Ref<HTMLTextAreaElement>;
 }
 
-/** Textarea berlabel, mis. catatan item "sambal dipisah" (maks. 120 karakter, FR-003). */
-export function Textarea({ label, hint, error, id, className, rows = 3, ...props }: TextareaProps) {
+/**
+ * Textarea berlabel, mis. catatan item "sambal dipisah" (maks. 120 karakter, FR-003).
+ * Bila `maxLength` diisi, penghitung "n/maks" tampil di kanan bawah.
+ */
+export function Textarea({ label, hint, error, id, className, rows = 3, onChange, ...props }: TextareaProps) {
   const ids = useFieldIds(id, hint, error);
+  const [typed, setTyped] = useState(String(props.defaultValue ?? '').length);
+  const length = props.value === undefined ? typed : String(props.value).length;
+  const counter = props.maxLength ? (
+    <span className="ml-auto shrink-0 tabular-nums" aria-hidden="true">
+      {length}/{props.maxLength}
+    </span>
+  ) : undefined;
+
+  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+    setTyped(event.target.value.length);
+    onChange?.(event);
+  };
+
   return (
-    <Field {...ids} label={label} hint={hint} error={error}>
+    <Field {...ids} label={label} hint={hint} error={error} counter={counter}>
       <textarea
         id={ids.fieldId}
         rows={rows}
+        onChange={handleChange}
         aria-invalid={error ? true : undefined}
         aria-describedby={ids.describedBy}
-        className={cx(control(Boolean(error)), 'py-2', className)}
+        className={cx(control(Boolean(error)), 'resize-none py-3', className)}
         {...props}
       />
     </Field>

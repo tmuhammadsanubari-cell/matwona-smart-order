@@ -6,18 +6,18 @@ export type ButtonSize = 'md' | 'lg';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
-  secondary: 'border-2 border-primary bg-surface text-primary hover:bg-primary-soft',
+  secondary: 'border-[1.5px] border-primary bg-cream text-primary hover:bg-primary-soft',
   ghost: 'bg-transparent text-primary hover:bg-primary-soft',
   danger: 'bg-danger text-primary-foreground hover:opacity-90',
   'danger-ghost': 'bg-transparent text-danger hover:bg-danger-soft',
   // Untuk latar hijau gelap (header): jangan menimpa warna varian lain lewat className, urutan CSS Tailwind tidak dijamin.
-  inverse: 'border-2 border-cream bg-transparent text-cream hover:bg-primary-hover',
+  inverse: 'border-[1.5px] border-cream bg-transparent text-cream hover:bg-primary-hover',
 };
 
-// Tinggi minimal 44 px (md) / 52 px (lg) agar mudah disentuh (NFR-012).
+// Tinggi minimal 44 px (md) / 48 px (lg) agar mudah disentuh (NFR-012).
 const SIZES: Record<ButtonSize, string> = {
   md: 'min-h-11 px-4 text-sm',
-  lg: 'min-h-13 px-5 text-base',
+  lg: 'min-h-12 px-5 text-[15px]',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -34,12 +34,17 @@ export function buttonClassName({
   variant = 'primary',
   size = 'md',
   fullWidth = false,
+  loading = false,
   className,
-}: Pick<ButtonProps, 'variant' | 'size' | 'fullWidth' | 'className'> = {}) {
+}: Pick<ButtonProps, 'variant' | 'size' | 'fullWidth' | 'loading' | 'className'> = {}) {
   return cx(
-    'inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-colors',
-    'disabled:cursor-not-allowed disabled:opacity-50',
+    'inline-flex items-center justify-center gap-2 rounded-control font-bold transition-colors',
     VARIANTS[variant],
+    // Disabled: latar abu-abu solid (bukan opacity) agar teks tetap kontras ≥ 4,5:1, mis. tombol "Habis".
+    // Loading tetap berwarna varian (hanya sedikit pudar) agar tidak terlihat seperti tombol mati.
+    loading
+      ? 'cursor-wait opacity-85'
+      : 'disabled:cursor-not-allowed disabled:border-transparent disabled:bg-disabled disabled:text-neutral',
     SIZES[size],
     fullWidth && 'w-full',
     className,
@@ -62,7 +67,7 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={buttonClassName({ variant, size, fullWidth, className })}
+      className={buttonClassName({ variant, size, fullWidth, loading, className })}
       {...props}
     >
       {loading && (

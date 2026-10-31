@@ -34,11 +34,12 @@ const TEXT_PAIRS: Array<[string, string, string]> = [
   ['cream', 'primary-hover', 'Button inverse saat hover'],
   ['primary', 'surface', 'Button secondary/ghost, harga'],
   ['primary', 'primary-soft', 'Button secondary/ghost saat hover'],
-  ['primary', 'cream', 'link di latar cream'],
+  ['primary', 'cream', 'link di latar cream, Button secondary, langkah status aktif'],
   ['primary-foreground', 'danger', 'Button danger'],
   ['danger', 'surface', 'pesan error field'],
-  ['muted', 'line', 'teks di Card muted (item Habis)'],
-  ['danger', 'danger-soft', 'Badge "Habis" di dalam Card muted'],
+  ['neutral', 'disabled', 'Button/Input/Stepper disabled, mis. tombol "Habis"'],
+  ['warning-soft', 'warning', 'ConnectionBanner'],
+  ['primary-foreground', 'ink', 'Toast'],
 ];
 
 // Turunkan pasangan dari kelas Badge agar tone baru otomatis ikut diuji.

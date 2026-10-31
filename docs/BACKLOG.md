@@ -16,7 +16,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S0-03 | CI GitHub Actions: lint, typecheck, test (Node) + ruff & pytest (reco) | NFR-019 | 🔴 | BE | S0-02 |
 | [x] | S0-04 | Prisma migrate pertama dari `schema.prisma` + seed (outlet, admin, kasir, kategori, menu contoh, 10 meja) | 4.2 | 🔴 | BE | S0-02 |
 | [x] | S0-05 | Design token brand di `globals.css` + komponen dasar (Button, Card, Badge, Input, BottomSheet) | 4.9, NFR-014 | 🔴 | FE1 | S0-02 |
-| [ ] | S0-06 | Wireframe & mockup Figma: menu, keranjang, checkout, status, kasir, admin menu | FR-001…008 | 🔴 | FE1 | – |
+| [x] | S0-06 | Wireframe & mockup UI (kanvas Claude Design, lihat `docs/design/BRAND.md`): menu, keranjang, checkout, status, kasir, admin, landing | FR-001…008 | 🔴 | FE1 | – |
 | [ ] | S0-07 | Finalisasi BRS & SRS draft (`docs/compro/`) + notulen validasi mitra | – | 🔴 | SA, PM | – |
 | [ ] | S0-08 | Minta contoh export produk & transaksi Olsera + konfirmasi akses API (simpan bukti) | Lampiran G | 🔴 | PM | – |
 
@@ -55,6 +55,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [ ] | S2-10 | Admin: halaman sinkronisasi (unggah, pemetaan kolom, pratinjau, log, ekspor) | FR-013, FR-014 | 🔴 | FE2 | S2-07, S2-08 |
 | [ ] | S2-11 | Upload foto menu ke Cloudinary | FR-010 | 🟡 | BE | S1-03 |
 | [ ] | S2-12 | Admin: kelola akun staf | FR-021 | 🟡 | FE2, BE | S1-01 |
+| [ ] | S2-13 | Selaraskan UI dengan mockup S0-06: (1) token & komponen dasar, (2) alur pelanggan C1–C4/C6/C7, (3) login & kasir K1–K3, (4) admin menu & meja A2–A3 | NFR-012, NFR-014 | 🟡 | FE1, FE2 | S0-06 |
 
 ## Sprint 3 — Intelligence (Minggu 12–13)
 
