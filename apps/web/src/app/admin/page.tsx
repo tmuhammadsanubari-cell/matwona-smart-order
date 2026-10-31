@@ -8,7 +8,7 @@ import { AdminShell } from '@/components/admin/admin-shell';
 const sections = [
   { href: '/admin/menu', label: 'Menu', task: null },
   { href: '/cashier', label: 'Dashboard kasir', task: null },
-  { href: '/admin/tables', label: 'Meja & QR', task: 'S2-05' },
+  { href: '/admin/tables', label: 'Meja & QR', task: null },
   { href: '/admin/sync', label: 'Sinkronisasi Olsera', task: 'S2-10' },
   { href: '/admin/analytics', label: 'Analitik', task: 'S3-06' },
   { href: '/admin/recommendations', label: 'Rekomendasi', task: 'S3-07' },

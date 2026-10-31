@@ -47,7 +47,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [ ] | S2-02 | Webhook Midtrans: verifikasi signature, idempoten, update status, emit `payment.updated`, kembalikan stok saat expire | FR-005, NFR-008 | 🔴 | BE | S2-01 |
 | [ ] | S2-03 | UI pembayaran QRIS (Snap.js) + pilih ulang metode saat gagal | FR-005 | 🔴 | FE1 | S2-01 |
 | [x] | S2-04 | Generate & regenerate token QR, `GET /tables/qr.pdf` berdesain brand | FR-011 | 🔴 | BE | S1-02 |
-| [ ] | S2-05 | Admin: halaman meja & cetak QR | FR-011 | 🔴 | FE2 | S2-04 |
+| [x] | S2-05 | Admin: halaman meja & cetak QR | FR-011 | 🔴 | FE2 | S2-04 |
 | [ ] | S2-06 | Landing page (SSG/ISR): hero, cerita brand, menu read-only, promo, lokasi, WhatsApp, SEO + schema.org Restaurant | FR-012 | 🔴 | FE1 | S1-03 |
 | [ ] | S2-07 | `PosSyncAdapter` + `OlseraCsvAdapter`: preview & apply impor produk, pemetaan kolom tersimpan | FR-013 | 🔴 | BE | S0-08, S1-03 |
 | [ ] | S2-08 | Ekspor transaksi lunas ke CSV + `pos_sync_logs` + `MockOlseraAdapter` untuk test | FR-013, FR-014 | 🔴 | BE | S2-07 |
