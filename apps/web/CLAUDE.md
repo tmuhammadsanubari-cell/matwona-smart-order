@@ -41,6 +41,7 @@ Baca `CLAUDE.md` root dan `docs/design/BRAND.md` dulu.
 - Validasi form memakai skema Zod dari `shared` (mis. `createOrderSchema`).
 - Format uang: `formatRupiah` dari `shared`. Label status: `ORDER_STATUS_LABEL`, `PAYMENT_STATUS_LABEL`.
 - Mobile-first: desain di 360 px dulu, target sentuh ≥ 44 px, keranjang sebagai bottom sheet.
+- Admin (S1-11): halaman `/admin/*` dibungkus `AdminShell` (`src/components/admin`, wajib ADMIN; halaman berupa client component karena `children` berupa fungsi). `/admin/menu` = `MenuAdmin`: kategori (urutan ↑/↓ via `/categories/reorder`, hapus hanya kategori kosong), menu (toggle Tersedia/Habis, form tambah/ubah, arsip dengan konfirmasi, lihat arsip). Form menu di `src/lib/menu-form.ts`: harga/stok integer ("45.000" diterima), edit hanya mengirim field yang berubah, peringatan Olsera untuk nama/harga/stok item ber-`olseraProductId`. Upload foto menyusul (S2-11).
 - Jangan menimpa warna varian `Button` lewat `className` (mis. `variant="ghost" className="text-danger"`): urutan kelas di CSS Tailwind yang menentukan, bukan urutan di atribut, sehingga hasilnya tak terduga. Pakai varian: `inverse` (latar hijau gelap/header), `danger-ghost` (aksi batal/hapus ringan).
 - Tidak boleh hex warna di komponen; gunakan kelas token (`bg-primary`, `text-cream`, `text-muted`, `border-line`, `rounded-card`). `accent`/`success` jangan untuk teks kecil (kontras ±3,5:1); untuk status "berhasil" pakai `Badge tone="success"` (teks primary di `primary-soft`).
 - Teks UI bahasa Indonesia, nada santai dan sopan.
