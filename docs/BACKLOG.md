@@ -55,7 +55,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [ ] | S2-10 | Admin: halaman sinkronisasi (unggah, pemetaan kolom, pratinjau, log, ekspor) | FR-013, FR-014 | 🔴 | FE2 | S2-07, S2-08 |
 | [ ] | S2-11 | Upload foto menu ke Cloudinary | FR-010 | 🟡 | BE | S1-03 |
 | [ ] | S2-12 | Admin: kelola akun staf | FR-021 | 🟡 | FE2, BE | S1-01 |
-| [ ] | S2-13 | Selaraskan UI dengan mockup S0-06: (1) token & komponen dasar, (2) alur pelanggan C1–C4/C6/C7, (3) login & kasir K1–K3, (4) admin menu & meja A2–A3 | NFR-012, NFR-014 | 🟡 | FE1, FE2 | S0-06 |
+| [x] | S2-13 | Selaraskan UI dengan mockup S0-06: (1) token & komponen dasar, (2) alur pelanggan C1–C4/C6/C7, (3) login & kasir K1–K3, (4) admin menu & meja A2–A3 (PR #18–#22) | NFR-012, NFR-014 | 🟡 | FE1, FE2 | S0-06 |
 
 ## Sprint 3 — Intelligence (Minggu 12–13)
 

@@ -14,6 +14,7 @@ import {
   PhotoPlaceholder,
   ProgressSteps,
   QuantityStepper,
+  Switch,
   Textarea,
   toast,
   Toaster,
@@ -34,6 +35,7 @@ export function UiPreview() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
+  const [available, setAvailable] = useState(true);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-8 p-4 pb-24">
@@ -78,6 +80,13 @@ export function UiPreview() {
       <Section title="Stepper">
         <div>
           <QuantityStepper itemName="Tuna Sambal Matah" quantity={quantity} min={1} max={20} onChange={setQuantity} />
+        </div>
+      </Section>
+
+      <Section title="Switch">
+        <div className="flex items-center gap-2">
+          <Switch checked={available} aria-label="Tersedia: Tuna Sambal Matah" onChange={setAvailable} />
+          <span className="text-sm font-bold">{available ? 'Tersedia' : 'Habis'}</span>
         </div>
       </Section>
 
