@@ -18,5 +18,5 @@ export default async function TableMenuPage({
   if (result.kind === 'invalid-token') return <InvalidQr />;
   if (result.kind === 'wrong-outlet') redirect(`/m/${result.slug}/t/${encodeURIComponent(token)}`);
 
-  return <MenuView token={token} tableLabel={result.table.label} outletName={result.outlet.name} menu={result.menu} />;
+  return <MenuView token={token} tableLabel={result.table.label} menu={result.menu} />;
 }

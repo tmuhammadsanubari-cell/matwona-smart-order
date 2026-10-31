@@ -2,7 +2,7 @@
 export { Badge, BADGE_TONES, type BadgeProps, type BadgeTone } from './badge';
 export { BottomSheet, type BottomSheetProps } from './bottom-sheet';
 export { Button, buttonClassName, type ButtonProps, type ButtonSize, type ButtonVariant } from './button';
-export { Card, type CardProps } from './card';
+export { Card, type CardPadding, type CardProps } from './card';
 export { ConnectionBanner } from './connection-banner';
 export { cx } from './cx';
 export { EmptyState, type EmptyStateProps } from './empty-state';

@@ -76,7 +76,9 @@ export function UiPreview() {
       </Section>
 
       <Section title="Stepper">
-        <QuantityStepper itemName="Tuna Sambal Matah" quantity={quantity} max={20} onChange={(q) => setQuantity(Math.max(q, 1))} />
+        <div>
+          <QuantityStepper itemName="Tuna Sambal Matah" quantity={quantity} min={1} max={20} onChange={setQuantity} />
+        </div>
       </Section>
 
       <Section title="Badge status">
@@ -99,7 +101,7 @@ export function UiPreview() {
       </Section>
 
       <Section title="Card (kartu menu)">
-        <Card className="flex gap-3 p-2.5">
+        <Card padding="sm" className="flex gap-3">
           <PhotoPlaceholder tone="tuna" className="h-[72px] w-24 shrink-0 rounded-control" />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="font-extrabold">Tuna Sambal Matah</p>
@@ -110,7 +112,7 @@ export function UiPreview() {
             </div>
           </div>
         </Card>
-        <Card muted className="flex gap-3 p-2.5">
+        <Card muted padding="sm" className="flex gap-3">
           <PhotoPlaceholder tone="none" className="h-[72px] w-24 shrink-0 rounded-control" />
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <p className="font-extrabold">Ayam Kampung Bakar</p>
@@ -158,7 +160,7 @@ export function UiPreview() {
             Tampilkan toast
           </Button>
         </div>
-        <Card className="p-0">
+        <Card padding="none">
           <EmptyState
             title="Keranjangmu masih kosong"
             description="Yuk pilih tuna atau ayam kampung favoritmu."
@@ -169,7 +171,7 @@ export function UiPreview() {
             }
           />
         </Card>
-        <Card className="overflow-hidden p-0">
+        <Card padding="none" className="overflow-hidden">
           <ConnectionBanner>Koneksi terputus, memperbarui otomatis…</ConnectionBanner>
           <div className="p-4 text-sm text-muted">Isi halaman tetap tampil.</div>
         </Card>

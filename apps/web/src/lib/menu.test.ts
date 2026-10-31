@@ -1,6 +1,6 @@
 import type { PublicMenu } from 'shared';
 import { cloudinaryLoader } from './cloudinary-loader';
-import { filterMenu, normalizeSearch } from './menu';
+import { filterMenu, normalizeSearch, photoTonesByItem, photoToneFor } from './menu';
 
 const item = (id: string, name: string) => ({ id, name, description: null, price: 1000, imageUrl: null, isAvailable: true });
 const categories: PublicMenu['categories'] = [
@@ -37,5 +37,21 @@ describe('cloudinaryLoader', () => {
 
   it('URL selain Cloudinary dikembalikan apa adanya', () => {
     expect(cloudinaryLoader({ src: '/brand/placeholder.png', width: 96 })).toBe('/brand/placeholder.png');
+  });
+});
+
+describe('warna placeholder foto (desain C1)', () => {
+  it('menebak jenis dari nama kategori', () => {
+    expect(photoToneFor('Olahan Tuna')).toBe('tuna');
+    expect(photoToneFor('Olahan Ayam Kampung')).toBe('chicken');
+    expect(photoToneFor('Minuman')).toBe('drink');
+    expect(photoToneFor('Es & Jus')).toBe('drink');
+    expect(photoToneFor('Tambahan')).toBe('none');
+  });
+
+  it('memetakan setiap item ke warna kategorinya', () => {
+    const tones = photoTonesByItem(categories);
+    expect(tones.get('t2')).toBe('tuna');
+    expect(tones.get('m1')).toBe('drink');
   });
 });

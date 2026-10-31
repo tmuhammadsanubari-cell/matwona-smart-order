@@ -87,6 +87,21 @@ describe('Badge & Card', () => {
     expect(screen.getByText('Habis').className).toContain('bg-danger');
   });
 
+  it('Card padding lewat prop: tidak ada dua kelas padding yang bertabrakan', () => {
+    render(
+      <>
+        <Card>md</Card>
+        <Card padding="sm">sm</Card>
+        <Card padding="none">none</Card>
+      </>,
+    );
+    expect(screen.getByText('md').className).toContain('p-4');
+    expect(screen.getByText('sm').className).toContain('p-2.5');
+    const none = screen.getByText('none').className;
+    expect(none).toContain('p-0');
+    expect(none).not.toContain('p-4');
+  });
+
   it('Card muted: teks muted & foto grayscale tanpa opacity (badge Habis tetap kontras)', () => {
     render(<Card muted>Habis</Card>);
     const card = screen.getByText('Habis');
@@ -218,6 +233,13 @@ describe('QuantityStepper', () => {
     expect(onChange).toHaveBeenLastCalledWith(0);
     fireEvent.click(screen.getByRole('button', { name: 'Tambah satu Tuna Geprek' }));
     expect(onChange).toHaveBeenLastCalledWith(2);
+  });
+
+  it('min ≥ 1 (sheet detail): − bertuliskan Kurangi dan nonaktif di batas bawah', () => {
+    render(<QuantityStepper itemName="Tuna Geprek" quantity={1} min={1} max={20} onChange={() => {}} />);
+    const minus = screen.getByRole('button', { name: 'Kurangi Tuna Geprek' }) as HTMLButtonElement;
+    expect(minus.disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Hapus Tuna Geprek' })).toBeNull();
   });
 
   it('tombol + nonaktif saat mencapai batas', () => {
