@@ -448,12 +448,13 @@ Admin unggah file export produk → pemetaan kolom (tersimpan di `pos_column_map
 
 ## 9. Desain Antarmuka Pengguna
 
-- **Brand:** token warna di `apps/web/src/app/globals.css` (primary `#106f4d`, accent `#069d70`, cream `#ffffca`, ink `#1f2a24`, danger `#c0392b`, plus `primary-soft`, `danger-soft`). Komponen hanya memakai kelas token (`docs/design/BRAND.md`). Font Mosvita belum tersedia → fallback Plus Jakarta Sans.
+- **Mockup (S0-06):** 20 artboard di kanvas Claude Design (design system, menu pelanggan C1–C7, landing L1–L2, kasir K1–K3, admin A1–A7; tautan di `docs/design/BRAND.md`). Penyelarasan kode dilacak di task S2-13.
+- **Brand:** token warna di `apps/web/src/app/globals.css` (primary `#106f4d`, accent `#069d70`, cream `#ffffca`, ink `#1f2a24`, danger `#c0392b`, palet badge status `success`/`warning`/`info`/`neutral`/`danger` + `-soft`, `disabled`, placeholder foto per jenis menu, skala heading, radius & bayangan). Komponen hanya memakai kelas token (`docs/design/BRAND.md`). Font Mosvita belum tersedia → fallback Plus Jakarta Sans.
 - **Aksesibilitas (NFR-014):** setiap pasangan teks/latar yang dipakai komponen diuji otomatis ≥ 4,5:1 (`contrast.test.ts`). Temuan: `accent`/`success` hanya 3,46:1 di atas putih → tidak dipakai untuk teks kecil.
 - **Mobile-first (NFR-012):** lebar minimum 360 px, target sentuh ≥ 44 px; diperiksa otomatis dengan `pnpm --filter web ui:check` (Playwright: screenshot, overflow horizontal, target kecil, error console) dan di HP Android sungguhan.
-- **Komponen dasar:** `Button` (varian primary/secondary/ghost/danger/danger-ghost/inverse), `Card`, `Badge`, `Input`/`Textarea` (label, hint, error ber-ARIA), `BottomSheet` (dialog modal, fokus terjebak & dikembalikan, kunci scroll).
-- **Layar utama terimplementasi:** menu meja (tab kategori sticky, pencarian, label Habis), keranjang (bottom sheet + bar total), checkout, status pesanan realtime, login staf, dashboard kasir (4 kolom/tab, bunyi notifikasi), admin menu, admin meja & QR, PDF QR meja.
-- **[Terbuka]** Mockup Figma (S0-06) belum tersedia; desain mengikuti PRD 4.9 & BRAND.md dan akan disesuaikan setelah validasi mitra. Screenshot setiap layar dapat dibuat ulang dengan `ui:check` untuk lampiran.
+- **Komponen dasar:** `Button` (varian primary/secondary/ghost/danger/danger-ghost/inverse), `Card` (padding none/sm/md), `Badge` (tone status), `Input`/`Textarea` (label, hint, error ber-ARIA, penghitung karakter), `BottomSheet` (dialog modal, fokus terjebak & dikembalikan, kunci scroll), `QuantityStepper`, `ProgressSteps` (mendatar/vertikal), `Toast`, `EmptyState`, `ConnectionBanner`, `PhotoPlaceholder`, `Logo`. Katalog di `/dev/ui` (mode dev).
+- **Layar utama terimplementasi:** menu meja (logo + chip meja, tab kategori sticky, pencarian, sheet detail menu, label Habis), keranjang (bottom sheet + bar melayang), checkout (kartu metode bayar), status pesanan realtime (timeline vertikal), QR tidak dikenali, login staf, dashboard kasir (4 kolom/tab, bunyi & toast pesanan baru), admin menu, admin meja & QR, PDF QR meja. Alur pelanggan, login, dan kasir sudah mengikuti mockup; admin menu & meja menyusul (S2-13 bagian 4).
+- Screenshot setiap layar dapat dibuat ulang dengan `ui:check` untuk lampiran.
 
 ---
 
