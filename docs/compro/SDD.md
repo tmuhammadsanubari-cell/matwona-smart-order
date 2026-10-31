@@ -439,8 +439,7 @@ Admin unggah file export produk → pemetaan kolom (tersimpan di `pos_column_map
 | Manipulasi harga | Harga & total dihitung ulang dari DB; harga klien diabaikan | [Terimplementasi] NFR-007 |
 | Pesanan ganda / spam | `Idempotency-Key` unik; rate limit 5 pesanan / 10 menit per meja & per IP (Redis, fallback in-memory; `trust proxy` untuk IP asli di Cloud Run) | [Terimplementasi] NFR-009 |
 | Menebak QR | Token acak 128-bit base62; dapat diganti (`regenerate-token`), meja nonaktif ditolak | [Terimplementasi] NFR-010 |
-| Kebocoran data pelanggan | Room pelanggan tanpa data pribadi; status pesanan hanya dengan kode + token meja yang cocok; data pelanggan minimal (nama, HP opsional) | [Terimplementasi] NFR-011 (sebagian) |
-| — | **Gap:** NFR-011 meminta no. HP disamarkan di tampilan kasir; dashboard kasir saat ini menampilkan nomor utuh | **[Terbuka]** perbaikan kecil di web |
+| Kebocoran data pelanggan | Room pelanggan tanpa data pribadi; status pesanan hanya dengan kode + token meja yang cocok; data pelanggan minimal (nama, HP opsional); no. HP disamarkan di dashboard kasir (`0812****7890`, `maskPhone`) | [Terimplementasi] NFR-011 |
 | Header & transport | Helmet, CORS hanya `WEB_ORIGIN` (+ LAN hanya di luar produksi), cookie `Secure` di produksi | [Terimplementasi] / HTTPS saat deploy |
 | Webhook palsu | Verifikasi signature SHA512 + idempoten | [Direncanakan] NFR-008 |
 | Audit keamanan | OWASP ZAP baseline, `pnpm audit`, `pip-audit` | [Direncanakan] S4-03 |
@@ -496,7 +495,6 @@ Target NFR-018 (coverage ≥ 60% pada modul inti) terpenuhi untuk `orders` dan `
 |---|---|---|
 | Keputusan domain staging/production | Login staf & realtime kasir di staging | Tim / PM |
 | Data export Olsera (S0-08) | Impor menu, analitik, PoC & model AI | PM (mitra) |
-| Mockup Figma (S0-06) & logo SVG resmi | Penyesuaian UI, PDF QR, landing | FE1 (mitra) |
-| Masking no. HP di dashboard kasir (NFR-011) | Kepatuhan privasi | FE |
+| Logo SVG resmi (mockup S0-06 sudah ada di kanvas Claude Design; logo saat ini PNG dari kanvas) | Ketajaman logo di PDF QR & layar besar | FE1 (mitra) |
 | Logout publik vs PRD 4.3 | Konsistensi dokumen | Tim |
 | Event `menu.updated` (menu habis langsung berubah di HP pelanggan) | UX; belum ada task | Tim |
