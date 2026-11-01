@@ -51,7 +51,9 @@ export function MenuPhoto({
 export function MenuItemCard({ item, photoTone, quantity, onAdd, onQuantityChange, onOpenDetail }: MenuItemCardProps) {
   const soldOut = !item.isAvailable;
   return (
-    <Card muted={soldOut} padding="sm" className="relative flex gap-3">
+    // isolate: z-index di dalam kartu (tombol aksi z-10) tidak bersaing dengan tab kategori sticky (z-10)
+    // sehingga kartu tidak menutupi tab saat di-scroll.
+    <Card muted={soldOut} padding="sm" className="relative isolate flex gap-3">
       <div className="relative shrink-0">
         <MenuPhoto
           item={item}
