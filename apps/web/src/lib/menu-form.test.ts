@@ -1,5 +1,5 @@
 import type { MenuItemDto } from 'shared';
-import { changedOlseraFields, emptyMenuItemForm, menuItemToForm, parseMenuItemChanges, parseNewMenuItem } from './menu-form';
+import { changedOlseraFields, emptyMenuItemForm, menuItemToForm, parseMenuItemChanges, parseNewMenuItem, menuImageError } from './menu-form';
 
 const CAT = '00000000-0000-4000-8000-000000000001';
 const item = (overrides: Partial<MenuItemDto> = {}): MenuItemDto => ({
@@ -63,5 +63,14 @@ describe('form menu (FR-010)', () => {
     expect(changedOlseraFields(synced, { ...menuItemToForm(synced), price: '47000', name: 'Baru' })).toEqual(['nama', 'harga']);
     expect(changedOlseraFields(synced, { ...menuItemToForm(synced), sku: 'X' })).toEqual([]);
     expect(changedOlseraFields(item(), { ...menuItemToForm(item()), price: '1' })).toEqual([]);
+  });
+});
+
+describe('menuImageError (S2-11)', () => {
+  it('JPG/PNG/WebP ≤ 2 MB lolos; format lain atau > 2 MB ditolak dengan pesan', () => {
+    expect(menuImageError({ type: 'image/jpeg', size: 500_000 })).toBeNull();
+    expect(menuImageError({ type: 'image/webp', size: 2 * 1024 * 1024 })).toBeNull();
+    expect(menuImageError({ type: 'image/gif', size: 1000 })).toBe('Format foto harus JPG, PNG, atau WebP.');
+    expect(menuImageError({ type: 'image/png', size: 2 * 1024 * 1024 + 1 })).toBe('Ukuran foto maksimal 2 MB.');
   });
 });

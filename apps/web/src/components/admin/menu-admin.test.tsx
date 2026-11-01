@@ -227,3 +227,67 @@ describe('Admin kelola menu (FR-010)', () => {
     expect(within(old).queryByRole('button')).toBeNull();
   });
 });
+
+describe('Foto menu (FR-010, S2-11)', () => {
+  const png = (size = 1000) => new File([new Uint8Array(size)], 'tuna.png', { type: 'image/png' });
+  const uploadUrl = 'https://res.cloudinary.com/demo/image/upload/v1/matwona/menu/1.png';
+
+  async function openEdit() {
+    renderPage();
+    const tuna = await row('Tuna Sambal Matah');
+    fireEvent.click(within(tuna).getByRole('button', { name: 'Ubah Tuna Sambal Matah' }));
+    return screen.getByRole('dialog', { name: 'Ubah Tuna Sambal Matah' });
+  }
+
+  it('pilih foto → POST multipart langsung, pratinjau tampil, bisa diganti/dihapus', async () => {
+    handler = (path, init) => {
+      if (path === '/menu-items/1/image' && init?.method === 'POST') return { ...items[0], imageUrl: uploadUrl };
+      if (path === '/menu-items/1/image' && init?.method === 'DELETE') return { ...items[0], imageUrl: null };
+      return undefined;
+    };
+    const sheet = await openEdit();
+    const file = png();
+    fireEvent.change(within(sheet).getByLabelText('Unggah foto menu'), { target: { files: [file] } });
+
+    await waitFor(() => expect(callTo('/menu-items/1/image')).toBeGreaterThan(-1));
+    const init = fetchMock.mock.calls[callTo('/menu-items/1/image')]![1]!;
+    expect(init.method).toBe('POST');
+    expect((init.body as FormData).get('file')).toBe(file);
+    expect((await within(sheet).findByRole('img', { name: 'Tuna Sambal Matah' })).getAttribute('src')).toContain('matwona/menu/1.png');
+    expect(within(sheet).getByLabelText('Ganti foto menu')).toBeTruthy();
+
+    fireEvent.click(within(sheet).getByRole('button', { name: 'Hapus foto' }));
+    expect(await within(sheet).findByText('Unggah foto (pratinjau 4:3)')).toBeTruthy();
+    expect(fetchMock.mock.calls.some((c) => c[0] === '/menu-items/1/image' && c[1]?.method === 'DELETE')).toBe(true);
+  });
+
+  it('format salah atau > 2 MB ditolak di browser tanpa memanggil API', async () => {
+    const sheet = await openEdit();
+    const input = within(sheet).getByLabelText('Unggah foto menu');
+    fireEvent.change(input, { target: { files: [new File(['GIF89a'], 'anim.gif', { type: 'image/gif' })] } });
+    expect(within(sheet).getByRole('alert').textContent).toBe('Format foto harus JPG, PNG, atau WebP.');
+    fireEvent.change(input, { target: { files: [png(2 * 1024 * 1024 + 1)] } });
+    expect(within(sheet).getByRole('alert').textContent).toBe('Ukuran foto maksimal 2 MB.');
+    expect(callTo('/menu-items/1/image')).toBe(-1);
+  });
+
+  it('pesan error server (mis. Cloudinary gagal) ditampilkan', async () => {
+    handler = (path) => {
+      if (path === '/menu-items/1/image') {
+        throw new ApiClientError(502, { code: ErrorCode.IMAGE_UPLOAD_FAILED, message: 'Foto belum bisa diunggah. Coba lagi beberapa saat lagi.' });
+      }
+      return undefined;
+    };
+    const sheet = await openEdit();
+    fireEvent.change(within(sheet).getByLabelText('Unggah foto menu'), { target: { files: [png()] } });
+    expect((await within(sheet).findByRole('alert')).textContent).toBe('Foto belum bisa diunggah. Coba lagi beberapa saat lagi.');
+  });
+
+  it('menu baru: foto diunggah setelah disimpan', async () => {
+    renderPage();
+    fireEvent.click(await screen.findByRole('button', { name: '+ Tambah Menu' }));
+    const sheet = screen.getByRole('dialog', { name: 'Tambah menu' });
+    expect(within(sheet).getByText('Foto bisa diunggah setelah menu disimpan.')).toBeTruthy();
+    expect(within(sheet).queryByLabelText('Unggah foto menu')).toBeNull();
+  });
+});

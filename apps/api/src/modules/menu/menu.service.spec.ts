@@ -1,5 +1,6 @@
 import {
   categoryReorderSchema,
+  MENU_IMAGE_MAX_BYTES,
   categoryUpdateSchema,
   ErrorCode,
   menuItemListQuerySchema,
@@ -11,7 +12,7 @@ import type { MenuItem } from '../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { CacheService } from '../../redis/cache.service.js';
 import { CategoriesService } from './categories.service.js';
-import { MenuItemsService } from './menu-items.service.js';
+import { MenuItemsService, menuImagePublicId } from './menu-items.service.js';
 import { MENU_CACHE_TTL_SECONDS, menuCacheKey, PublicMenuService } from './public-menu.service.js';
 
 const OUTLET = { id: 'outlet-1', slug: 'matwona', name: 'Matwona' };
@@ -60,12 +61,14 @@ function setup() {
   const cache = { getJson: vi.fn().mockResolvedValue(null), setJson: vi.fn(), del: vi.fn() };
   const db = prisma as unknown as PrismaService;
   const publicMenu = new PublicMenuService(db, cache as unknown as CacheService);
+  const images = { upload: vi.fn().mockResolvedValue({ url: 'https://res.cloudinary.com/demo/image/upload/v2/menu.jpg' }) };
   return {
     prisma,
     cache,
     publicMenu,
+    images,
     categories: new CategoriesService(db, publicMenu),
-    items: new MenuItemsService(db, publicMenu),
+    items: new MenuItemsService(db, publicMenu, images),
   };
 }
 
@@ -264,6 +267,66 @@ describe('MenuItemsService (FR-010)', () => {
     await items.list(OUTLET.id, menuItemListQuerySchema.parse({ archived: 'true' }));
     expect(prisma.menuItem.findMany.mock.calls[0]![0].where).toEqual({ outletId: OUTLET.id, isArchived: false });
     expect(prisma.menuItem.findMany.mock.calls[1]![0].where).toEqual({ outletId: OUTLET.id, isArchived: true });
+  });
+});
+
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
+
+describe('MenuItemsService foto menu (FR-010, S2-11)', () => {
+  it('foto valid: diunggah dengan id tetap per item, imageUrl disimpan, cache menu di-invalidate', async () => {
+    const { prisma, cache, images, items } = setup();
+    prisma.menuItem.findFirst.mockResolvedValue(makeItem());
+    prisma.outlet.findUnique.mockResolvedValue(OUTLET);
+    prisma.menuItem.update.mockImplementation(async ({ data }) => makeItem(data));
+
+    const dto = await items.setImage(OUTLET.id, 'item-1', { buffer: PNG, size: PNG.length });
+
+    expect(images.upload).toHaveBeenCalledWith({ buffer: PNG, type: 'image/png' }, menuImagePublicId(OUTLET.id, 'item-1'));
+    expect(prisma.menuItem.update).toHaveBeenCalledWith({
+      where: { id: 'item-1' },
+      data: { imageUrl: 'https://res.cloudinary.com/demo/image/upload/v2/menu.jpg' },
+    });
+    expect(dto.imageUrl).toBe('https://res.cloudinary.com/demo/image/upload/v2/menu.jpg');
+    expect(cache.del).toHaveBeenCalledWith(menuCacheKey(OUTLET.slug));
+  });
+
+  it('tanpa file, > 2 MB, atau bukan JPG/PNG/WebP → VALIDATION_ERROR tanpa memanggil Cloudinary', async () => {
+    const { prisma, images, items } = setup();
+    prisma.menuItem.findFirst.mockResolvedValue(makeItem());
+
+    const empty = await expectAppError(items.setImage(OUTLET.id, 'item-1', undefined), ErrorCode.VALIDATION_ERROR);
+    expect(empty.message).toBe('Pilih foto yang akan diunggah.');
+    const big = await expectAppError(
+      items.setImage(OUTLET.id, 'item-1', { buffer: PNG, size: MENU_IMAGE_MAX_BYTES + 1 }),
+      ErrorCode.VALIDATION_ERROR,
+    );
+    expect(big.message).toBe('Ukuran foto maksimal 2 MB.');
+    // File teks yang mengaku gambar: jenis dicek dari isi file.
+    const fake = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"></svg>');
+    const wrong = await expectAppError(items.setImage(OUTLET.id, 'item-1', { buffer: fake, size: fake.length }), ErrorCode.VALIDATION_ERROR);
+    expect(wrong.message).toBe('Format foto harus JPG, PNG, atau WebP.');
+    expect(images.upload).not.toHaveBeenCalled();
+  });
+
+  it('item arsip atau outlet lain → NOT_FOUND; gagal unggah tidak mengubah imageUrl', async () => {
+    const { prisma, images, items } = setup();
+    prisma.menuItem.findFirst.mockResolvedValueOnce(makeItem({ isArchived: true })).mockResolvedValueOnce(null);
+    await expectAppError(items.setImage(OUTLET.id, 'item-1', { buffer: PNG, size: PNG.length }), ErrorCode.NOT_FOUND);
+    await expectAppError(items.setImage(OUTLET.id, 'item-x', { buffer: PNG, size: PNG.length }), ErrorCode.NOT_FOUND);
+
+    prisma.menuItem.findFirst.mockResolvedValue(makeItem());
+    images.upload.mockRejectedValue(new AppException(ErrorCode.IMAGE_UPLOAD_FAILED, 'Foto belum bisa diunggah.'));
+    await expectAppError(items.setImage(OUTLET.id, 'item-1', { buffer: PNG, size: PNG.length }), ErrorCode.IMAGE_UPLOAD_FAILED);
+    expect(prisma.menuItem.update).not.toHaveBeenCalled();
+  });
+
+  it('hapus foto: imageUrl jadi null dan cache menu di-invalidate', async () => {
+    const { prisma, cache, items } = setup();
+    prisma.menuItem.findFirst.mockResolvedValue(makeItem({ imageUrl: 'https://res.cloudinary.com/x.jpg' }));
+    prisma.outlet.findUnique.mockResolvedValue(OUTLET);
+    prisma.menuItem.update.mockImplementation(async ({ data }) => makeItem(data));
+    expect((await items.removeImage(OUTLET.id, 'item-1')).imageUrl).toBeNull();
+    expect(cache.del).toHaveBeenCalledWith(menuCacheKey(OUTLET.slug));
   });
 });
 

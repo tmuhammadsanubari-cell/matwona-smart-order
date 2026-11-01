@@ -9,7 +9,13 @@ const STATUS_TO_CODE: Record<number, ErrorCode> = {
   401: ErrorCode.UNAUTHORIZED,
   403: ErrorCode.FORBIDDEN,
   404: ErrorCode.NOT_FOUND,
+  413: ErrorCode.VALIDATION_ERROR,
   429: ErrorCode.RATE_LIMITED,
+};
+
+/** Pesan bawaan Nest berbahasa Inggris; ganti yang mungkin dilihat pengguna. */
+const STATUS_MESSAGE: Partial<Record<number, string>> = {
+  413: 'Ukuran file terlalu besar.',
 };
 
 /** Mengubah semua error ke format { success: false, error: { code, message, details, traceId } } (PRD 4.5). */
@@ -35,7 +41,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exception.getStatus();
       body = {
         code: STATUS_TO_CODE[status] ?? ErrorCode.INTERNAL_ERROR,
-        message: exception.message,
+        message: STATUS_MESSAGE[status] ?? exception.message,
         traceId,
       };
     }

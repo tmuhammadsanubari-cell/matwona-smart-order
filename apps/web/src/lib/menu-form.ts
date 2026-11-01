@@ -1,4 +1,4 @@
-import { menuItemSchema, menuItemUpdateSchema } from 'shared';
+import { MENU_IMAGE_MAX_BYTES, MENU_IMAGE_TYPES, menuItemSchema, menuItemUpdateSchema } from 'shared';
 import type { MenuItemDto, MenuItemInput, MenuItemUpdateInput } from 'shared';
 
 /** Nilai mentah form menu (semua string dari input HTML). */
@@ -99,4 +99,14 @@ export function changedOlseraFields(item: MenuItemDto | null, values: MenuItemFo
   const current = menuItemToForm(item);
   const labels = { name: 'nama', price: 'harga', stock: 'stok' } as const;
   return OLSERA_FIELDS.filter((f) => current[f].trim() !== values[f].trim()).map((f) => labels[f]);
+}
+
+/**
+ * Cek awal foto menu sebelum diunggah (FR-010: JPG/PNG/WebP maks. 2 MB) agar admin tidak menunggu
+ * upload yang pasti ditolak. Server tetap memeriksa ulang dari isi file.
+ */
+export function menuImageError(file: Pick<File, 'type' | 'size'>): string | null {
+  if (!(MENU_IMAGE_TYPES as readonly string[]).includes(file.type)) return 'Format foto harus JPG, PNG, atau WebP.';
+  if (file.size > MENU_IMAGE_MAX_BYTES) return 'Ukuran foto maksimal 2 MB.';
+  return null;
 }

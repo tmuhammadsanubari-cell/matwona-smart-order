@@ -1,10 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ErrorCode } from 'shared';
+import { ErrorCode, MENU_IMAGE_MAX_BYTES } from 'shared';
 import type { MenuItemDto, MenuItemInput, MenuItemListQuery, MenuItemUpdateInput } from 'shared';
 import { AppException } from '../../common/app.exception.js';
 import type { MenuItem } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
+import { detectImageType, IMAGE_STORAGE, type ImageStorage } from './image-storage.js';
 import { PublicMenuService } from './public-menu.service.js';
+
+/** File dari multipart (FileInterceptor/multer); cukup field yang dipakai. */
+export interface UploadedImage {
+  buffer: Buffer;
+  size: number;
+}
+
+/** Id foto di Cloudinary: satu foto per item, unggah ulang menimpa. */
+export const menuImagePublicId = (outletId: string, itemId: string) => `matwona/${outletId}/menu/${itemId}`;
 
 export const toMenuItemDto = (item: MenuItem): MenuItemDto => ({
   id: item.id,
@@ -33,6 +43,7 @@ export class MenuItemsService {
   constructor(
     @Inject(PrismaService) private readonly prisma: PrismaService,
     @Inject(PublicMenuService) private readonly publicMenu: PublicMenuService,
+    @Inject(IMAGE_STORAGE) private readonly images: ImageStorage,
   ) {}
 
   async list(outletId: string, query: MenuItemListQuery): Promise<MenuItemDto[]> {
@@ -81,6 +92,39 @@ export class MenuItemsService {
     const item = await this.prisma.menuItem.update({ where: { id }, data: { isArchived: true } });
     await this.publicMenu.invalidate(outletId);
     return toMenuItemDto(item);
+  }
+
+  /**
+   * POST /menu-items/:id/image (FR-010 AC): JPG/PNG/WebP maks. 2 MB, jenis dicek dari isi file.
+   * Foto disimpan di Cloudinary dengan id tetap per item lalu `imageUrl` diperbarui.
+   */
+  async setImage(outletId: string, id: string, file: UploadedImage | undefined): Promise<MenuItemDto> {
+    const item = await this.findOrThrow(outletId, id);
+    if (item.isArchived) throw this.notFound();
+    if (!file || file.size === 0) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'Pilih foto yang akan diunggah.', { field: 'file' });
+    }
+    if (file.size > MENU_IMAGE_MAX_BYTES) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'Ukuran foto maksimal 2 MB.', { field: 'file' });
+    }
+    const type = detectImageType(file.buffer);
+    if (!type) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'Format foto harus JPG, PNG, atau WebP.', { field: 'file' });
+    }
+
+    const { url } = await this.images.upload({ buffer: file.buffer, type }, menuImagePublicId(outletId, id));
+    const updated = await this.prisma.menuItem.update({ where: { id }, data: { imageUrl: url } });
+    await this.publicMenu.invalidate(outletId);
+    return toMenuItemDto(updated);
+  }
+
+  /** DELETE /menu-items/:id/image: menu kembali memakai placeholder. File di Cloudinary dibiarkan (ditimpa saat unggah ulang). */
+  async removeImage(outletId: string, id: string): Promise<MenuItemDto> {
+    const item = await this.findOrThrow(outletId, id);
+    if (item.isArchived) throw this.notFound();
+    const updated = await this.prisma.menuItem.update({ where: { id }, data: { imageUrl: null } });
+    await this.publicMenu.invalidate(outletId);
+    return toMenuItemDto(updated);
   }
 
   private async findOrThrow(outletId: string, id: string) {

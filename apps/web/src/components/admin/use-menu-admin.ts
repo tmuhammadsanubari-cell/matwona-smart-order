@@ -59,6 +59,19 @@ export function useMenuAdminMutations() {
       staffFetch<MenuItemDto>(`/menu-items/${id}/availability`, json('PATCH', { isAvailable })),
     onSuccess,
   });
+  /** Foto menu (S2-11): multipart field `file`; validasi jenis & ukuran juga di server. */
+  const uploadImage = useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => {
+      const body = new FormData();
+      body.append('file', file);
+      return staffFetch<MenuItemDto>(`/menu-items/${id}/image`, { method: 'POST', body });
+    },
+    onSuccess,
+  });
+  const removeImage = useMutation({
+    mutationFn: (id: string) => staffFetch<MenuItemDto>(`/menu-items/${id}/image`, { method: 'DELETE' }),
+    onSuccess,
+  });
   const archiveItem = useMutation({
     mutationFn: (id: string) => staffFetch<MenuItemDto>(`/menu-items/${id}`, { method: 'DELETE' }),
     onSuccess,
@@ -72,6 +85,8 @@ export function useMenuAdminMutations() {
     createItem,
     updateItem,
     setAvailability,
+    uploadImage,
+    removeImage,
     archiveItem,
   };
 }
