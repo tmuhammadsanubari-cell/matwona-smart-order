@@ -123,3 +123,8 @@ export interface PublicMenu {
   outlet: { id: string; slug: string; name: string };
   categories: { id: string; name: string; items: PublicMenuItem[] }[];
 }
+
+/** Foto menu (FR-010 AC): JPG/PNG/WebP, maks. 2 MB. Dipakai API (validasi) & web (input file). */
+export const MENU_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
+export type MenuImageType = (typeof MENU_IMAGE_TYPES)[number];
+export const MENU_IMAGE_MAX_BYTES = 2 * 1024 * 1024;

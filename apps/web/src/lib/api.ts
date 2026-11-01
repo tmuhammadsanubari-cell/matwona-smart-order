@@ -35,11 +35,13 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const { tableToken, idempotencyKey, headers, ...rest } = init;
   const csrf = SAFE_METHODS.has((rest.method ?? 'GET').toUpperCase()) ? undefined : readCookie(AUTH_COOKIE.CSRF);
+  // FormData (unggah foto): Content-Type multipart + boundary diisi browser, jangan ditimpa JSON.
+  const isForm = typeof FormData !== 'undefined' && rest.body instanceof FormData;
   const res = await fetch(`${resolveDevUrl(API_URL)}${path}`, {
     credentials: 'include',
     ...rest,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isForm ? {} : { 'Content-Type': 'application/json' }),
       ...(tableToken ? { 'X-Table-Token': tableToken } : {}),
       ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}),
       ...(csrf ? { [CSRF_HEADER]: csrf } : {}),

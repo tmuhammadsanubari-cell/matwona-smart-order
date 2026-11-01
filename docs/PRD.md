@@ -1483,6 +1483,7 @@ Pesan `message` berbahasa Indonesia dan aman ditampilkan ke pengguna; detail tek
 | SYNC_FILE_INVALID | 422 | Format CSV tidak sesuai pemetaan |
 | RATE_LIMITED | 429 | Terlalu banyak permintaan |
 | PAYMENT_PROVIDER_ERROR | 502 | Midtrans gagal merespons |
+| IMAGE_UPLOAD_FAILED | 502 | Penyimpanan foto (Cloudinary) gagal atau belum dikonfigurasi |
 | RECO_UNAVAILABLE | 503 | AI service tidak tersedia (klien memakai fallback) |
 | INTERNAL_ERROR | 500 | Kesalahan server |
 

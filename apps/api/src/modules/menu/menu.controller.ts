@@ -1,4 +1,19 @@
-import { Body, Controller, Delete, Get, Inject, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   categoryReorderSchema,
   categorySchema,
@@ -7,6 +22,7 @@ import {
   menuItemListQuerySchema,
   menuItemSchema,
   menuItemUpdateSchema,
+  MENU_IMAGE_MAX_BYTES,
 } from 'shared';
 import type {
   ApiSuccess,
@@ -26,7 +42,7 @@ import { Public, Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { uuidParam, ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { CategoriesService } from './categories.service.js';
-import { MenuItemsService } from './menu-items.service.js';
+import { MenuItemsService, type UploadedImage } from './menu-items.service.js';
 import { PublicMenuService } from './public-menu.service.js';
 
 /** Menu digital pelanggan (FR-002). */
@@ -131,6 +147,31 @@ export class MenuItemsController {
       success: true,
       data: await this.items.setAvailability(user.outletId, id, body.isAvailable),
     };
+  }
+
+  /**
+   * Upload foto menu (FR-010, S2-11): multipart field `file`. Multer menolak > 2 × batas (413) agar file
+   * raksasa tidak ditampung di memori; batas 2 MB yang sebenarnya dicek service dengan pesan yang jelas.
+   */
+  @Roles('ADMIN')
+  @Post(':id/image')
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MENU_IMAGE_MAX_BYTES * 2, files: 1 } }))
+  async uploadImage(
+    @CurrentUser() user: AuthUser,
+    @Param('id', uuidParam()) id: string,
+    @UploadedFile() file: UploadedImage | undefined,
+  ): Promise<ApiSuccess<MenuItemDto>> {
+    return { success: true, data: await this.items.setImage(user.outletId, id, file) };
+  }
+
+  @Roles('ADMIN')
+  @Delete(':id/image')
+  async removeImage(
+    @CurrentUser() user: AuthUser,
+    @Param('id', uuidParam()) id: string,
+  ): Promise<ApiSuccess<MenuItemDto>> {
+    return { success: true, data: await this.items.removeImage(user.outletId, id) };
   }
 
   @Roles('ADMIN')

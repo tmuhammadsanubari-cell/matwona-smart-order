@@ -23,6 +23,20 @@ describe('apiFetch (PRD 4.4)', () => {
     expect(fetchMock.mock.calls[0]![1].credentials).toBe('include');
   });
 
+  it('FormData (unggah foto): tanpa Content-Type JSON agar browser mengisi boundary multipart', async () => {
+    const body = new FormData();
+    body.append('file', new Blob(['x'], { type: 'image/png' }), 'foto.png');
+    await apiFetch('/menu-items/1/image', { method: 'POST', body });
+    expect(headersOf()).not.toHaveProperty('Content-Type');
+    expect(headersOf()['x-csrf-token']).toBe('csrf-123');
+    expect(fetchMock.mock.calls[0]![1].body).toBe(body);
+  });
+
+  it('body JSON tetap memakai Content-Type application/json', async () => {
+    await apiFetch('/orders/1/cancel', { method: 'POST', body: JSON.stringify({ reason: 'batal' }) });
+    expect(headersOf()['Content-Type']).toBe('application/json');
+  });
+
   it('GET tidak mengirim CSRF', async () => {
     await apiFetch('/orders');
     expect(headersOf()).not.toHaveProperty('x-csrf-token');

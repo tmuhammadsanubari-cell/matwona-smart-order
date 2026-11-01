@@ -93,7 +93,8 @@ Catatan implementasi (S1-07):
 | ✅ | POST | `/menu-items` | ADMIN |
 | ✅ | PUT/DELETE | `/menu-items/:id` | ADMIN |
 | ✅ | PATCH | `/menu-items/:id/availability` | CASHIER, ADMIN |
-| ⬜ | POST | `/menu-items/:id/image` | ADMIN (S2-11) |
+| ✅ | POST | `/menu-items/:id/image` | ADMIN |
+| ✅ | DELETE | `/menu-items/:id/image` | ADMIN |
 
 Catatan implementasi (S1-03):
 - `GET /public/outlets/:slug/menu` → `PublicMenu`: `{ outlet, categories: [{ id, name, items: [{ id, name, description, price, imageUrl, isAvailable }] }] }`. Hanya kategori aktif yang punya item non-arsip; urut `sortOrder` lalu nama. `isAvailable = false` bila ditandai habis **atau** `stock = 0`. Harga promo menyusul di S3-08.
@@ -103,6 +104,13 @@ Catatan implementasi (S1-03):
 - `POST /menu-items` body `{ categoryId, name, price, description?, stock?, sku?, isAvailable?, sortOrder? }`; `PUT /menu-items/:id` parsial (field yang tidak dikirim tidak berubah). Harga integer Rupiah ≥ 0. SKU unik per outlet → 409 `SKU_TAKEN`. Kategori outlet lain → 404.
 - `PATCH /menu-items/:id/availability` body `{ isAvailable }`; item arsip → 404.
 - `DELETE /menu-items/:id` **mengarsipkan** (`isArchived = true`), tidak menghapus permanen; response `MenuItemDto`.
+
+Catatan implementasi (S2-11, foto menu):
+- `POST /menu-items/:id/image` **multipart/form-data**, field `file` (+ header `X-CSRF-Token` seperti mutasi lain). JPG/PNG/WebP maks. 2 MB (`MENU_IMAGE_TYPES`, `MENU_IMAGE_MAX_BYTES` di `shared`); jenis dicek dari **isi file** (magic bytes), bukan dari `Content-Type`. Tanpa file / format lain / > 2 MB → 400 `VALIDATION_ERROR` (`details.field = "file"`); > 4 MB ditolak multer sebelum dibaca → 413 `VALIDATION_ERROR` "Ukuran file terlalu besar.". Item arsip/outlet lain → 404. Response `MenuItemDto` dengan `imageUrl` baru.
+- Foto diunggah ke Cloudinary (signed upload REST, kredensial `CLOUDINARY_*` di `.env`) dengan `public_id` tetap `matwona/<outletId>/menu/<itemId>`: unggah ulang **menimpa** foto lama (`overwrite` + `invalidate`), URL memuat nomor versi sehingga cache browser ikut berganti. Foto asli dibatasi 1600 px sisi terpanjang saat disimpan; tampilan memakai transformasi `w_<lebar>,f_auto,q_auto` dari web (`cloudinary-loader.ts`).
+- Kredensial kosong atau Cloudinary gagal/timeout 15 detik → 502 `IMAGE_UPLOAD_FAILED`; `imageUrl` lama tidak berubah.
+- `DELETE /menu-items/:id/image` → `imageUrl = null` (menu kembali memakai placeholder). File di Cloudinary dibiarkan dan akan ditimpa bila item diberi foto lagi.
+- Setiap perubahan foto meng-invalidate cache menu publik.
 
 ## Meja & QR (FR-011)
 | Status | Method | Endpoint | Auth |

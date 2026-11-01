@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { formatRupiah } from 'shared';
 import type { CategoryDto, MenuItemDto, MenuItemInput, MenuItemUpdateInput } from 'shared';
 import { BottomSheet, Button, Input, Textarea } from '@/components/ui';
+import { MenuPhotoField } from './menu-photo-field';
 import {
   changedOlseraFields,
   emptyMenuItemForm,
@@ -73,6 +74,11 @@ export function MenuItemFormSheet(props: MenuItemFormSheetProps) {
       }
     >
       <div className="flex flex-col gap-4">
+        {item ? (
+          <MenuPhotoField item={item} />
+        ) : (
+          <p className="rounded-control bg-neutral-soft p-3 text-sm text-neutral">Foto bisa diunggah setelah menu disimpan.</p>
+        )}
         {item?.olseraProductId && (
           <p className={olseraChanges.length ? 'rounded-xl bg-danger-soft p-3 text-sm text-danger' : 'rounded-xl bg-primary-soft p-3 text-sm text-primary'} role={olseraChanges.length ? 'alert' : undefined}>
             {olseraChanges.length
