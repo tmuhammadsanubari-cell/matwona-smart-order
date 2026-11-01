@@ -60,6 +60,12 @@ describe('MenuView (FR-001, FR-002)', () => {
     expect(screen.getAllByText('Habis')).toHaveLength(2);
   });
 
+  it('kartu menu membuat stacking context sendiri agar tidak menutupi tab kategori sticky', () => {
+    renderMenu();
+    const card = screen.getByRole('button', { name: 'Lihat detail Tuna Sambal Matah' }).closest('div.relative');
+    expect(card?.className).toContain('isolate');
+  });
+
   it('klik tab memilih kategori', () => {
     renderMenu();
     fireEvent.click(tabs()[1]!);
