@@ -33,3 +33,11 @@ data/
 .vercel
 playwright-report/
 test-results/
+.taste-skill/
+.cursor/
+.agents/
+skills-lock.json
+*.zip
+WhatsApp Image*.jpeg
+Brand Guideline.pdf
+

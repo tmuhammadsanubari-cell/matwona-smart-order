@@ -27,7 +27,7 @@ const MENU: PublicMenu = {
     { id: 'minum', name: 'Minuman', items: [item('m1', 'Es Teh Serai', 8000)] },
   ],
 };
-const ORDER = { orderCode: 'MTW-261105-0042', createdAt: '2026-11-05T05:12:44Z' };
+const ORDER = { orderCode: 'MTW-261105-0042', createdAt: new Date().toISOString() };
 
 function saveCart(lines: object[]) {
   localStorage.setItem('matwona-cart', JSON.stringify({ state: { tableToken: TOKEN, lines }, version: 0 }));

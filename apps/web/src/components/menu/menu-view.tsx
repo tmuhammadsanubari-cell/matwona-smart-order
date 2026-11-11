@@ -159,6 +159,82 @@ export function MenuView({ token, tableLabel, menu }: MenuViewProps) {
             </span>
           </Link>
         )}
+
+        {!query && (
+          <>
+            {/* Promo Banner mingguan (desain C1) */}
+            <div className="flex items-center justify-between gap-3 overflow-hidden rounded-card bg-accent p-4 text-white shadow-xs">
+              <div className="flex flex-col gap-1.5">
+                <div className="text-[15px] font-extrabold leading-tight">Diskon 10% Paket Tuna setiap Jumat</div>
+                <span className="inline-flex self-start rounded-full bg-cream px-2.5 py-0.5 text-[11px] font-bold text-primary">
+                  Berlaku s.d. 30 Nov 2026
+                </span>
+              </div>
+              <div className="flex size-13 shrink-0 items-center justify-center rounded-full bg-cream text-base font-black text-primary shadow-xs">
+                10%
+              </div>
+            </div>
+
+            {/* Rekomendasi horizontal Populer Sekarang (desain C1) */}
+            {menu.categories.length > 0 && (
+              <div className="flex flex-col gap-2 pt-1">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-center gap-1.5 text-base font-extrabold text-ink">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#069D70" strokeWidth="2.2" aria-hidden="true">
+                      <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" />
+                    </svg>
+                    <span>Populer sekarang</span>
+                  </div>
+                  <span className="text-xs font-semibold text-muted">Paling sering dipesan siang ini</span>
+                </div>
+
+                <div className="no-scrollbar -mr-4 flex gap-2.5 overflow-x-auto pr-4 pb-1">
+                  {menu.categories
+                    .flatMap((c) => c.items)
+                    .filter((i) => i.isAvailable)
+                    .slice(0, 4)
+                    .map((popItem) => (
+                      <div
+                        key={`pop-${popItem.id}`}
+                        className="flex w-[140px] shrink-0 flex-col overflow-hidden rounded-control border border-line bg-surface shadow-xs"
+                      >
+                        <div
+                          className="flex h-[80px] w-full cursor-pointer items-center justify-center bg-photo-tuna text-photo-tuna-ink"
+                          onClick={() => setDetailItem(popItem)}
+                        >
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                            <circle cx="12" cy="13" r="7" />
+                            <path d="M5 13h14" />
+                          </svg>
+                        </div>
+                        <div className="flex flex-1 flex-col justify-between gap-2 p-2.5">
+                          <div
+                            className="cursor-pointer text-xs font-extrabold leading-snug line-clamp-2 text-ink hover:text-primary"
+                            onClick={() => setDetailItem(popItem)}
+                          >
+                            {popItem.name}
+                          </div>
+                          <div className="flex items-center justify-between gap-1 pt-1">
+                            <span className="text-xs font-extrabold text-primary">
+                              {popItem.price >= 1000 ? `Rp${(popItem.price / 1000).toFixed(0)}rb` : `Rp${popItem.price}`}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => addItem(popItem)}
+                              aria-label={`Tambah cepat ${popItem.name}`}
+                              className="flex size-7 items-center justify-center rounded-lg bg-primary text-sm font-bold text-white transition hover:bg-primary-hover active:scale-95"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       <p className="sr-only" aria-live="polite">

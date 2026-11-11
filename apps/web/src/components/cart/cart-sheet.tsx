@@ -32,8 +32,16 @@ export function CartSheet({ open, onClose, tableLabel, menuItems, photoTones, ch
   const lines = useCart((s) => s.lines);
   const setQuantity = useCart((s) => s.setQuantity);
   const setNote = useCart((s) => s.setNote);
+  const add = useCart((s) => s.add);
   const summary = summarizeCart(lines, menuItems);
   const canCheckout = summary.itemCount > 0 && summary.unavailable.length === 0;
+
+  // Rekomendasi pelengkap / sering dibeli bersama (desain C3):
+  // Pilih item yang tersedia dan belum ada di keranjang (misal minuman/camilan).
+  const inCartIds = new Set(lines.map((l) => l.menuItemId));
+  const recommendations = Array.from(menuItems.values())
+    .filter((item) => item.isAvailable && !inCartIds.has(item.id))
+    .slice(0, 3);
 
   const footer =
     lines.length === 0 ? undefined : (
@@ -106,6 +114,41 @@ export function CartSheet({ open, onClose, tableLabel, menuItems, photoTones, ch
               ))}
             </ul>
           </Card>
+
+          {recommendations.length > 0 && (
+            <div className="flex flex-col gap-2 pt-2">
+              <div className="flex flex-col">
+                <span className="text-sm font-extrabold text-ink">Sering dibeli bersama</span>
+                <span className="text-xs font-semibold text-muted">Cocok dipadukan dengan pesananmu</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {recommendations.map((rec) => (
+                  <div
+                    key={`rec-${rec.id}`}
+                    className="flex flex-col justify-between rounded-control border border-line bg-surface p-2 shadow-2xs"
+                  >
+                    <div className="flex h-12 w-full items-center justify-center rounded-lg bg-photo-drink text-photo-drink-ink">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                        <circle cx="12" cy="13" r="7" />
+                        <path d="M5 13h14" />
+                      </svg>
+                    </div>
+                    <div className="mt-1.5 flex flex-col gap-0.5">
+                      <span className="text-[11px] font-extrabold leading-tight text-ink line-clamp-1">{rec.name}</span>
+                      <span className="text-[11px] font-extrabold text-primary">{formatRupiah(rec.price)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => add({ menuItemId: rec.id, name: rec.name, unitPrice: rec.price }, 1)}
+                      className="mt-2 inline-flex h-8 items-center justify-center rounded-lg border border-primary bg-surface text-xs font-extrabold text-primary transition hover:bg-primary hover:text-white"
+                    >
+                      + Tambah
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </BottomSheet>

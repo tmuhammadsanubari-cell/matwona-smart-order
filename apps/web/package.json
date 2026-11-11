@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3000",
+    "dev": "next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
     "lint": "eslint .",
@@ -17,6 +17,7 @@
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-thermal-printer": "^0.23.0",
     "recharts": "^3.2.0",
     "shared": "workspace:*",
     "socket.io-client": "^4.8.1",

@@ -9,6 +9,7 @@ import { COLUMNS, groupByColumn, todayWib, type ColumnId } from '@/lib/cashier-b
 import { playNewOrderSound, readSoundPreference, unlockSound, writeSoundPreference } from '@/lib/notification-sound';
 import { CancelOrderSheet } from './cancel-order-sheet';
 import { OrderCard } from './order-card';
+import { ThermalReceiptModal } from './thermal-receipt';
 import { useCashierOrders, useOrderAction, type OrderAction, type OrderFilters } from './use-cashier-orders';
 
 /** Lama sorotan kartu pesanan baru. */
@@ -57,6 +58,7 @@ export function CashierDashboard() {
   const [soundOn, setSoundOn] = useState(true);
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
   const [cancelling, setCancelling] = useState<StaffOrderDto | null>(null);
+  const [printingOrder, setPrintingOrder] = useState<StaffOrderDto | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const action = useOrderAction();
 
@@ -294,12 +296,20 @@ export function CashierDashboard() {
                     onAdvance={(status) => run(order, { kind: 'status', status })}
                     onMarkPaid={() => run(order, { kind: 'paid' })}
                     onCancel={() => setCancelling(order)}
+                    onPrint={() => setPrintingOrder(order)}
                   />
                 ))
               )}
             </section>
           ))}
         </div>
+      )}
+
+      {printingOrder && (
+        <ThermalReceiptModal
+          order={printingOrder}
+          onClose={() => setPrintingOrder(null)}
+        />
       )}
 
       <CancelOrderSheet

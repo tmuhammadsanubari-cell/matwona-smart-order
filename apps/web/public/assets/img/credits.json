@@ -1,0 +1,110 @@
+{
+ "note": "Credits for the photographs in this folder: photos.mjs credits prints the footer block for the ones the pages use.",
+ "photos": [
+  {
+   "file": "photo-f197010978.webp",
+   "files": [
+    "photo-f197010978-500.webp",
+    "photo-f197010978-960.webp",
+    "photo-f197010978.webp"
+   ],
+   "id": "f197010978",
+   "alt": "Nasi tuna bakar goreng",
+   "by": "Hzu Hzu",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Nasi_tuna_bakar_goreng.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f2427663.webp",
+   "files": [
+    "photo-f2427663-500.webp",
+    "photo-f2427663-960.webp",
+    "photo-f2427663.webp"
+   ],
+   "id": "f2427663",
+   "alt": "Mi ayam jamur",
+   "by": "Midori",
+   "licence": "CC BY-SA 3.0",
+   "licenceUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+   "page": "https://commons.wikimedia.org/wiki/File:Mi_ayam_jamur.JPG",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f15601118.webp",
+   "files": [
+    "photo-f15601118-500.webp",
+    "photo-f15601118-960.webp",
+    "photo-f15601118.webp"
+   ],
+   "id": "f15601118",
+   "alt": "FoodOmelete",
+   "by": "Renee Comet (photographer)",
+   "licence": "Public domain",
+   "licenceUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+   "page": "https://commons.wikimedia.org/wiki/File:FoodOmelete.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f106139598.webp",
+   "files": [
+    "photo-f106139598-500.webp",
+    "photo-f106139598-960.webp",
+    "photo-f106139598.webp"
+   ],
+   "id": "f106139598",
+   "alt": "Little open kitchen by Classical Cafe",
+   "by": "Peachyeung316",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Little_open_kitchen_by_Classical_Cafe.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f1752757.webp",
+   "files": [
+    "photo-f1752757-500.webp",
+    "photo-f1752757-960.webp",
+    "photo-f1752757.webp"
+   ],
+   "id": "f1752757",
+   "alt": "Iced tea with ice cubes",
+   "by": "Editor at Large",
+   "licence": "CC BY-SA 2.5",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+   "page": "https://commons.wikimedia.org/wiki/File:Iced_tea_with_ice_cubes.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f98888457.webp",
+   "files": [
+    "photo-f98888457-500.webp",
+    "photo-f98888457-960.webp",
+    "photo-f98888457.webp"
+   ],
+   "id": "f98888457",
+   "alt": "Ayam Goreng Sambal Matah",
+   "by": "Kresnanta",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Ayam_Goreng_Sambal_Matah.jpg",
+   "source": "Wikimedia Commons"
+  },
+  {
+   "file": "photo-f153080413.webp",
+   "files": [
+    "photo-f153080413-500.webp",
+    "photo-f153080413-960.webp",
+    "photo-f153080413.webp"
+   ],
+   "id": "f153080413",
+   "alt": "Spring roll 4",
+   "by": "Gannu03",
+   "licence": "CC BY-SA 4.0",
+   "licenceUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+   "page": "https://commons.wikimedia.org/wiki/File:Spring_roll_4.jpg",
+   "source": "Wikimedia Commons"
+  }
+ ]
+}

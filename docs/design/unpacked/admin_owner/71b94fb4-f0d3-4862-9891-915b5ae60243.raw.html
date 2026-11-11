@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<title>Admin · Sinkronisasi Olsera</title>
+<script src="d206a23a-0c0b-4eed-90df-7d7aca53c98b"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("944af157-0191-4b27-8494-3512bee9f3e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("944af157-0191-4b27-8494-3512bee9f3e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("944af157-0191-4b27-8494-3512bee9f3e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("944af157-0191-4b27-8494-3512bee9f3e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("944af157-0191-4b27-8494-3512bee9f3e6") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24}
+a{color:#106F4D}a:hover{color:#0B5A3E}
+.card{background:#fff;border:1px solid #E3E8D9;border-radius:16px}
+.mut{color:#5B6B62}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:12px;color:#FFFFCA;text-decoration:none;font-weight:600;font-size:14px}
+.btn{font:inherit;font-weight:800;font-size:14px;border-radius:12px;height:44px;padding:0 16px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#106F4D;color:#fff;cursor:pointer}
+.btn2{background:#fff;color:#1F2A24;border:1.5px solid #D5DCCB}
+.h3{margin:0;font-size:17px;font-weight:800}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #E3E8D9}
+.tabs span{padding:12px 16px;font-size:14px;font-weight:700;color:#5B6B62;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs .on{color:#106F4D;border-bottom-color:#106F4D;font-weight:800}
+th{font-size:12px;font-weight:800;color:#5B6B62;text-align:left;padding:10px 12px;border-bottom:1px solid #E3E8D9;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;background:#FAFAF0}
+td{padding:10px 12px;border-bottom:1px solid #EEF1E6;font-size:14px;white-space:nowrap}
+.sel{font:inherit;font-size:14px;height:38px;border:1.5px solid #D5DCCB;border-radius:10px;padding:0 10px;background:#fff;min-width:200px}
+.sectlabel{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#069D70}
+</style>
+</helmet>
+<div style="display:flex;flex-wrap:wrap;background:#FAFAF0;min-height:2000px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24">
+  <aside style="flex:1 1 248px;max-width:100%;background:#106F4D;padding:24px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 8px"><img src="20632700-42d6-4b69-b23a-b3fa31265ca0" alt="Matwona" style="width:112px;height:auto"><span style="color:#FFFFCA;font-weight:800;font-size:13px;border:1px solid rgba(255,255,202,.5);border-radius:6px;padding:2px 6px">Admin</span></div>
+    <nav style="display:flex;flex-direction:column;gap:4px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="8"><a href="{{n.href}}" class="nav" style="background:{{n.bg}};color:{{n.fg}};font-weight:{{n.w}}"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.icon}}"></path></svg>{{n.label}}</a></sc-for>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,202,.1)"><span style="width:36px;height:36px;border-radius:50%;background:#FFFFCA;color:#106F4D;display:flex;align-items:center;justify-content:center;font-weight:800">OM</span><div style="display:flex;flex-direction:column"><span style="color:#fff;font-weight:700;font-size:14px">Owner Matwona</span><span style="color:#FFFFCA;font-size:12px">Admin</span></div></div>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:28px 32px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+      <h1 style="margin:0;font-size:28px;font-weight:800;color:#106F4D">Sinkronisasi Olsera</h1>
+      <span class="chip" style="background:#E1F2EA;color:#0B5A3E;font-size:13px">Mode: Impor CSV</span>
+      <span style="font-size:13px;font-weight:600" class="mut">Integrasi API menyusul saat akses tersedia</span>
+    </div>
+
+    <section class="card" style="overflow:hidden">
+      <div class="tabs" style="padding:0 16px"><span class="on">Impor Produk</span><span>Ekspor Transaksi</span><span>Riwayat Sinkron</span></div>
+      <div style="padding:22px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <sc-for list="{{steps}}" as="s" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="width:30px;height:30px;border-radius:50%;background:{{s.bg}};color:{{s.fg}};font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center">{{s.n}}</span>
+              <span style="font-size:14px;font-weight:{{s.w}}">{{s.t}}</span>
+              <sc-if value="{{s.line}}" hint-placeholder-val="{{true}}"><span style="width:48px;height:2px;background:#106F4D;margin-left:4px"></span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span class="sectlabel">1 · Unggah File</span>
+            <div style="border:2px dashed #B9E0CE;border-radius:14px;background:#F6FBF8;padding:28px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+              <svg width="34" height="34" sc-camel-view-box="0 0 24 24" fill="none" stroke="#106F4D" stroke-width="1.8" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M12 18v-6M9 15l3-3 3 3"></path></svg>
+              <span style="font-size:15px;font-weight:800;color:#106F4D">Tarik file export produk Olsera (.csv) ke sini</span>
+              <span style="font-size:13px" class="mut">atau <a href="#">pilih file</a></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;border:1px solid #E3E8D9;border-radius:12px;padding:10px 12px"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#069D70" stroke-width="2" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6"></path></svg><span style="font-size:14px;font-weight:700;flex:1">olsera_produk_20261031.csv</span><span style="font-size:12px" class="mut">36 baris · 14 KB</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <span class="sectlabel">2 · Pemetaan Kolom</span>
+            <div style="border:1px solid #E3E8D9;border-radius:12px;overflow:hidden">
+              <sc-raw-table style="border-collapse:collapse;width:100%">
+                <sc-raw-thead><sc-raw-tr><sc-raw-th>Kolom CSV</sc-raw-th><sc-raw-th></sc-raw-th><sc-raw-th>Field sistem</sc-raw-th></sc-raw-tr></sc-raw-thead>
+                <sc-raw-tbody>
+                  <sc-for list="{{map}}" as="m" hint-placeholder-count="6"><sc-raw-tr><sc-raw-td style="font-family:ui-monospace,monospace;font-size:13px">{{m.a}}</sc-raw-td><sc-raw-td class="mut">→</sc-raw-td><sc-raw-td><sc-raw-select class="sel" aria-label="Field untuk {{m.a}}"><option>{{m.b}}</option></sc-raw-select></sc-raw-td></sc-raw-tr></sc-for>
+                </sc-raw-tbody>
+              </sc-raw-table>
+            </div>
+            <label style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:600"><input type="checkbox" checked="" style="width:18px;height:18px;accent-color:#106F4D">Simpan pemetaan untuk impor berikutnya</label>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <span class="sectlabel">3 · Pratinjau</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+            <div style="border-radius:14px;padding:14px 16px;background:#DDF3E9;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700;color:#0B5A3E">Baru</span><span style="font-size:28px;font-weight:800;color:#0B5A3E">4</span></div>
+            <div style="border-radius:14px;padding:14px 16px;background:#FFF0D1;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700;color:#7A4A00">Berubah</span><span style="font-size:28px;font-weight:800;color:#7A4A00">7</span></div>
+            <div style="border-radius:14px;padding:14px 16px;background:#ECEFE8;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700;color:#46534B">Tidak berubah</span><span style="font-size:28px;font-weight:800;color:#46534B">23</span></div>
+            <div style="border-radius:14px;padding:14px 16px;background:#FBE3E0;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700;color:#A12D22">Error</span><span style="font-size:28px;font-weight:800;color:#A12D22">2</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;align-items:start">
+            <div style="border:1px solid #E3E8D9;border-radius:12px;overflow-x:auto">
+              <sc-raw-table style="border-collapse:collapse;width:100%">
+                <sc-raw-thead><sc-raw-tr><sc-raw-th>Produk</sc-raw-th><sc-raw-th>Status</sc-raw-th><sc-raw-th>Harga lama</sc-raw-th><sc-raw-th>Harga baru</sc-raw-th></sc-raw-tr></sc-raw-thead>
+                <sc-raw-tbody>
+                  <sc-for list="{{diff}}" as="d" hint-placeholder-count="5"><sc-raw-tr><sc-raw-td style="font-weight:700">{{d.n}}</sc-raw-td><sc-raw-td><span class="chip" style="background:{{d.bg}};color:{{d.fg}}">{{d.s}}</span></sc-raw-td><sc-raw-td class="mut" style="text-decoration:{{d.strike}}">{{d.o}}</sc-raw-td><sc-raw-td style="font-weight:800">{{d.v}}</sc-raw-td></sc-raw-tr></sc-for>
+                </sc-raw-tbody>
+              </sc-raw-table>
+            </div>
+            <div style="border:1px solid #F0B8B1;background:#FFF8F6;border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:14px;font-weight:800;color:#A12D22">2 baris dilewati</span>
+              <div style="display:flex;gap:8px;font-size:14px;font-weight:600;color:#8E2419"><span style="font-family:ui-monospace,monospace">Baris 12</span>harga kosong</div>
+              <div style="display:flex;gap:8px;font-size:14px;font-weight:600;color:#8E2419"><span style="font-family:ui-monospace,monospace">Baris 31</span>SKU duplikat</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end"><button class="btn btn2">Batal</button><button class="btn">Terapkan</button></div>
+        </div>
+      </div>
+    </section>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:20px;align-items:start">
+      <section class="card" style="overflow:hidden">
+        <div class="tabs" style="padding:0 16px"><span>Impor Produk</span><span class="on">Ekspor Transaksi</span><span>Riwayat Sinkron</span></div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><span style="display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:10px;border:1.5px solid #D5DCCB;font-size:14px;font-weight:700"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#5B6B62" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>1 Okt – 31 Okt 2026</span><span class="chip" style="background:#E2EEF9;color:#1D4F7A">Hanya pesanan lunas</span></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:700" class="mut">Kolom yang diekspor</span>
+            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{cols}}" as="c" hint-placeholder-count="8"><span class="chip" style="background:#F3F5EC;color:#1F2A24;font-family:ui-monospace,monospace;font-weight:600">{{c}}</span></sc-for></div>
+          </div>
+          <div style="font-size:13px" class="mut">1.284 transaksi akan diekspor.</div>
+          <button class="btn" style="align-self:flex-start"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>Unduh CSV Transaksi</button>
+        </div>
+      </section>
+
+      <section class="card" style="overflow:hidden">
+        <div class="tabs" style="padding:0 16px"><span>Impor Produk</span><span>Ekspor Transaksi</span><span class="on">Riwayat Sinkron</span></div>
+        <div style="overflow-x:auto">
+          <sc-raw-table style="border-collapse:collapse;width:100%">
+            <sc-raw-thead><sc-raw-tr><sc-raw-th>Waktu</sc-raw-th><sc-raw-th>Arah</sc-raw-th><sc-raw-th>Jenis</sc-raw-th><sc-raw-th>Status</sc-raw-th><sc-raw-th>Sukses/Gagal</sc-raw-th><sc-raw-th>File</sc-raw-th><sc-raw-th>User</sc-raw-th></sc-raw-tr></sc-raw-thead>
+            <sc-raw-tbody>
+              <sc-for list="{{hist}}" as="h" hint-placeholder-count="4"><sc-raw-tr><sc-raw-td>{{h.t}}</sc-raw-td><sc-raw-td>{{h.a}}</sc-raw-td><sc-raw-td>{{h.j}}</sc-raw-td><sc-raw-td><span class="chip" style="background:{{h.bg}};color:{{h.fg}}">{{h.s}}</span></sc-raw-td><sc-raw-td style="font-weight:700">{{h.c}}</sc-raw-td><sc-raw-td class="mut" style="font-family:ui-monospace,monospace;font-size:12px">{{h.f}}</sc-raw-td><sc-raw-td>{{h.u}}</sc-raw-td></sc-raw-tr></sc-for>
+            </sc-raw-tbody>
+          </sc-raw-table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:2000}}">
+class Component extends DCLogic {
+  renderVals() {
+    const items = [['Analitik','A1-Analitik.dc.html','M4 20V10M10 20V4M16 20v-7M22 20H2'],['Menu','A2-Menu.dc.html','M4 6h16M4 12h16M4 18h10'],['Meja & QR','A3-Meja.dc.html','M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM17 20h4v-3'],['Promo','A5-Promo.dc.html','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01'],['Sinkronisasi Olsera','A4-Olsera.dc.html','M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5'],['Rekomendasi AI','A6-AI.dc.html','M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'],['Staf','A7-Staf.dc.html','M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 20v-1.5a3 3 0 0 0-2.5-3M4 20v-1.5a3 3 0 0 1 2.5-3'],['Pengaturan','#','M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4 12h2M18 12h2M12 4v2M12 18v2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M6.3 17.7l1.4-1.4M16.3 7.7l1.4-1.4']];
+    const active = 'Sinkronisasi Olsera';
+    const nav = items.map(([label, href, icon]) => ({ label, href, icon, bg: label === active ? '#FFFFCA' : 'transparent', fg: label === active ? '#106F4D' : '#FFFFCA', w: label === active ? 800 : 600 }));
+    const st = { baru: ['Baru', '#DDF3E9', '#0B5A3E'], ubah: ['Berubah', '#FFF0D1', '#7A4A00'] };
+    const d = (n, k, o, v) => ({ n, s: st[k][0], bg: st[k][1], fg: st[k][2], o, v, strike: o === '—' ? 'none' : 'line-through' });
+    const hs = { ok: ['Sukses', '#DDF3E9', '#0B5A3E'], part: ['Sebagian', '#FFF0D1', '#7A4A00'], fail: ['Gagal', '#FBE3E0', '#A12D22'] };
+    const h = (t, a, j, k, c, f, u) => ({ t, a, j, s: hs[k][0], bg: hs[k][1], fg: hs[k][2], c, f, u });
+    return {
+      nav,
+      steps: [
+        { n: '✓', t: 'Unggah File', bg: '#106F4D', fg: '#fff', w: 700, line: true },
+        { n: '✓', t: 'Pemetaan Kolom', bg: '#106F4D', fg: '#fff', w: 700, line: true },
+        { n: '3', t: 'Pratinjau', bg: '#FFFFCA', fg: '#106F4D', w: 800, line: false }
+      ],
+      map: [{ a: 'Nama Produk', b: 'Nama' }, { a: 'Kategori', b: 'Kategori' }, { a: 'Harga Jual', b: 'Harga' }, { a: 'Stok', b: 'Stok' }, { a: 'SKU', b: 'SKU' }, { a: 'ID Produk', b: 'ID Produk Olsera' }],
+      diff: [d('Tuna Sambal Matah', 'ubah', 'Rp43.000', 'Rp45.000'), d('Es Jeruk', 'ubah', 'Rp9.000', 'Rp10.000'), d('Tuna Bakar Kecap', 'ubah', 'Rp40.000', 'Rp42.000'), d('Sambal Ekstra', 'baru', '—', 'Rp4.000'), d('Lalapan', 'baru', '—', 'Rp5.000')],
+      cols: ['kode_pesanan', 'tanggal', 'meja', 'item', 'qty', 'harga', 'diskon', 'total', 'metode_bayar'],
+      hist: [
+        h('31 Okt, 21.15', 'Tarik', 'Produk', 'part', '34 / 2', 'olsera_produk_20261031.csv', 'Owner'),
+        h('31 Okt, 21.02', 'Kirim', 'Transaksi', 'ok', '412 / 0', 'transaksi_okt.csv', 'Owner'),
+        h('24 Okt, 20.40', 'Tarik', 'Produk', 'ok', '36 / 0', 'olsera_produk_20261024.csv', 'Owner'),
+        h('17 Okt, 20.10', 'Tarik', 'Produk', 'fail', '0 / 36', 'produk_salah_format.csv', 'Owner')
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

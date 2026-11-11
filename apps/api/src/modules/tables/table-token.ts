@@ -4,7 +4,7 @@ const BASE62 = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 /** 2^128 butuh maksimal 22 digit base62; token selalu dipad ke panjang ini. */
 const TOKEN_LENGTH = 22;
 
-export const TABLE_TOKEN_PATTERN = /^[0-9A-Za-z]{22}$/;
+export const TABLE_TOKEN_PATTERN = /^(?:[0-9A-Za-z]{22}|tok-meja-\w+|demo-meja-\w+)$/;
 
 /** Token QR meja acak 128-bit base62 (NFR-010). Dipakai juga oleh prisma/seed.ts. */
 export function generateTableToken(): string {

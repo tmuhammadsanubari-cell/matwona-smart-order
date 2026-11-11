@@ -22,11 +22,12 @@ export class PublicMenuService {
   async getMenu(slug: string): Promise<PublicMenu> {
     if (!SLUG_PATTERN.test(slug)) throw this.outletNotFound();
 
-    const cached = await this.cache.getJson<PublicMenu>(menuCacheKey(slug));
+    const targetSlug = slug === 'matwona-pusat' ? 'matwona' : slug;
+    const cached = await this.cache.getJson<PublicMenu>(menuCacheKey(targetSlug));
     if (cached) return cached;
 
     const outlet = await this.prisma.outlet.findUnique({
-      where: { slug },
+      where: { slug: targetSlug },
       select: { id: true, slug: true, name: true },
     });
     if (!outlet) throw this.outletNotFound();

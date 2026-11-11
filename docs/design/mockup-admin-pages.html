@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matwona Admin — Design Mockup</title>
+<style>
+  /* ═══════════ MATWONA DESIGN TOKENS (from globals.css) ═══════════ */
+  :root {
+    --primary: #106f4d;
+    --primary-hover: #0b5a3e;
+    --primary-soft: #e1f2ea;
+    --primary-fg: #ffffff;
+    --accent: #069d70;
+    --cream: #ffffca;
+    --ink: #1f2a24;
+    --muted: #5b6b62;
+    --surface: #ffffff;
+    --line: #e3e8d9;
+    --line-strong: #d5dccb;
+    --danger: #c0392b;
+    --danger-soft: #fbe3e0;
+    --success: #069d70;
+    --success-soft: #ddf3e9;
+    --warning: #7a4a00;
+    --warning-soft: #fff0d1;
+    --info: #1d4f7a;
+    --info-soft: #e2eef9;
+    --neutral: #46534b;
+    --neutral-soft: #eceee8;
+    --radius-card: 1rem;
+    --radius-control: 0.75rem;
+    --shadow-card: 0 6px 20px rgb(16 111 77 / 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+
+  /* ═══════════ MOCKUP NAV (page selector) ═══════════ */
+  .mockup-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink); color: var(--cream);
+    padding: 12px 24px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    font-size: 13px; font-weight: 700;
+  }
+  .mockup-nav .logo { font-size: 16px; font-weight: 900; letter-spacing: 0.5px; margin-right: 16px; color: var(--cream); }
+  .mockup-nav .logo span { color: var(--accent); }
+  .mockup-nav button {
+    background: transparent; border: 1.5px solid rgba(255,255,202,0.3); color: var(--cream);
+    padding: 7px 14px; border-radius: 999px; font: inherit; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mockup-nav button:hover { background: rgba(255,255,202,0.1); }
+  .mockup-nav button.active { background: var(--cream); color: var(--ink); border-color: var(--cream); }
+
+  /* ═══════════ PAGE FRAME (simulates AdminShell) ═══════════ */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: flex; }
+
+  .sidebar {
+    width: 248px; flex-shrink: 0; background: var(--primary);
+    padding: 24px 16px; display: flex; flex-direction: column; gap: 24px;
+    min-height: 100vh; position: sticky; top: 0; align-self: flex-start;
+  }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+  .sidebar-brand .mark { font-size: 18px; font-weight: 900; color: var(--cream); letter-spacing: 1px; }
+  .sidebar-badge {
+    font-size: 11px; font-weight: 800; color: var(--cream);
+    border: 1px solid rgba(255,255,202,0.5); border-radius: 6px; padding: 2px 6px;
+  }
+  .sidebar nav { display: flex; flex-direction: column; gap: 2px; }
+  .sidebar nav a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: var(--radius-control);
+    font-size: 14px; font-weight: 600; color: var(--cream); text-decoration: none;
+    transition: background 0.15s;
+  }
+  .sidebar nav a:hover { background: rgba(255,255,202,0.1); }
+  .sidebar nav a.active { background: var(--cream); color: var(--primary); font-weight: 800; }
+  .sidebar nav a.soon { color: rgba(255,255,202,0.4); pointer-events: none; }
+  .sidebar nav a .soon-label { margin-left: auto; font-size: 11px; font-weight: 700; }
+
+  .page-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; padding: 24px 32px 96px; }
+  .page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .page-header h1 { font-size: 28px; font-weight: 800; color: var(--primary); }
+
+  /* ═══════════ SHARED COMPONENTS ═══════════ */
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius-card); padding: 20px;
+  }
+  .card-sm { padding: 16px; }
+  .card-none { padding: 0; }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 44px; padding: 0 16px;
+    border-radius: var(--radius-control); font-size: 14px; font-weight: 700;
+    border: none; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: var(--primary-fg); }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-secondary { background: var(--cream); color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-secondary:hover { background: var(--primary-soft); }
+  .btn-ghost { background: transparent; color: var(--primary); }
+  .btn-ghost:hover { background: var(--primary-soft); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-sm { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .btn-full { width: 100%; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 800; white-space: nowrap;
+  }
+  .badge-success { background: var(--success-soft); color: var(--primary-hover); }
+  .badge-danger { background: var(--danger-soft); color: var(--danger); }
+  .badge-warning { background: var(--warning-soft); color: var(--warning); }
+  .badge-info { background: var(--info-soft); color: var(--info); }
+  .badge-neutral { background: var(--neutral-soft); color: var(--neutral); }
+  .badge-primary { background: var(--primary); color: var(--primary-fg); }
+
+  .input {
+    min-height: 44px; padding: 0 12px;
+    border: 1.5px solid var(--line-strong); border-radius: var(--radius-control);
+    background: var(--surface); font-size: 16px; color: var(--ink);
+    width: 100%;
+  }
+  .input:focus { border-color: var(--primary); outline: none; }
+  .select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b62' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+
+  .table-wrapper { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; padding: 12px 16px; font-weight: 700; color: var(--muted); border-bottom: 2px solid var(--line); font-size: 13px; }
+  td { padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:hover td { background: rgba(225,242,234,0.3); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card);
+    padding: 20px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat-label { font-size: 13px; font-weight: 700; color: var(--muted); }
+  .stat-value { font-size: 28px; font-weight: 800; color: var(--ink); }
+  .stat-change { font-size: 12px; font-weight: 700; }
+  .stat-up { color: var(--success); }
+  .stat-down { color: var(--danger); }
+
+  .tab-bar { display: flex; gap: 4px; border-bottom: 2px solid var(--line); }
+  .tab {
+    padding: 10px 16px; font-size: 14px; font-weight: 700; color: var(--muted);
+    background: none; border: none; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px;
+    transition: all 0.15s;
+  }
+  .tab:hover { color: var(--ink); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  .switch-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; }
+  .switch-row + .switch-row { border-top: 1px solid var(--line); }
+
+  .switch-toggle {
+    width: 44px; height: 24px; border-radius: 999px; border: none; cursor: pointer;
+    position: relative; transition: background 0.2s;
+  }
+  .switch-toggle.on { background: var(--primary); }
+  .switch-toggle.off { background: var(--line-strong); }
+  .switch-toggle::after {
+    content: ''; position: absolute; top: 2px; width: 20px; height: 20px;
+    border-radius: 50%; background: white; transition: left 0.2s;
+  }
+  .switch-toggle.on::after { left: 22px; }
+  .switch-toggle.off::after { left: 2px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 14px; font-weight: 700; color: var(--ink); }
+  .form-group .hint { font-size: 12px; color: var(--muted); }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  .chart-placeholder {
+    background: linear-gradient(135deg, var(--primary-soft) 0%, var(--cream) 100%);
+    border: 2px dashed var(--line-strong); border-radius: var(--radius-card);
+    padding: 40px; text-align: center; color: var(--muted); font-weight: 700;
+    min-height: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  }
+  .chart-bar-group { display: flex; align-items: flex-end; gap: 6px; height: 160px; }
+  .chart-bar {
+    width: 32px; border-radius: 6px 6px 0 0; transition: height 0.3s;
+  }
+  .chart-bar-primary { background: var(--primary); }
+  .chart-bar-accent { background: var(--accent); opacity: 0.5; }
+
+  .empty-state {
+    text-align: center; padding: 48px 24px; color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+  }
+  .empty-state svg { opacity: 0.4; }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: var(--primary); background: var(--primary-soft);
+  }
+
+  .dots-menu {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--surface); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--muted);
+  }
+  .dots-menu:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* Chart mock bars */
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 200px; padding: 0 8px; }
+  .bar-chart .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bar-chart .bar {
+    width: 100%; max-width: 40px; border-radius: 6px 6px 0 0;
+    background: var(--primary); transition: height 0.4s;
+  }
+  .bar-chart .bar-label { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .bar-chart .bar-val { font-size: 11px; color: var(--ink); font-weight: 700; }
+
+  /* Donut mock */
+  .donut-mock {
+    width: 180px; height: 180px; border-radius: 50%;
+    background: conic-gradient(var(--primary) 0% 45%, var(--accent) 45% 72%, var(--warning) 72% 88%, var(--line-strong) 88% 100%);
+    display: flex; align-items: center; justify-content: center; margin: 0 auto;
+  }
+  .donut-hole {
+    width: 100px; height: 100px; border-radius: 50%; background: var(--surface);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+  }
+  .donut-hole .val { font-size: 22px; font-weight: 800; color: var(--ink); }
+  .donut-hole .lbl { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* Rank list */
+  .rank-list { display: flex; flex-direction: column; gap: 0; }
+  .rank-item {
+    display: flex; align-items: center; gap: 12px; padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .rank-item:last-child { border-bottom: none; }
+  .rank-num {
+    width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800;
+  }
+  .rank-1 { background: var(--primary); color: white; }
+  .rank-2 { background: var(--accent); color: white; }
+  .rank-3 { background: var(--warning-soft); color: var(--warning); }
+  .rank-n { background: var(--neutral-soft); color: var(--neutral); }
+
+  .progress-bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+
+  .section-title { font-size: 17px; font-weight: 800; color: var(--ink); margin-bottom: 16px; }
+
+  /* Promo cards */
+  .promo-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card);
+    padding: 20px; display: flex; flex-direction: column; gap: 12px;
+    transition: border-color 0.15s;
+  }
+  .promo-card:hover { border-color: var(--primary); }
+  .promo-card .promo-title { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .promo-card .promo-desc { font-size: 13px; color: var(--muted); }
+  .promo-card .promo-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .rule-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card);
+    padding: 16px; display: flex; align-items: center; gap: 16px;
+  }
+  .rule-arrow { font-size: 20px; color: var(--accent); font-weight: 800; flex-shrink: 0; }
+  .rule-items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rule-chip {
+    background: var(--primary-soft); color: var(--primary); padding: 4px 10px;
+    border-radius: 6px; font-size: 12px; font-weight: 700;
+  }
+  .rule-chip-result { background: var(--accent); color: white; }
+  .rule-stats { margin-left: auto; display: flex; gap: 16px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .rule-stats strong { color: var(--ink); }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ MOCKUP NAVIGATION ═══════════ -->
+<div class="mockup-nav">
+  <div class="logo">MA<span>TWO</span>NA</div>
+  <span style="color: rgba(255,255,202,0.5); margin-right: 8px;">Design Mockup</span>
+  <button class="active" onclick="showPage('analytics')">📊 Analitik</button>
+  <button onclick="showPage('promos')">🏷️ Promo</button>
+  <button onclick="showPage('recommendations')">🤖 Rekomendasi AI</button>
+  <button onclick="showPage('staff')">👥 Staf</button>
+  <button onclick="showPage('receipt')">🧾 Struk Kasir</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 1: ANALITIK
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-analytics">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="mark">MATWONA</span>
+      <span class="sidebar-badge">Admin</span>
+    </div>
+    <nav>
+      <a href="#">Beranda</a>
+      <a href="#">Menu</a>
+      <a href="#">Meja & QR</a>
+      <a href="#">Dashboard Kasir</a>
+      <a href="#" class="active">Analitik</a>
+      <a href="#">Promo</a>
+      <a href="#">Sinkronisasi Olsera</a>
+      <a href="#">Rekomendasi AI</a>
+      <a href="#">Staf</a>
+    </nav>
+  </aside>
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Analitik Penjualan</h1>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="date" class="input" style="width:150px; font-size:14px;" value="2026-11-01">
+        <span style="font-weight:700; color:var(--muted);">—</span>
+        <input type="date" class="input" style="width:150px; font-size:14px;" value="2026-11-11">
+        <button class="btn btn-secondary btn-sm">Hari ini</button>
+        <button class="btn btn-secondary btn-sm">7 hari</button>
+        <button class="btn btn-secondary btn-sm">30 hari</button>
+      </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-label">Total Pendapatan</span>
+        <span class="stat-value">Rp4.870.000</span>
+        <span class="stat-change stat-up">↑ 12,3% dari periode lalu</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Jumlah Pesanan</span>
+        <span class="stat-value">247</span>
+        <span class="stat-change stat-up">↑ 8,1% dari periode lalu</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Rata-rata per Pesanan</span>
+        <span class="stat-value">Rp19.717</span>
+        <span class="stat-change stat-up">↑ 3,8%</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Pesanan Dibatalkan</span>
+        <span class="stat-value">7</span>
+        <span class="stat-change stat-down">↓ 2,8% (lebih baik)</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Tren Harian -->
+      <div class="card">
+        <h2 class="section-title">Tren Harian</h2>
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar-val">38</div><div class="bar" style="height:76%;"></div><div class="bar-label">Sen</div></div>
+          <div class="bar-col"><div class="bar-val">42</div><div class="bar" style="height:84%;"></div><div class="bar-label">Sel</div></div>
+          <div class="bar-col"><div class="bar-val">35</div><div class="bar" style="height:70%;"></div><div class="bar-label">Rab</div></div>
+          <div class="bar-col"><div class="bar-val">40</div><div class="bar" style="height:80%;"></div><div class="bar-label">Kam</div></div>
+          <div class="bar-col"><div class="bar-val">52</div><div class="bar" style="height:100%; background:var(--accent);"></div><div class="bar-label">Jum</div></div>
+          <div class="bar-col"><div class="bar-val">48</div><div class="bar" style="height:92%;"></div><div class="bar-label">Sab</div></div>
+          <div class="bar-col"><div class="bar-val">32</div><div class="bar" style="height:64%;"></div><div class="bar-label">Min</div></div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:12px; font-weight:600;">📌 Jumat paling ramai — ideal untuk promo paket tuna</p>
+      </div>
+
+      <!-- Metode Pembayaran -->
+      <div class="card">
+        <h2 class="section-title">Metode Pembayaran</h2>
+        <div class="donut-mock">
+          <div class="donut-hole">
+            <span class="val">247</span>
+            <span class="lbl">pesanan</span>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--primary);"></div>Kasir 45%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>QRIS 27%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--warning);"></div>Olsera 16%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--line-strong);"></div>Lainnya 12%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Top Menu -->
+      <div class="card">
+        <h2 class="section-title">Menu Terlaris</h2>
+        <div class="rank-list">
+          <div class="rank-item">
+            <div class="rank-num rank-1">1</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;">Tuna Sambal Matah (R)</div>
+              <div style="font-size:12px; color:var(--muted);">67 terjual · Rp1.273.000</div>
+            </div>
+            <div style="width:120px;">
+              <div class="progress-bar"><div class="progress-fill" style="width:100%; background:var(--primary);"></div></div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-num rank-2">2</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;">Tuna Sambal Matah (J)</div>
+              <div style="font-size:12px; color:var(--muted);">54 terjual · Rp1.566.000</div>
+            </div>
+            <div style="width:120px;">
+              <div class="progress-bar"><div class="progress-fill" style="width:81%; background:var(--accent);"></div></div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-num rank-3">3</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;">Bakmie Tuna Sambal Matah</div>
+              <div style="font-size:12px; color:var(--muted);">38 terjual · Rp1.444.000</div>
+            </div>
+            <div style="width:120px;">
+              <div class="progress-bar"><div class="progress-fill" style="width:57%; background:var(--warning);"></div></div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-num rank-n">4</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;">Es Teh Matwona</div>
+              <div style="font-size:12px; color:var(--muted);">31 terjual · Rp310.000</div>
+            </div>
+            <div style="width:120px;">
+              <div class="progress-bar"><div class="progress-fill" style="width:46%; background:var(--neutral);"></div></div>
+            </div>
+          </div>
+          <div class="rank-item">
+            <div class="rank-num rank-n">5</div>
+            <div style="flex:1;">
+              <div style="font-weight:700;">Nasi Telur Barendo</div>
+              <div style="font-size:12px; color:var(--muted);">28 terjual · Rp364.000</div>
+            </div>
+            <div style="width:120px;">
+              <div class="progress-bar"><div class="progress-fill" style="width:42%; background:var(--neutral);"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jam Tersibuk -->
+      <div class="card">
+        <h2 class="section-title">Jam Tersibuk</h2>
+        <div class="bar-chart" style="height:160px;">
+          <div class="bar-col"><div class="bar-val">8</div><div class="bar" style="height:25%; background:var(--line-strong);"></div><div class="bar-label">06-10</div></div>
+          <div class="bar-col"><div class="bar-val">52</div><div class="bar" style="height:100%; background:var(--accent);"></div><div class="bar-label">10-14</div></div>
+          <div class="bar-col"><div class="bar-val">24</div><div class="bar" style="height:46%;"></div><div class="bar-label">14-17</div></div>
+          <div class="bar-col"><div class="bar-val">45</div><div class="bar" style="height:87%;"></div><div class="bar-label">17-21</div></div>
+          <div class="bar-col"><div class="bar-val">6</div><div class="bar" style="height:12%; background:var(--line-strong);"></div><div class="bar-label">21-00</div></div>
+        </div>
+        <p style="font-size:12px; color:var(--muted); margin-top:12px; font-weight:600;">📌 Makan siang (10-14) paling padat — pertimbangkan tambah staf</p>
+      </div>
+    </div>
+
+    <!-- Per-meja -->
+    <div class="card">
+      <h2 class="section-title">Pendapatan per Meja</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th>Meja</th><th>Pesanan</th><th>Total</th><th>Rata-rata</th><th>Terlaris</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="font-weight:700;">Meja 1</td><td>32</td><td>Rp624.000</td><td>Rp19.500</td><td>Tuna Sambal Matah</td></tr>
+            <tr><td style="font-weight:700;">Meja 2</td><td>28</td><td>Rp546.000</td><td>Rp19.500</td><td>Bakmie Tuna Chili Oil</td></tr>
+            <tr><td style="font-weight:700;">Meja 3</td><td>35</td><td>Rp682.500</td><td>Rp19.500</td><td>Tuna Dabu-Dabu (J)</td></tr>
+            <tr><td style="font-weight:700;">Meja 4</td><td>24</td><td>Rp468.000</td><td>Rp19.500</td><td>Nasi Telur Barendo</td></tr>
+            <tr><td style="font-weight:700;">Meja 5</td><td>40</td><td>Rp780.000</td><td>Rp19.500</td><td>Tuna Sambal Matah (J)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 2: PROMO
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-promos">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="mark">MATWONA</span><span class="sidebar-badge">Admin</span></div>
+    <nav>
+      <a href="#">Beranda</a><a href="#">Menu</a><a href="#">Meja & QR</a><a href="#">Dashboard Kasir</a>
+      <a href="#">Analitik</a><a href="#" class="active">Promo</a><a href="#">Sinkronisasi Olsera</a>
+      <a href="#">Rekomendasi AI</a><a href="#">Staf</a>
+    </nav>
+  </aside>
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Kelola Promo</h1>
+      <button class="btn btn-primary">+ Buat Promo Baru</button>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab active">Aktif (3)</button>
+      <button class="tab">Terjadwal (1)</button>
+      <button class="tab">Selesai (5)</button>
+    </div>
+
+    <!-- Active Promos -->
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:16px;">
+      <!-- Promo 1 -->
+      <div class="promo-card">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+          <div>
+            <div class="promo-title">Diskon 10% Paket Tuna</div>
+            <div class="promo-desc">Berlaku setiap hari Jumat untuk semua olahan tuna</div>
+          </div>
+          <span class="badge badge-success">Aktif</span>
+        </div>
+        <div class="promo-meta">
+          <span class="badge badge-neutral">Diskon 10%</span>
+          <span class="badge badge-info">Jumat</span>
+          <span class="badge badge-neutral">Min. Rp0</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="rule-chip">Tuna Sambal Matah (R)</span>
+          <span class="rule-chip">Tuna Sambal Matah (J)</span>
+          <span class="rule-chip">Tuna Dabu-Dabu (R)</span>
+          <span style="font-size:12px; color:var(--muted); font-weight:600; padding:4px;">+4 lainnya</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:12px; font-size:12px; color:var(--muted);">
+          <span>1 Nov — 30 Nov 2026</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm">Ubah</button>
+            <button class="btn btn-sm" style="background:var(--danger-soft); color:var(--danger);">Nonaktifkan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promo 2 -->
+      <div class="promo-card">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+          <div>
+            <div class="promo-title">Paket Hemat Makan Siang</div>
+            <div class="promo-desc">Diskon Rp5.000 untuk pesanan di atas Rp50.000</div>
+          </div>
+          <span class="badge badge-success">Aktif</span>
+        </div>
+        <div class="promo-meta">
+          <span class="badge badge-neutral">- Rp5.000</span>
+          <span class="badge badge-info">Sen — Jum</span>
+          <span class="badge badge-neutral">Min. Rp50.000</span>
+        </div>
+        <div style="font-size:13px; color:var(--muted); font-style:italic;">Semua menu</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:12px; font-size:12px; color:var(--muted);">
+          <span>1 Nov — 15 Des 2026</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm">Ubah</button>
+            <button class="btn btn-sm" style="background:var(--danger-soft); color:var(--danger);">Nonaktifkan</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promo 3 -->
+      <div class="promo-card">
+        <div style="display:flex; justify-content:space-between; align-items:start;">
+          <div>
+            <div class="promo-title">Happy Weekend Bakmie</div>
+            <div class="promo-desc">Beli 2 bakmie, gratis 1 es teh</div>
+          </div>
+          <span class="badge badge-success">Aktif</span>
+        </div>
+        <div class="promo-meta">
+          <span class="badge badge-neutral">Diskon 15%</span>
+          <span class="badge badge-info">Sab — Min</span>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <span class="rule-chip">Bakmie Tuna Sambal Matah</span>
+          <span class="rule-chip">Bakmie Tuna Chili Oil</span>
+          <span class="rule-chip">Bakmie Ayam</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:12px; font-size:12px; color:var(--muted);">
+          <span>1 Nov — 31 Des 2026</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost btn-sm">Ubah</button>
+            <button class="btn btn-sm" style="background:var(--danger-soft); color:var(--danger);">Nonaktifkan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form mockup (collapsed but visible as sheet pattern) -->
+    <div class="card" style="border: 2px dashed var(--primary); background: var(--primary-soft);">
+      <h2 class="section-title" style="color:var(--primary);">📋 Form Buat Promo (Bottom Sheet)</h2>
+      <div class="grid-2" style="gap:20px;">
+        <div class="form-group"><label>Judul Promo</label><input class="input" value="Diskon 10% Paket Tuna" readonly></div>
+        <div class="form-group"><label>Deskripsi</label><input class="input" value="Berlaku setiap hari Jumat untuk semua olahan tuna" readonly></div>
+        <div class="form-group">
+          <label>Jenis Diskon</label>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-primary btn-sm">Persen (%)</button>
+            <button class="btn btn-secondary btn-sm">Rupiah (Rp)</button>
+          </div>
+        </div>
+        <div class="form-group"><label>Nilai Diskon</label><input class="input" value="10" readonly></div>
+        <div class="form-group"><label>Minimal Pembelian</label><input class="input" value="0" readonly><span class="hint">Rp0 = tanpa batas minimum</span></div>
+        <div class="form-group">
+          <label>Hari Aktif</label>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <span class="badge badge-neutral">Sen</span>
+            <span class="badge badge-neutral">Sel</span>
+            <span class="badge badge-neutral">Rab</span>
+            <span class="badge badge-neutral">Kam</span>
+            <span class="badge badge-primary">Jum</span>
+            <span class="badge badge-neutral">Sab</span>
+            <span class="badge badge-neutral">Min</span>
+          </div>
+        </div>
+        <div class="form-group"><label>Tanggal Mulai</label><input type="date" class="input" value="2026-11-01" readonly></div>
+        <div class="form-group"><label>Tanggal Selesai</label><input type="date" class="input" value="2026-11-30" readonly></div>
+      </div>
+      <div style="margin-top:20px;">
+        <label style="font-size:14px; font-weight:700;">Menu yang Termasuk</label>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+          <span class="rule-chip">Tuna Sambal Matah (R) ✕</span>
+          <span class="rule-chip">Tuna Sambal Matah (J) ✕</span>
+          <span class="rule-chip">Tuna Dabu-Dabu (R) ✕</span>
+          <span class="rule-chip" style="background:var(--cream); border:1.5px dashed var(--primary); color:var(--primary);">+ Tambah Menu</span>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:24px; border-top:1px solid var(--line); padding-top:16px;">
+        <button class="btn btn-secondary">Batal</button>
+        <button class="btn btn-primary">Simpan Promo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 3: REKOMENDASI AI
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-recommendations">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="mark">MATWONA</span><span class="sidebar-badge">Admin</span></div>
+    <nav>
+      <a href="#">Beranda</a><a href="#">Menu</a><a href="#">Meja & QR</a><a href="#">Dashboard Kasir</a>
+      <a href="#">Analitik</a><a href="#">Promo</a><a href="#">Sinkronisasi Olsera</a>
+      <a href="#" class="active">Rekomendasi AI</a><a href="#">Staf</a>
+    </nav>
+  </aside>
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Rekomendasi AI</h1>
+      <button class="btn btn-primary">🔄 Latih Ulang Model</button>
+    </div>
+
+    <!-- Model Status -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-label">Status Model</span>
+        <span style="display:flex; align-items:center; gap:8px;"><span class="badge badge-success">Aktif</span> <span style="font-size:13px; font-weight:700;">v2026.11.05</span></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Data Latih</span>
+        <span class="stat-value" style="font-size:22px;">1.247 transaksi</span>
+        <span style="font-size:12px; color:var(--muted); font-weight:600;">180 hari terakhir</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Rule Aktif</span>
+        <span class="stat-value" style="font-size:22px;">23</span>
+        <span style="font-size:12px; color:var(--muted); font-weight:600;">FP-Growth + Popularitas</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Hit Rate @3</span>
+        <span class="stat-value" style="font-size:22px;">34,2%</span>
+        <span class="stat-change stat-up">↑ vs baseline 12,1%</span>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab active">Sering Dibeli Bersama (18)</button>
+      <button class="tab">Populer per Waktu (5)</button>
+      <button class="tab">Riwayat Training</button>
+    </div>
+
+    <!-- Rules list -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="rule-card">
+        <div>
+          <div class="rule-items">
+            <span class="rule-chip">Tuna Sambal Matah (R)</span>
+          </div>
+        </div>
+        <span class="rule-arrow">→</span>
+        <div class="rule-items">
+          <span class="rule-chip rule-chip-result">Es Teh Matwona</span>
+        </div>
+        <div class="rule-stats">
+          <span>Support: <strong>8,2%</strong></span>
+          <span>Confidence: <strong>67%</strong></span>
+          <span>Lift: <strong>3,4</strong></span>
+        </div>
+        <div class="switch-toggle on"></div>
+      </div>
+
+      <div class="rule-card">
+        <div>
+          <div class="rule-items">
+            <span class="rule-chip">Bakmie Tuna Sambal Matah</span>
+          </div>
+        </div>
+        <span class="rule-arrow">→</span>
+        <div class="rule-items">
+          <span class="rule-chip rule-chip-result">Risol Tuna Melt (3 pcs)</span>
+        </div>
+        <div class="rule-stats">
+          <span>Support: <strong>5,1%</strong></span>
+          <span>Confidence: <strong>54%</strong></span>
+          <span>Lift: <strong>2,8</strong></span>
+        </div>
+        <div class="switch-toggle on"></div>
+      </div>
+
+      <div class="rule-card">
+        <div>
+          <div class="rule-items">
+            <span class="rule-chip">Tuna Sambal Matah (J)</span>
+            <span class="rule-chip">Es Teh Matwona</span>
+          </div>
+        </div>
+        <span class="rule-arrow">→</span>
+        <div class="rule-items">
+          <span class="rule-chip rule-chip-result">Soft Cookies Chocochip</span>
+        </div>
+        <div class="rule-stats">
+          <span>Support: <strong>3,7%</strong></span>
+          <span>Confidence: <strong>42%</strong></span>
+          <span>Lift: <strong>2,1</strong></span>
+        </div>
+        <div class="switch-toggle on"></div>
+      </div>
+
+      <div class="rule-card" style="opacity:0.6;">
+        <div>
+          <div class="rule-items">
+            <span class="rule-chip">Nasi Telur Barendo</span>
+          </div>
+        </div>
+        <span class="rule-arrow">→</span>
+        <div class="rule-items">
+          <span class="rule-chip rule-chip-result">Jus Alpukat</span>
+        </div>
+        <div class="rule-stats">
+          <span>Support: <strong>1,2%</strong></span>
+          <span>Confidence: <strong>28%</strong></span>
+          <span>Lift: <strong>1,3</strong></span>
+        </div>
+        <div class="switch-toggle off"></div>
+      </div>
+    </div>
+
+    <!-- Training History -->
+    <div class="card" style="margin-top:8px;">
+      <h2 class="section-title">Performa Model</h2>
+      <div class="grid-2">
+        <div>
+          <div class="table-wrapper">
+            <table>
+              <thead><tr><th>Metrik</th><th>Model</th><th>Baseline</th></tr></thead>
+              <tbody>
+                <tr><td style="font-weight:700;">Hit Rate @3</td><td><span class="badge badge-success">34,2%</span></td><td>12,1%</td></tr>
+                <tr><td style="font-weight:700;">Precision @3</td><td><span class="badge badge-success">18,7%</span></td><td>6,3%</td></tr>
+                <tr><td style="font-weight:700;">Coverage</td><td>78,4%</td><td>100%</td></tr>
+                <tr><td style="font-weight:700;">Training Time</td><td>2,3 detik</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <p style="font-size:13px; font-weight:600; color:var(--muted);">Parameters:</p>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <span class="badge badge-neutral">min_support: 0.01</span>
+            <span class="badge badge-neutral">min_confidence: 0.2</span>
+            <span class="badge badge-neutral">min_lift: 1.0</span>
+            <span class="badge badge-neutral">window: 180 hari</span>
+            <span class="badge badge-neutral">holdout: 20%</span>
+          </div>
+          <p style="font-size:12px; color:var(--muted);">Terakhir dilatih: 5 Nov 2026 14:32 WIB</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 4: STAF
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-staff">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="mark">MATWONA</span><span class="sidebar-badge">Admin</span></div>
+    <nav>
+      <a href="#">Beranda</a><a href="#">Menu</a><a href="#">Meja & QR</a><a href="#">Dashboard Kasir</a>
+      <a href="#">Analitik</a><a href="#">Promo</a><a href="#">Sinkronisasi Olsera</a>
+      <a href="#">Rekomendasi AI</a><a href="#" class="active">Staf</a>
+    </nav>
+  </aside>
+  <div class="page-body">
+    <div class="page-header">
+      <h1>Kelola Staf</h1>
+      <button class="btn btn-primary">+ Tambah Staf</button>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="stat-card">
+        <span class="stat-label">Total Staf</span>
+        <span class="stat-value" style="font-size:28px;">5</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Admin</span>
+        <span class="stat-value" style="font-size:28px;">2</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Kasir</span>
+        <span class="stat-value" style="font-size:28px;">3</span>
+      </div>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="card card-none">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr><th style="width:48px;"></th><th>Nama</th><th>Email</th><th>Peran</th><th>Status</th><th>Login Terakhir</th><th style="width:80px;"></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="avatar">OW</div></td>
+              <td style="font-weight:700;">Owner Matwona</td>
+              <td style="color:var(--muted);">owner@matwona.local</td>
+              <td><span class="badge badge-primary">Admin</span></td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td style="font-size:13px; color:var(--muted);">11 Nov 2026 09:15</td>
+              <td><button class="dots-menu">⋯</button></td>
+            </tr>
+            <tr>
+              <td><div class="avatar">AK</div></td>
+              <td style="font-weight:700;">Admin Kantor</td>
+              <td style="color:var(--muted);">admin@matwona.local</td>
+              <td><span class="badge badge-primary">Admin</span></td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td style="font-size:13px; color:var(--muted);">10 Nov 2026 18:42</td>
+              <td><button class="dots-menu">⋯</button></td>
+            </tr>
+            <tr>
+              <td><div class="avatar">KS</div></td>
+              <td style="font-weight:700;">Kasir Siang</td>
+              <td style="color:var(--muted);">kasir.siang@matwona.local</td>
+              <td><span class="badge badge-info">Kasir</span></td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td style="font-size:13px; color:var(--muted);">11 Nov 2026 10:01</td>
+              <td><button class="dots-menu">⋯</button></td>
+            </tr>
+            <tr>
+              <td><div class="avatar">KM</div></td>
+              <td style="font-weight:700;">Kasir Malam</td>
+              <td style="color:var(--muted);">kasir.malam@matwona.local</td>
+              <td><span class="badge badge-info">Kasir</span></td>
+              <td><span class="badge badge-success">Aktif</span></td>
+              <td style="font-size:13px; color:var(--muted);">10 Nov 2026 20:30</td>
+              <td><button class="dots-menu">⋯</button></td>
+            </tr>
+            <tr style="opacity:0.6;">
+              <td><div class="avatar" style="background:var(--neutral-soft); color:var(--neutral);">KL</div></td>
+              <td style="font-weight:700;">Kasir Lama</td>
+              <td style="color:var(--muted);">kasir.lama@matwona.local</td>
+              <td><span class="badge badge-info">Kasir</span></td>
+              <td><span class="badge badge-danger">Nonaktif</span></td>
+              <td style="font-size:13px; color:var(--muted);">15 Okt 2026 09:22</td>
+              <td><button class="dots-menu">⋯</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Add Staff Form (Sheet Preview) -->
+    <div class="card" style="border: 2px dashed var(--primary); background: var(--primary-soft);">
+      <h2 class="section-title" style="color:var(--primary);">📋 Form Tambah / Ubah Staf (Bottom Sheet)</h2>
+      <div class="grid-2" style="gap:20px;">
+        <div class="form-group"><label>Nama Lengkap</label><input class="input" value="Kasir Baru" readonly></div>
+        <div class="form-group"><label>Email</label><input class="input" value="kasir.baru@matwona.local" readonly></div>
+        <div class="form-group">
+          <label>Peran</label>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm">Admin</button>
+            <button class="btn btn-primary btn-sm">Kasir</button>
+          </div>
+          <span class="hint">Admin: akses penuh. Kasir: hanya dashboard kasir.</span>
+        </div>
+        <div class="form-group"><label>Password</label><input class="input" type="password" value="••••••••" readonly><span class="hint">Min. 8 karakter</span></div>
+      </div>
+      <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:24px; border-top:1px solid var(--line); padding-top:16px;">
+        <button class="btn btn-secondary">Batal</button>
+        <button class="btn btn-primary">Simpan Staf</button>
+      </div>
+    </div>
+
+    <!-- Context menu preview -->
+    <div class="card" style="max-width:240px; padding:8px; box-shadow: var(--shadow-card);">
+      <p style="font-size:12px; font-weight:700; color:var(--muted); padding:6px 8px;">Menu ⋯</p>
+      <button style="display:flex; width:100%; align-items:center; gap:8px; padding:10px 8px; border:none; background:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--ink);" onmouseover="this.style.background='var(--neutral-soft)'" onmouseout="this.style.background='none'">✏️ Ubah</button>
+      <button style="display:flex; width:100%; align-items:center; gap:8px; padding:10px 8px; border:none; background:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--ink);" onmouseover="this.style.background='var(--neutral-soft)'" onmouseout="this.style.background='none'">🔑 Reset Password</button>
+      <button style="display:flex; width:100%; align-items:center; gap:8px; padding:10px 8px; border:none; background:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; color:var(--danger);" onmouseover="this.style.background='var(--danger-soft)'" onmouseout="this.style.background='none'">🚫 Nonaktifkan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════
+     PAGE 5: THERMAL RECEIPT (preview of already-built component)
+     ══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-receipt">
+  <aside class="sidebar">
+    <div class="sidebar-brand"><span class="mark">MATWONA</span><span class="sidebar-badge">Admin</span></div>
+    <nav>
+      <a href="#">Beranda</a><a href="#">Menu</a><a href="#">Meja & QR</a>
+      <a href="#" class="active">Dashboard Kasir</a>
+      <a href="#">Analitik</a><a href="#">Promo</a><a href="#">Sinkronisasi Olsera</a>
+      <a href="#">Rekomendasi AI</a><a href="#">Staf</a>
+    </nav>
+  </aside>
+  <div class="page-body" style="align-items:center;">
+    <div class="page-header" style="width:100%;">
+      <h1>Preview Struk Kasir</h1>
+      <span class="badge badge-success">Sudah Diimplementasi ✓</span>
+    </div>
+    <p style="color:var(--muted); font-size:14px; font-weight:600; max-width:600px; text-align:center;">
+      Struk ini muncul saat kasir menekan tombol 🖨️ di kartu pesanan.
+      Mendukung printer thermal 58mm / 80mm via browser dialog.
+    </p>
+
+    <!-- Thermal Receipt Preview -->
+    <div style="background:rgba(0,0,0,0.6); padding:32px; border-radius:24px; width:100%; max-width:440px;">
+      <div style="background:white; border-radius:16px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <!-- Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--line);">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#106f4d" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+            <span style="font-weight:800;">Cetak Struk Kasir</span>
+          </div>
+          <button style="width:32px; height:32px; border:none; background:none; border-radius:8px; cursor:pointer; font-size:16px; color:var(--muted);">✕</button>
+        </div>
+
+        <!-- Receipt Paper -->
+        <div style="padding:20px;">
+          <div style="background:white; border:1px solid var(--line-strong); border-radius:12px; padding:16px; font-family:monospace; font-size:11px; color:#1a1a1a; box-shadow:inset 0 2px 8px rgba(0,0,0,0.06);">
+            <div style="text-align:center; font-weight:900; font-size:14px; letter-spacing:1.5px;">MATWONA</div>
+            <div style="text-align:center; font-size:10px; color:#666;">Two worlds. One table. Simply, makan.</div>
+            <div style="text-align:center; font-size:10px; color:#999;">Jl. Matwona, Bandung</div>
+            <div style="border-bottom:1px dashed #ccc; margin:8px 0;"></div>
+            <div style="display:flex; justify-content:space-between;"><span>No Order:</span><span style="font-weight:700;">MTW-261111-0042</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Meja:</span><span style="font-weight:700;">Meja 5</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Waktu:</span><span>10:12 WIB</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Pelanggan:</span><span style="font-weight:700;">Rina</span></div>
+            <div style="border-bottom:1px dashed #ccc; margin:8px 0;"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-weight:600;">2x Tuna Sambal Matah (R)</span><span style="font-weight:700;">Rp38.000</span></div>
+            <div style="font-size:10px; color:#666; font-style:italic; margin-bottom:6px;">Note: sambal dipisah</div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;"><span style="font-weight:600;">1x Es Teh Matwona</span><span style="font-weight:700;">Rp10.000</span></div>
+            <div style="display:flex; justify-content:space-between;"><span style="font-weight:600;">1x Soft Cookies Chocochip</span><span style="font-weight:700;">Rp10.000</span></div>
+            <div style="border-bottom:1px dashed #ccc; margin:8px 0;"></div>
+            <div style="display:flex; justify-content:space-between;"><span>Subtotal:</span><span>Rp58.000</span></div>
+            <div style="display:flex; justify-content:space-between; color:#069d70;"><span>Diskon:</span><span>-Rp5.000</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:900; padding-top:4px;"><span>TOTAL:</span><span>Rp53.000</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:10px; color:#666; padding-top:4px;"><span>Metode:</span><span style="font-weight:700;">BAYAR DI KASIR</span></div>
+            <div style="border-bottom:1px dashed #ccc; margin:10px 0;"></div>
+            <div style="text-align:center; font-size:10px; color:#666;">Terima kasih atas kunjungan Anda</div>
+            <div style="text-align:center; font-size:10px; font-weight:600;">Selamat Menikmati!</div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:#FAFAF0; border-top:1px solid var(--line);">
+          <button class="btn btn-secondary btn-sm">Salin Teks</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-secondary btn-sm">Tutup</button>
+            <button class="btn btn-primary btn-sm">🖨️ Cetak Struk</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.mockup-nav button').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

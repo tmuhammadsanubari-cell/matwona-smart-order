@@ -148,13 +148,12 @@ describe('Admin meja & QR (FR-011)', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('Tidak ada meja aktif untuk dicetak.');
   });
 
-  it('sidebar admin: halaman aktif ditandai, halaman yang belum ada nonaktif', async () => {
+  it('sidebar admin: halaman aktif ditandai, halaman lain dapat diakses', async () => {
     renderPage();
     await screen.findByRole('article', { name: 'Meja 1' });
     const nav = screen.getByRole('navigation', { name: 'Navigasi admin' });
     expect(within(nav).getByRole('link', { name: 'Meja & QR' }).getAttribute('aria-current')).toBe('page');
     expect(within(nav).getByRole('link', { name: 'Menu' }).getAttribute('aria-current')).toBeNull();
-    expect(within(nav).queryByRole('link', { name: /Analitik/ })).toBeNull();
-    expect(within(nav).getByText('Analitik').closest('[aria-disabled]')).toBeTruthy();
+    expect(within(nav).getByRole('link', { name: 'Analitik' })).toBeTruthy();
   });
 });

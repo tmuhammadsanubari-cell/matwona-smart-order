@@ -12,10 +12,20 @@ export interface OrderCardProps {
   onAdvance: (status: OrderStatus) => void;
   onMarkPaid: () => void;
   onCancel: () => void;
+  onPrint?: () => void;
 }
 
 /** Status yang tidak terbaca dari judul kolom (kolom berisi dua status) → tampilkan badge. */
 const SHOW_STATUS_BADGE: OrderStatus[] = ['CONFIRMED', 'PREPARING', 'COMPLETED', 'CANCELLED'];
+
+function PrinterIcon() {
+  return (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+      <rect x="6" y="14" width="12" height="8" rx="1" />
+    </svg>
+  );
+}
 
 function CloseIcon() {
   return (
@@ -30,7 +40,7 @@ function CloseIcon() {
  * total. Tombol mengikuti `allowedNextStatuses`/`canMarkPaid` dari server (state machine).
  * No. HP disamarkan (NFR-011).
  */
-export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onCancel }: OrderCardProps) {
+export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onCancel, onPrint }: OrderCardProps) {
   const next = primaryNextStatus(order);
   const canCancel = order.allowedNextStatuses.includes('CANCELLED');
   const awaitingQris = order.paymentMethod === 'QRIS' && order.paymentStatus !== 'PAID' && order.status === 'NEW';
@@ -97,8 +107,8 @@ export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onC
         <p className="text-sm font-semibold text-danger">Dibatalkan: {order.cancelReason}</p>
       )}
 
-      {(next || order.canMarkPaid || canCancel) && (
-        // Urutan: aksi utama + batal selalu sebaris; "Tandai lunas" turun ke baris penuh bila kolom sempit.
+      {(next || order.canMarkPaid || canCancel || onPrint) && (
+        // Urutan: aksi utama + cetak/batal selalu sebaris; "Tandai lunas" turun ke baris penuh bila kolom sempit.
         <div className="flex flex-wrap items-center gap-2">
           {next && (
             <Button
@@ -109,6 +119,17 @@ export function OrderCard({ order, highlighted, busy, onAdvance, onMarkPaid, onC
             >
               {ACTION_LABEL[next]}
             </Button>
+          )}
+          {onPrint && (
+            <button
+              type="button"
+              aria-label="Cetak Struk"
+              title="Cetak Struk Thermal"
+              onClick={onPrint}
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-control border-[1.5px] border-line-strong bg-surface text-ink hover:bg-cream hover:border-primary transition-colors"
+            >
+              <PrinterIcon />
+            </button>
           )}
           {canCancel && (
             <button

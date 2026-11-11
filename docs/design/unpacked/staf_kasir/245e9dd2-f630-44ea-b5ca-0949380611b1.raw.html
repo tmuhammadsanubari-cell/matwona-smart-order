@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<title>Dashboard Kasir</title>
+<script src="4eb76d15-7653-4c80-8565-b6af6008b138"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("595bf244-b560-42a7-8a94-230cada8b0f0") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("301c3131-6341-473c-9bd7-d5fb32d5023e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c86a27c9-042f-475a-9c44-7a6a40d899e9") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("241e622a-7bbd-47e4-a4b6-ed3698c333d7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("595bf244-b560-42a7-8a94-230cada8b0f0") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("301c3131-6341-473c-9bd7-d5fb32d5023e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c86a27c9-042f-475a-9c44-7a6a40d899e9") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("241e622a-7bbd-47e4-a4b6-ed3698c333d7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("595bf244-b560-42a7-8a94-230cada8b0f0") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("301c3131-6341-473c-9bd7-d5fb32d5023e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c86a27c9-042f-475a-9c44-7a6a40d899e9") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("241e622a-7bbd-47e4-a4b6-ed3698c333d7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("595bf244-b560-42a7-8a94-230cada8b0f0") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("301c3131-6341-473c-9bd7-d5fb32d5023e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c86a27c9-042f-475a-9c44-7a6a40d899e9") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("241e622a-7bbd-47e4-a4b6-ed3698c333d7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("595bf244-b560-42a7-8a94-230cada8b0f0") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("301c3131-6341-473c-9bd7-d5fb32d5023e") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("c86a27c9-042f-475a-9c44-7a6a40d899e9") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("241e622a-7bbd-47e4-a4b6-ed3698c333d7") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24}
+a{color:#106F4D}a:hover{color:#0B5A3E}
+.card{background:#fff;border:1px solid #E3E8D9;border-radius:16px}
+.mut{color:#5B6B62}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.b{font:inherit;font-weight:800;font-size:14px;border-radius:10px;height:44px;padding:0 14px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;flex:1}
+.ib{width:44px;height:44px;border-radius:10px;border:1.5px solid #D5DCCB;background:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb{color:#FFFFCA;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:10px;background:rgba(255,255,202,.1)}
+</style>
+</helmet>
+<div style="background:#F6F7EE;min-height:1180px;position:relative;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24">
+  <div role="status" style="background:#7A4A00;color:#FFF0D1;font-size:14px;font-weight:700;padding:10px 24px;display:flex;align-items:center;gap:10px"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 2l20 20M8.5 16.4a5 5 0 0 1 7 0M5 12.9a10 10 0 0 1 5.2-2.8M19 12.9a10 10 0 0 0-2-1.5M12 20h.01"></path></svg>Koneksi terputus, mencoba menyambung…</div>
+  <header style="background:#106F4D;padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px;margin-right:auto"><img src="2f267a26-9ad9-484f-962e-64b26abaf2b3" alt="Matwona" style="width:118px;height:auto"><span style="color:#FFFFCA;font-weight:800;font-size:18px;border-left:1px solid rgba(255,255,202,.4);padding-left:10px">Kasir</span></div>
+    <span class="tb"><span style="width:9px;height:9px;border-radius:50%;background:#7FE0B8;box-shadow:0 0 0 3px rgba(127,224,184,.3)"></span>Terhubung</span>
+    <button class="tb" style="border:0;font:inherit;font-size:13px;font-weight:700"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4zM16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"></path></svg>Suara notifikasi: Aktif</button>
+    <label style="display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:10px;background:#fff;min-width:240px"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#5B6B62" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input aria-label="Cari" placeholder="Cari kode pesanan / meja" style="border:0;outline:0;font:inherit;font-size:14px;flex:1"></label>
+    <span class="tb">Hari ini <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></span>
+    <span class="tb"><span style="width:26px;height:26px;border-radius:50%;background:#FFFFCA;color:#106F4D;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px">K1</span>Kasir 1</span>
+  </header>
+  <div style="padding:14px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;border-bottom:1px solid #E3E8D9;background:#fff">
+    <a href="#" style="display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #106F4D;font-weight:800;font-size:14px;text-decoration:none"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"></path></svg>Stok Menu</a>
+    <span style="font-size:14px;font-weight:700" class="mut">12 pesanan hari ini</span>
+  </div>
+
+  <div style="position:absolute;top:126px;right:24px;z-index:3;background:#1F2A24;color:#fff;border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 30px rgba(0,0,0,.25);font-weight:700;font-size:14px"><span style="width:34px;height:34px;border-radius:50%;background:#069D70;display:flex;align-items:center;justify-content:center"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"></path></svg></span>Pesanan baru dari Meja B2</div>
+
+  <main style="padding:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:18px;align-items:start">
+    <sc-for list="{{cols}}" as="col" hint-placeholder-count="4">
+      <section style="background:#ECEFE3;border-radius:18px;padding:12px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 6px"><h2 style="margin:0;font-size:16px;font-weight:800">{{col.title}}</h2><span class="chip" style="background:{{col.cbg}};color:{{col.cfg}};font-size:13px">{{col.count}}</span></div>
+        <sc-for list="{{col.cards}}" as="c" hint-placeholder-count="2">
+          <article class="card" style="padding:14px;display:flex;flex-direction:column;gap:10px;position:relative;border-color:{{c.bd}};box-shadow:{{c.glow}}">
+            <sc-if value="{{c.isNew}}" hint-placeholder-val="{{false}}"><span class="chip" style="position:absolute;top:-10px;right:14px;background:#C0392B;color:#fff;letter-spacing:.06em">BARU</span></sc-if>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:24px;font-weight:800;color:#106F4D;line-height:1">{{c.table}}</span><span style="font-size:14px;font-weight:700">{{c.name}}</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span style="font-size:12px;font-weight:700" class="mut">{{c.code}}</span><span style="font-size:12px;font-weight:600" class="mut">{{c.time}}</span></div>
+            </div>
+            <sc-if value="{{c.full}}" hint-placeholder-val="{{true}}">
+              <ul style="margin:0;padding:10px 0;list-style:none;display:flex;flex-direction:column;gap:5px;font-size:14px;border-top:1px dashed #E3E8D9;border-bottom:1px dashed #E3E8D9">
+                <sc-for list="{{c.items}}" as="i" hint-placeholder-count="3"><li><b>{{i.q}}</b> {{i.n}}<sc-if value="{{i.note}}" hint-placeholder-val="{{false}}"><span style="font-style:italic;color:#5B6B62"> · {{i.note}}</span></sc-if></li></sc-for>
+              </ul>
+            </sc-if>
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="chip" style="background:{{c.pbg}};color:{{c.pfg}}">{{c.pay}}</span><span style="font-size:16px;font-weight:800">{{c.total}}</span></div>
+            <sc-if value="{{c.full}}" hint-placeholder-val="{{true}}">
+              <div style="display:flex;gap:8px;align-items:center">
+                <sc-for list="{{c.btns}}" as="b" hint-placeholder-count="1"><button class="b" style="background:{{b.bg}};color:{{b.fg}};border:{{b.bd}}" title="{{b.tip}}">{{b.l}}</button></sc-for>
+                <sc-if value="{{c.tools}}" hint-placeholder-val="{{false}}">
+                  <button class="ib" aria-label="Cetak"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#1F2A24" stroke-width="2" aria-hidden="true"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"></path></svg></button>
+                  <button class="ib" aria-label="Batalkan" style="border-color:#F0B8B1"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#C0392B" stroke-width="2.2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+                </sc-if>
+              </div>
+            </sc-if>
+            <sc-if value="{{c.tip}}" hint-placeholder-val="{{false}}"><div style="align-self:flex-start;background:#1F2A24;color:#fff;font-size:12px;font-weight:600;border-radius:8px;padding:6px 10px;position:relative">{{c.tip}}</div></sc-if>
+          </article>
+        </sc-for>
+        <sc-if value="{{col.more}}" hint-placeholder-val="{{false}}"><a href="#" style="text-align:center;font-weight:800;font-size:14px;padding:10px">{{col.more}}</a></sc-if>
+      </section>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:1180}}">
+class Component extends DCLogic {
+  renderVals() {
+    const items = [{ q: '2×', n: 'Tuna Sambal Matah', note: 'sambal dipisah' }, { q: '2×', n: 'Nasi Putih', note: '' }, { q: '1×', n: 'Es Jeruk', note: '' }];
+    const P = { lunas: ['Lunas · QRIS', '#DDF3E9', '#0B5A3E'], kasir: ['Belum Bayar · Kasir', '#FFF0D1', '#7A4A00'], pend: ['Menunggu Pembayaran', '#ECEFE8', '#46534B'], lunasK: ['Lunas · Kasir', '#DDF3E9', '#0B5A3E'] };
+    const pri = (l, x) => ({ l, bg: '#106F4D', fg: '#fff', bd: '0', tip: '', ...(x || {}) });
+    const sec = (l, x) => ({ l, bg: '#fff', fg: '#106F4D', bd: '1.5px solid #106F4D', tip: '', ...(x || {}) });
+    const dis = (l, tip) => ({ l, bg: '#E3E8D9', fg: '#7F8B84', bd: '0', tip: tip || '' });
+    const card = (o) => { const p = P[o.p]; return Object.assign({ isNew: false, bd: '#E3E8D9', glow: 'none', full: true, items, tools: false, tip: '', total: 'Rp103.000', pay: p[0], pbg: p[1], pfg: p[2] }, o); };
+    return {
+      cols: [
+        { title: 'Baru', count: 3, cbg: '#C0392B', cfg: '#fff', more: '', cards: [
+          card({ isNew: true, bd: '#069D70', glow: '0 0 0 3px rgba(6,157,112,.25), 0 10px 24px rgba(6,157,112,.25)', table: 'Meja B2', name: 'Dimas', code: 'MTW-261105-0045', time: '12:24 · baru saja', p: 'lunas', btns: [pri('Konfirmasi')] }),
+          card({ table: 'Meja A3', name: 'Rina', code: 'MTW-261105-0042', time: '12:10 · 2 menit lalu', p: 'kasir', btns: [pri('Tandai Lunas'), dis('Konfirmasi')] }),
+          card({ table: 'Meja C1', name: 'Sari', code: 'MTW-261105-0044', time: '12:18 · 6 menit lalu', p: 'pend', btns: [dis('Konfirmasi')], tip: 'Pesanan QRIS belum lunas', items: [{ q: '1×', n: 'Tuna Geprek', note: '' }, { q: '1×', n: 'Es Teh Serai', note: '' }], total: 'Rp46.000' })
+        ]},
+        { title: 'Diproses', count: 2, cbg: '#E2EEF9', cfg: '#1D4F7A', more: '', cards: [
+          card({ table: 'Meja A1', name: 'Budi', code: 'MTW-261105-0039', time: '11:58 · 14 menit lalu', p: 'lunas', tools: true, btns: [pri('Tandai Disajikan')], items: [{ q: '1×', n: 'Ayam Kampung Goreng Lengkuas', note: 'tidak pedas' }, { q: '1×', n: 'Nasi Putih', note: '' }], total: 'Rp46.000' }),
+          card({ table: 'Meja B4', name: 'Ayu', code: 'MTW-261105-0040', time: '12:02 · 10 menit lalu', p: 'lunasK', tools: true, btns: [pri('Tandai Disajikan')], items: [{ q: '2×', n: 'Tuna Bakar Kecap', note: '' }], total: 'Rp84.000' })
+        ]},
+        { title: 'Disajikan', count: 2, cbg: '#106F4D', cfg: '#fff', more: '', cards: [
+          card({ table: 'Meja A2', name: 'Fajar', code: 'MTW-261105-0036', time: '11:40 · 32 menit lalu', p: 'lunas', tools: true, btns: [sec('Selesai')], items: [{ q: '1×', n: 'Tuna Geprek', note: '' }, { q: '1×', n: 'Es Jeruk', note: '' }], total: 'Rp48.000' }),
+          card({ table: 'Meja C3', name: 'Lina', code: 'MTW-261105-0037', time: '11:45 · 27 menit lalu', p: 'lunasK', tools: true, btns: [sec('Selesai')], items: [{ q: '3×', n: 'Tuna Sambal Matah', note: '1 tidak pedas' }], total: 'Rp121.500' })
+        ]},
+        { title: 'Selesai', count: 8, cbg: '#ECEFE8', cfg: '#46534B', more: 'Lihat 6 lainnya', cards: [
+          card({ full: false, table: 'Meja A4', name: 'Tono', code: 'MTW-261105-0031', time: '11:05', p: 'lunas', total: 'Rp88.000' }),
+          card({ full: false, table: 'Meja B1', name: 'Wati', code: 'MTW-261105-0030', time: '10:58', p: 'lunasK', total: 'Rp52.000' })
+        ]}
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -173,6 +173,9 @@ importers:
       react-dom:
         specifier: ^19.2.0
         version: 19.3.1(react@19.3.1)
+      react-thermal-printer:
+        specifier: ^0.23.0
+        version: 0.23.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       recharts:
         specifier: ^3.2.0
         version: 3.10.1(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@19.3.1)(react@19.3.1)(redux@5.0.1)
@@ -1353,6 +1356,12 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  '@react-thermal-printer/image@0.14.0':
+    resolution: {integrity: sha512-OHTLCeUZ1xbu7SQtvQLC13R+GHSfs9jM3OdYGRyxGa6C+tn+TvqlfAtEKa+CnoRiN5jkfswy1rFATS6HjgTzMQ==}
+
+  '@react-thermal-printer/printer@0.20.0':
+    resolution: {integrity: sha512-PYhslUuXAwEfdEFKBv7wbl+13MzCt5S9Ex2fMa0mW1W/YkAEwaJUK95dXFsI4RzS5evOgfTr6EZqR3RIiI2vVg==}
 
   '@reduxjs/toolkit@2.13.0':
     resolution: {integrity: sha512-f6jwVRfwW30+tnllz4YcsHHpPYYOE7abcHkyUCovD+P7DyhdAI5prz2Fh/8TLhakjpN+7aIEion1s5L/tvlYlA==}
@@ -2978,6 +2987,9 @@ packages:
   flatted@3.4.4:
     resolution: {integrity: sha512-5+ybhBZANEJxaH3X5evAFatUxLfEHSr7n6kYJ+1Qd0mUqr4eu9gIf6GDbWHf8RJijHrjjO8G+la14SlL2SeS1Q==}
 
+  floyd-steinberg@1.0.6:
+    resolution: {integrity: sha512-gzlre+taSQzEY+nCusbHJFQ3zHXBkRAX4fe3szssPY/N/t1ClBX9hnHZM4o8ZvpdqLLUPEavuZ/Noj71ZaA8+A==}
+
   follow-redirects@1.16.2:
     resolution: {integrity: sha512-/kVP2U8z596Ia0gwFrwyIeo74ta5aVmSeU1FfAUMAmcEP5EP7zydmag3SLiN64NaRKef3lxsq7i/g7ltJQDGow==}
     engines: {node: '>=4.0'}
@@ -4148,6 +4160,13 @@ packages:
         optional: true
       redux:
         optional: true
+
+  react-thermal-printer@0.23.0:
+    resolution: {integrity: sha512-WgyM8vgtYPM9k2RFhADopodnlbl8UNTD+ECksV2jlf+/HdWON1/NCjGt5I3cSksNu3eAVSIu764KwDXTFouTlg==}
+    engines: {ndoe: '>= 16'}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
 
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
@@ -5919,6 +5938,14 @@ snapshots:
       react: 19.3.1
     optionalDependencies:
       '@types/react': 19.3.0
+
+  '@react-thermal-printer/image@0.14.0':
+    dependencies:
+      floyd-steinberg: 1.0.6
+
+  '@react-thermal-printer/printer@0.20.0':
+    dependencies:
+      '@react-thermal-printer/image': 0.14.0
 
   '@reduxjs/toolkit@2.13.0(react-redux@9.3.1(@types/react@19.3.0)(react@19.3.1)(redux@5.0.1))(react@19.3.1)':
     dependencies:
@@ -7705,6 +7732,8 @@ snapshots:
 
   flatted@3.4.4: {}
 
+  floyd-steinberg@1.0.6: {}
+
   follow-redirects@1.16.2: {}
 
   fontkit@2.0.4:
@@ -8820,6 +8849,13 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
       redux: 5.0.1
+
+  react-thermal-printer@0.23.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+    dependencies:
+      '@react-thermal-printer/image': 0.14.0
+      '@react-thermal-printer/printer': 0.20.0
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
 
   react@19.3.1: {}
 

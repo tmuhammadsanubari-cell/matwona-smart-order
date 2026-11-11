@@ -35,20 +35,18 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Menu', href: '/admin/menu', icon: 'M4 6h16M4 12h16M4 18h10' },
   { label: 'Meja & QR', href: '/admin/tables', icon: 'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM17 20h4v-3' },
   { label: 'Dashboard Kasir', href: '/cashier', icon: 'M3 11h18v9H3zM6 11V5h8v6M7 15h4' },
-  { label: 'Analitik', href: '/admin/analytics', icon: 'M4 20V10M10 20V4M16 20v-7M22 20H2', task: 'S3-06' },
-  { label: 'Promo', href: '/admin/promos', icon: 'M20 12l-8 8-9-9V3h8zM7.5 7.5h.01', task: 'S3-08' },
+  { label: 'Analitik', href: '/admin/analytics', icon: 'M4 20V10M10 20V4M16 20v-7M22 20H2' },
+  { label: 'Promo', href: '/admin/promos', icon: 'M20 12l-8 8-9-9V3h8zM7.5 7.5h.01' },
   {
     label: 'Sinkronisasi Olsera',
     href: '/admin/sync',
     icon: 'M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5',
-    task: 'S2-10',
   },
-  { label: 'Rekomendasi AI', href: '/admin/recommendations', icon: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z', task: 'S3-07' },
+  { label: 'Rekomendasi AI', href: '/admin/recommendations', icon: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z' },
   {
     label: 'Staf',
     href: '/admin/staff',
     icon: 'M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 20v-1.5a3 3 0 0 0-2.5-3M4 20v-1.5a3 3 0 0 1 2.5-3',
-    task: 'S2-12',
   },
 ];
 

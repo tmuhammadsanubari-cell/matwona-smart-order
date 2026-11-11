@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id"><head>
+<meta charset="utf-8">
+<title>Admin · Rekomendasi AI</title>
+<script src="812d2697-07fb-424a-9b4f-44d3aebd1b05"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("6feeb677-21e8-4da3-a869-5fdf8a17973f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("6feeb677-21e8-4da3-a869-5fdf8a17973f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("6feeb677-21e8-4da3-a869-5fdf8a17973f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("6feeb677-21e8-4da3-a869-5fdf8a17973f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko70yyygA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko50yyygA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/plusjakartasans/v12/LDIoaomQNQcsA88c7O9yZ4KMCoOg4Ko40yyygA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("6feeb677-21e8-4da3-a869-5fdf8a17973f") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+body{margin:0;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24}
+a{color:#106F4D}a:hover{color:#0B5A3E}
+.card{background:#fff;border:1px solid #E3E8D9;border-radius:16px}
+.mut{color:#5B6B62}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.nav{display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border-radius:12px;color:#FFFFCA;text-decoration:none;font-weight:600;font-size:14px}
+.btn{font:inherit;font-weight:800;font-size:14px;border-radius:12px;height:44px;padding:0 16px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#106F4D;color:#fff;cursor:pointer}
+.h3{margin:0;font-size:17px;font-weight:800}
+th{font-size:12px;font-weight:800;color:#5B6B62;text-align:left;padding:10px 12px;border-bottom:1px solid #E3E8D9;white-space:nowrap;background:#FAFAF0}
+td{padding:10px 12px;border-bottom:1px solid #EEF1E6;font-size:14px;white-space:nowrap}
+.q{display:inline-flex;width:16px;height:16px;border-radius:50%;background:#E3E8D9;color:#46534B;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-left:4px;vertical-align:middle;cursor:help}
+</style>
+</helmet>
+<div style="display:flex;flex-wrap:wrap;background:#FAFAF0;min-height:1400px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:#1F2A24">
+  <aside style="flex:1 1 248px;max-width:100%;background:#106F4D;padding:24px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:24px">
+    <div style="display:flex;align-items:center;gap:10px;padding:0 8px"><img src="852da76f-3c9b-463f-9b78-804caed356fc" alt="Matwona" style="width:112px;height:auto"><span style="color:#FFFFCA;font-weight:800;font-size:13px;border:1px solid rgba(255,255,202,.5);border-radius:6px;padding:2px 6px">Admin</span></div>
+    <nav style="display:flex;flex-direction:column;gap:4px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="8"><a href="{{n.href}}" class="nav" style="background:{{n.bg}};color:{{n.fg}};font-weight:{{n.w}}"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.icon}}"></path></svg>{{n.label}}</a></sc-for>
+    </nav>
+    <div style="margin-top:auto;display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;background:rgba(255,255,202,.1)"><span style="width:36px;height:36px;border-radius:50%;background:#FFFFCA;color:#106F4D;display:flex;align-items:center;justify-content:center;font-weight:800">OM</span><div style="display:flex;flex-direction:column"><span style="color:#fff;font-weight:700;font-size:14px">Owner Matwona</span><span style="color:#FFFFCA;font-size:12px">Admin</span></div></div>
+  </aside>
+
+  <main style="flex:999 1 560px;min-width:0;padding:28px 32px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <h1 style="margin:0;font-size:28px;font-weight:800;color:#106F4D">Rekomendasi AI</h1>
+        <span style="font-size:13px;font-weight:600" class="mut">Model terakhir: <span style="font-family:ui-monospace,monospace;color:#1F2A24">fpg-20261031-0300</span> · dilatih otomatis setiap hari pukul 03.00 WIB</span>
+      </div>
+      <button class="btn"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"></path></svg>Latih Ulang Sekarang</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700" class="mut">Transaksi dilatih</span><span style="font-size:28px;font-weight:800">4.210</span><span style="font-size:12px" class="mut">Data 90 hari terakhir</span></div>
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700" class="mut">Jumlah aturan</span><span style="font-size:28px;font-weight:800">86</span><span style="font-size:12px" class="mut">Pola "dibeli bersama"</span></div>
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:6px;border-color:#B9E0CE;background:#F6FBF8"><span style="font-size:13px;font-weight:700" class="mut">HitRate@3<span class="q" title="Seberapa sering 1 dari 3 rekomendasi teratas benar-benar dibeli">?</span></span><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:28px;font-weight:800">0,41</span><span class="chip" style="background:#106F4D;color:#fff">+52%</span></div><span style="font-size:12px" class="mut">vs baseline menu terlaris 0,27</span></div>
+      <div class="card" style="padding:18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700" class="mut">Durasi latih</span><span style="font-size:28px;font-weight:800">18 detik</span><span style="font-size:12px" class="mut">Selesai 03.00 WIB</span></div>
+    </div>
+
+    <div style="background:#E1F2EA;color:#0B5A3E;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:600;line-height:1.5">Artinya: dari 100 pelanggan, sekitar 41 membeli minimal satu dari 3 item yang kami sarankan. Kalau cuma menyarankan menu terlaris, hanya 27.</div>
+
+    <section class="card" style="overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px"><h2 class="h3">20 Aturan Teratas</h2><a href="#" style="font-size:14px;font-weight:700">Lihat semua 20</a></div>
+      <div style="overflow-x:auto">
+        <sc-raw-table style="border-collapse:collapse;width:100%">
+          <sc-raw-thead><sc-raw-tr><sc-raw-th>Jika memesan</sc-raw-th><sc-raw-th></sc-raw-th><sc-raw-th>Rekomendasikan</sc-raw-th><sc-raw-th>Support<span class="q" title="Seberapa sering kombinasi ini muncul dari semua transaksi">?</span></sc-raw-th><sc-raw-th>Confidence<span class="q" title="Dari yang memesan item kiri, berapa persen juga memesan item kanan">?</span></sc-raw-th><sc-raw-th>Lift<span class="q" title="Berapa kali lebih mungkin dibanding kebetulan. Di atas 1 = berkaitan">?</span></sc-raw-th></sc-raw-tr></sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-for list="{{rules}}" as="r" hint-placeholder-count="8">
+              <sc-raw-tr>
+                <sc-raw-td><div style="display:flex;gap:6px;flex-wrap:wrap"><sc-for list="{{r.a}}" as="x" hint-placeholder-count="1"><span class="chip" style="background:#F3F5EC;color:#1F2A24">{{x}}</span></sc-for></div></sc-raw-td>
+                <sc-raw-td style="color:#069D70;font-weight:800">→</sc-raw-td>
+                <sc-raw-td><span class="chip" style="background:#106F4D;color:#fff">{{r.c}}</span></sc-raw-td>
+                <sc-raw-td>{{r.s}}</sc-raw-td>
+                <sc-raw-td><div style="display:flex;align-items:center;gap:8px"><div style="width:70px;height:8px;border-radius:4px;background:#EEF1E6;overflow:hidden"><div style="height:100%;width:{{r.cw}};background:#069D70"></div></div>{{r.cf}}</div></sc-raw-td>
+                <sc-raw-td style="font-weight:800">{{r.l}}</sc-raw-td>
+              </sc-raw-tr>
+            </sc-for>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </div>
+    </section>
+
+    <section class="card" style="padding:18px;display:flex;flex-direction:column;gap:14px">
+      <h2 class="h3">Populer per Waktu</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+        <sc-for list="{{times}}" as="t" hint-placeholder-count="4">
+          <div style="background:#FAFAF0;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:15px;font-weight:800;color:#106F4D">{{t.n}}</span><span style="font-size:12px;font-weight:600" class="mut">{{t.h}}</span></div>
+            <sc-for list="{{t.items}}" as="i" hint-placeholder-count="3"><div style="display:flex;gap:10px;align-items:center;font-size:14px"><span style="width:22px;height:22px;border-radius:50%;background:#fff;border:1px solid #E3E8D9;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">{{i.r}}</span><span style="font-weight:600">{{i.n}}</span></div></sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="card" style="overflow:hidden">
+      <div style="padding:16px 18px"><h2 class="h3">Riwayat Model</h2></div>
+      <div style="overflow-x:auto">
+        <sc-raw-table style="border-collapse:collapse;width:100%">
+          <sc-raw-thead><sc-raw-tr><sc-raw-th>Versi</sc-raw-th><sc-raw-th>Tanggal</sc-raw-th><sc-raw-th>Transaksi</sc-raw-th><sc-raw-th>Aturan</sc-raw-th><sc-raw-th>HitRate@3</sc-raw-th><sc-raw-th>Status</sc-raw-th></sc-raw-tr></sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-for list="{{hist}}" as="h" hint-placeholder-count="4"><sc-raw-tr><sc-raw-td style="font-family:ui-monospace,monospace;font-size:13px">{{h.v}}</sc-raw-td><sc-raw-td>{{h.d}}</sc-raw-td><sc-raw-td>{{h.t}}</sc-raw-td><sc-raw-td>{{h.r}}</sc-raw-td><sc-raw-td style="font-weight:800">{{h.h}}</sc-raw-td><sc-raw-td><span class="chip" style="background:{{h.bg}};color:{{h.fg}}">{{h.s}}</span></sc-raw-td></sc-raw-tr></sc-for>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1400}}">
+class Component extends DCLogic {
+  renderVals() {
+    const items = [['Analitik','A1-Analitik.dc.html','M4 20V10M10 20V4M16 20v-7M22 20H2'],['Menu','A2-Menu.dc.html','M4 6h16M4 12h16M4 18h10'],['Meja & QR','A3-Meja.dc.html','M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM17 20h4v-3'],['Promo','A5-Promo.dc.html','M20 12l-8 8-9-9V3h8zM7.5 7.5h.01'],['Sinkronisasi Olsera','A4-Olsera.dc.html','M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5'],['Rekomendasi AI','A6-AI.dc.html','M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z'],['Staf','A7-Staf.dc.html','M16 20v-2a4 4 0 0 0-8 0v2M12 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6M20 20v-1.5a3 3 0 0 0-2.5-3M4 20v-1.5a3 3 0 0 1 2.5-3'],['Pengaturan','#','M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM4 12h2M18 12h2M12 4v2M12 18v2M6.3 6.3l1.4 1.4M16.3 16.3l1.4 1.4M6.3 17.7l1.4-1.4M16.3 7.7l1.4-1.4']];
+    const active = 'Rekomendasi AI';
+    const nav = items.map(([label, href, icon]) => ({ label, href, icon, bg: label === active ? '#FFFFCA' : 'transparent', fg: label === active ? '#106F4D' : '#FFFFCA', w: label === active ? 800 : 600 }));
+    const r = (a, c, s, cf, l) => ({ a, c, s, cf: cf + '%', cw: cf + '%', l });
+    const it = (arr) => arr.map((n, i) => ({ r: i + 1, n }));
+    return {
+      nav,
+      rules: [
+        r(['Tuna Sambal Matah'], 'Es Teh Serai', '0,18', 62, '2,4'),
+        r(['Tuna Geprek'], 'Nasi Putih', '0,15', 71, '1,9'),
+        r(['Tuna Sambal Matah', 'Nasi Putih'], 'Lalapan', '0,09', 48, '2,8'),
+        r(['Ayam Kampung Bakar'], 'Sambal Ekstra', '0,07', 44, '3,1'),
+        r(['Tuna Bakar Kecap'], 'Es Jeruk', '0,08', 39, '1,7'),
+        r(['Ayam Goreng Lengkuas'], 'Nasi Putih', '0,10', 68, '1,8'),
+        r(['Tuna Geprek', 'Es Teh Serai'], 'Sambal Ekstra', '0,05', 36, '2,5'),
+        r(['Lalapan'], 'Tuna Sambal Matah', '0,06', 41, '1,6')
+      ],
+      times: [
+        { n: 'Pagi', h: '10.00–11.00', items: it(['Tuna Geprek', 'Es Teh Serai', 'Nasi Putih']) },
+        { n: 'Siang', h: '11.00–15.00', items: it(['Tuna Sambal Matah', 'Tuna Geprek', 'Es Teh Serai']) },
+        { n: 'Sore', h: '15.00–18.00', items: it(['Es Jeruk', 'Tuna Bakar Kecap', 'Lalapan']) },
+        { n: 'Malam', h: '18.00–22.00', items: it(['Ayam Kampung Bakar', 'Tuna Sambal Matah', 'Ayam Goreng Lengkuas']) }
+      ],
+      hist: [
+        { v: 'fpg-20261031-0300', d: '31 Okt 2026', t: '4.210', r: 86, h: '0,41', s: 'Aktif', bg: '#DDF3E9', fg: '#0B5A3E' },
+        { v: 'fpg-20261030-0300', d: '30 Okt 2026', t: '4.168', r: 84, h: '0,40', s: 'Arsip', bg: '#ECEFE8', fg: '#46534B' },
+        { v: 'fpg-20261029-0300', d: '29 Okt 2026', t: '4.121', r: 81, h: '0,39', s: 'Arsip', bg: '#ECEFE8', fg: '#46534B' },
+        { v: 'fpg-20261028-0300', d: '28 Okt 2026', t: '4.077', r: 80, h: '0,39', s: 'Arsip', bg: '#ECEFE8', fg: '#46534B' }
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>
