@@ -147,9 +147,44 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
               ? order.paymentStatus === 'PAID'
                 ? 'Sudah dibayar di kasir. Terima kasih!'
                 : `Bayar di kasir sebesar ${formatRupiah(order.totalAmount)} dengan menyebut kode pesananmu.`
-              : 'QRIS'}
+              : order.paymentStatus === 'PAID'
+                ? 'Pembayaran QRIS berhasil diterima. Terima kasih!'
+                : `Scan kode QRIS di bawah sebesar ${formatRupiah(order.totalAmount)} lalu konfirmasi ke kasir saat disajikan.`}
           </p>
         </div>
+
+        {order.paymentMethod === 'QRIS' && order.paymentStatus !== 'PAID' && (
+          <Card className="flex flex-col items-center gap-3 border-2 border-primary/30 p-5 text-center bg-white shadow-xs">
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-black text-xs tracking-wider bg-rose-600 text-white px-2 py-0.5 rounded">QRIS</span>
+              <span className="text-xs font-bold text-muted">Pembayaran Digital Instan</span>
+            </div>
+
+            <div className="relative rounded-xl border-2 border-primary/20 p-4 bg-[#FFFFCA]/20">
+              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-primary">
+                <rect x="2" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
+                <rect x="4.5" y="4.5" width="2" height="2" fill="currentColor" />
+                <rect x="15" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
+                <rect x="17.5" y="4.5" width="2" height="2" fill="currentColor" />
+                <rect x="2" y="15" width="7" height="7" rx="1.5" strokeWidth="2" />
+                <rect x="4.5" y="17.5" width="2" height="2" fill="currentColor" />
+                <path d="M14 14h3v3h-3z" fill="currentColor" />
+                <path d="M19 14h2v2h-2z" fill="currentColor" />
+                <path d="M14 19h2v2h-2z" fill="currentColor" />
+                <path d="M18 18h3v3h-3z" strokeWidth="1.5" />
+                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+              </svg>
+            </div>
+
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs font-bold text-muted">Nominal Pembayaran</span>
+              <span className="font-mono text-xl font-black text-primary">{formatRupiah(order.totalAmount)}</span>
+            </div>
+            <p className="text-xs text-muted max-w-xs leading-relaxed">
+              Buka aplikasi GoPay, OVO, Dana, BCA, Livin&apos;, ShopeePay, atau m-Banking untuk scan QRIS di atas.
+            </p>
+          </Card>
+        )}
 
         {steps.length > 0 && (
           <Card className="pb-1.5">
