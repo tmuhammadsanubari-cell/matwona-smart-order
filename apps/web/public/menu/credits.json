@@ -1,0 +1,139 @@
+{
+  "source": "Materi menu Matwona yang diberikan pemilik proyek pada 11 November 2026",
+  "originals": [
+    "WhatsApp Image 2026-11-02 at 23.43.39.jpeg",
+    "WhatsApp Image 2026-11-02 at 23.43.39 (1).jpeg",
+    "WhatsApp Image 2026-11-02 at 23.43.39 (2).jpeg"
+  ],
+  "processing": "Lembar menu dikonversi ke WebP; foto produk dipotong dari lembar yang sama.",
+  "original_product_photos": {
+    "archive": "Project Compro-20261111T164642Z-1-001.zip",
+    "files": {
+      "Matwona Sambal Matah Reguler.jpg": "tuna-matah-reguler",
+      "Matwona Sambal Matah Jumbo.jpg": "tuna-matah-jumbo",
+      "Matwona Sambal Dabu-Dabu Reguler.jpg": "tuna-dabu-reguler",
+      "Matwona Sambal Dabu-Dabu Jumbo.jpg": "tuna-dabu-jumbo",
+      "Matwona Lada Garam Reguler.jpg": "tuna-lada-reguler",
+      "Matwona Lada Garam Jumbo.jpg": "tuna-lada-jumbo",
+      "Bakmie Ayam Kampung Lada Garam.jpg": "bakmie-ayam",
+      "Bakmie Tuna Lada Garam.jpg": "bakmie-tuna"
+    },
+    "processing": "Delapan JPEG disalin utuh tanpa pemotongan atau perubahan proporsi. Tampilan menggunakan object-contain."
+  },
+  "additional_product_photos": {
+    "folder": "https://drive.google.com/drive/folders/1hMfnrmRtaqsWeRfqjS5HLYo8nArw0Qgs",
+    "received": "2026-11-12",
+    "processing": "PNG asli disalin tanpa crop atau perubahan proporsi; Next Image mengoptimalkan pengiriman sesuai ukuran layar.",
+    "mapped": [
+      {
+        "index": 0,
+        "name": "Milk Tea Hot.png",
+        "url": "https://drive.google.com/file/d/1Cw8Ke27VVCbjTl-_WyWuAW9Qur2QvTXt/view?usp=drivesdk",
+        "target": "black-tea-hot.png"
+      },
+      {
+        "index": 1,
+        "name": "Milk Tea Ice.png",
+        "url": "https://drive.google.com/file/d/1HkzQin_GqPlZNUnSwNpe1R1aKrqAqFJN/view?usp=drivesdk",
+        "target": "black-tea-ice.png"
+      },
+      {
+        "index": 2,
+        "name": "Kopsu Ice.png",
+        "url": "https://drive.google.com/file/d/1vTuSrr2Hj0Y2pF_2KDFLqXH5UFhkIitL/view?usp=drivesdk",
+        "target": "kopi-susu-ice.png"
+      },
+      {
+        "index": 3,
+        "name": "Kopsu Hot.png",
+        "url": "https://drive.google.com/file/d/1EKosfRpZ2EhKxkv3vP5fbbOyisBHFnPf/view?usp=drivesdk",
+        "target": "kopi-susu.png"
+      },
+      {
+        "index": 4,
+        "name": "Kopi Butter.png",
+        "url": "https://drive.google.com/file/d/12DkwFzf7azYgsWCLO-9u5hd10qDHZ6I-/view?usp=drivesdk",
+        "target": "kopi-butter.png"
+      },
+      {
+        "index": 5,
+        "name": "Kopi Hitam Es.png",
+        "url": "https://drive.google.com/file/d/1MkDMvaQ2dtO214kydq3t6vlkY3VcIxKP/view?usp=drivesdk",
+        "target": "kopi-hitam-ice.png"
+      },
+      {
+        "index": 6,
+        "name": "Es Kopi Lemon.png",
+        "url": "https://drive.google.com/file/d/1CuIAtmNVlRpN03Q-b7xnavCHlpyVksUW/view?usp=drivesdk",
+        "target": "kopi-lemon.png"
+      },
+      {
+        "index": 7,
+        "name": "Bakmie Chilli Oil Ayam Suir.png",
+        "url": "https://drive.google.com/file/d/1P1FI2Aj_17dPSGhWV-7OAeNT9iEa7Juv/view?usp=drivesdk",
+        "target": "bakmie-ayam-chilli.png"
+      },
+      {
+        "index": 8,
+        "name": "Bakmie Chilli Oil Tuna.png",
+        "url": "https://drive.google.com/file/d/1CL4KD52GzRgNaI4IZPkNu82Hj-8GfV2i/view?usp=drivesdk",
+        "target": "bakmie-tuna-chilli.png"
+      },
+      {
+        "index": 9,
+        "name": "Bakmi Tuna Lada Garam.png",
+        "url": "https://drive.google.com/file/d/1cBfANk8veQGIgIS29mwkWr5eVdxNDc7w/view?usp=drivesdk",
+        "target": "bakmie-tuna.png"
+      },
+      {
+        "index": 11,
+        "name": "Matah Reguler.png",
+        "url": "https://drive.google.com/file/d/1rswjZVDcqTRPfa35cU7WuPfZWNk1vKDn/view?usp=drivesdk",
+        "target": "tuna-matah-reguler.png"
+      },
+      {
+        "index": 12,
+        "name": "Ayam Suir Bakmi.png",
+        "url": "https://drive.google.com/file/d/1M9rOPH1lPrdJYEnxNQesEQtgrLa-x6YK/view?usp=drivesdk",
+        "target": "bakmie-ayam.png"
+      },
+      {
+        "index": 13,
+        "name": "Lada Garam Reguler.png",
+        "url": "https://drive.google.com/file/d/1hPv6Rd9Vft3i80tUAfbY2oRIRddbEPvu/view?usp=drivesdk",
+        "target": "tuna-lada-reguler.png"
+      },
+      {
+        "index": 14,
+        "name": "Matah Jumbo.png",
+        "url": "https://drive.google.com/file/d/1SzDAWCk0ZO7Ul84D_07kcMmQZZ3DXFYx/view?usp=drivesdk",
+        "target": "tuna-matah-jumbo.png"
+      },
+      {
+        "index": 15,
+        "name": "Lada Garam Jumbo.png",
+        "url": "https://drive.google.com/file/d/1bs4HI0DmFYpPyzZlLNzIWzuSf7IDNJug/view?usp=drivesdk",
+        "target": "tuna-lada-jumbo.png"
+      },
+      {
+        "index": 16,
+        "name": "Dabu Dabu Reguler.png",
+        "url": "https://drive.google.com/file/d/1EDKFVHoR-izEvOupi1WXqSqBp-vwvuD_/view?usp=drivesdk",
+        "target": "tuna-dabu-reguler.png"
+      },
+      {
+        "index": 17,
+        "name": "Dabu Dabu Jumbo.png",
+        "url": "https://drive.google.com/file/d/1MBFKOe8DnprQtjtTIxbu1GsFffEKXeHc/view?usp=drivesdk",
+        "target": "tuna-dabu-jumbo.png"
+      }
+    ],
+    "unmapped": [
+      {
+        "name": "Sourdough Tuna Melt.png",
+        "url": "https://drive.google.com/file/d/1ozOi9AktV9oYlR0QehUvZewUlpjUd9qo/view?usp=drivesdk",
+        "reason": "Sourdough Tuna Melt belum ada dalam katalog; harga belum diberikan."
+      }
+    ]
+  }
+}

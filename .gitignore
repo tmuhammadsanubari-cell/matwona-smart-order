@@ -41,3 +41,5 @@ skills-lock.json
 WhatsApp Image*.jpeg
 Brand Guideline.pdf
 
+# Local design references and browser review artifacts
+/tmp/design-review/

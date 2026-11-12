@@ -1,7 +1,15 @@
 import Image from 'next/image';
 import { formatRupiah } from 'shared';
 import type { PublicMenuItem } from 'shared';
-import { Badge, Button, Card, cx, PhotoPlaceholder, QuantityStepper, type PhotoTone } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Card,
+  cx,
+  PhotoPlaceholder,
+  QuantityStepper,
+  type PhotoTone,
+} from '@/components/ui';
 import { cloudinaryLoader } from '@/lib/cloudinary-loader';
 import { MAX_QTY_PER_LINE } from '@/stores/cart';
 
@@ -17,7 +25,7 @@ export interface MenuItemCardProps {
   onOpenDetail: () => void;
 }
 
-/** Foto menu 4:3 atau placeholder berwarna; dipakai juga di sheet detail & keranjang. */
+/** Foto ditampilkan utuh di dalam bingkai; dipakai juga di detail, keranjang, dan admin. */
 export function MenuPhoto({
   item,
   tone,
@@ -33,12 +41,14 @@ export function MenuPhoto({
   return (
     <Image
       src={item.imageUrl}
-      loader={cloudinaryLoader}
+      loader={
+        item.imageUrl.startsWith('https://res.cloudinary.com/') ? cloudinaryLoader : undefined
+      }
       alt={item.name}
       width={width}
       height={Math.round((width * 3) / 4)}
       sizes={`${width}px`}
-      className={cx('object-cover', className)}
+      className={cx('bg-cream/30 object-contain object-center', className)}
     />
   );
 }
@@ -48,7 +58,14 @@ export function MenuPhoto({
  * Seluruh kartu membuka detail lewat tombol nama yang direntangkan (after:inset-0); tombol aksi di atasnya.
  * Item habis: foto abu-abu, label "Habis", tombol nonaktif.
  */
-export function MenuItemCard({ item, photoTone, quantity, onAdd, onQuantityChange, onOpenDetail }: MenuItemCardProps) {
+export function MenuItemCard({
+  item,
+  photoTone,
+  quantity,
+  onAdd,
+  onQuantityChange,
+  onOpenDetail,
+}: MenuItemCardProps) {
   const soldOut = !item.isAvailable;
   return (
     // isolate: z-index di dalam kartu (tombol aksi z-10) tidak bersaing dengan tab kategori sticky (z-10)
@@ -86,7 +103,12 @@ export function MenuItemCard({ item, photoTone, quantity, onAdd, onQuantityChang
         {item.description && <p className="truncate text-xs text-muted">{item.description}</p>}
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
-          <span className={cx('text-[15px] font-extrabold whitespace-nowrap', soldOut ? 'text-muted' : 'text-primary')}>
+          <span
+            className={cx(
+              'text-[15px] font-extrabold whitespace-nowrap',
+              soldOut ? 'text-muted' : 'text-primary',
+            )}
+          >
             {formatRupiah(item.price)}
           </span>
           {/* relative z-10: di atas tombol detail yang direntangkan. */}
