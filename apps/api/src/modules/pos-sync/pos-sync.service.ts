@@ -1,9 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCode } from 'shared';
-import { SyncDirection, SyncEntity, SyncStatus } from '../../generated/prisma/client.js';
+import { MappingEntity, SyncDirection, SyncEntity, SyncStatus } from '../../generated/prisma/client.js';
 import { AppException } from '../../common/app.exception.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
+import { DEFAULT_PRODUCT_MAPPING } from './adapters/olsera-csv.adapter.js';
 import {
   POS_SYNC_ADAPTER,
   type ExternalProduct,
@@ -42,16 +43,49 @@ export class PosSyncService {
     @Inject(PublicMenuService) private readonly publicMenu: PublicMenuService,
   ) {}
 
+  async getMapping(outletId: string, entity: MappingEntity = MappingEntity.PRODUCT): Promise<Record<string, string>> {
+    const record = await this.prisma.posColumnMapping.findUnique({
+      where: { outletId_entity: { outletId, entity } },
+    });
+    if (record && typeof record.mapping === 'object' && record.mapping !== null) {
+      return record.mapping as Record<string, string>;
+    }
+    return DEFAULT_PRODUCT_MAPPING;
+  }
+
+  async saveMapping(outletId: string, entity: MappingEntity, mapping: Record<string, string>): Promise<Record<string, string>> {
+    const record = await this.prisma.posColumnMapping.upsert({
+      where: { outletId_entity: { outletId, entity } },
+      create: {
+        outletId,
+        entity,
+        mapping,
+      },
+      update: {
+        mapping,
+      },
+    });
+    return record.mapping as Record<string, string>;
+  }
+
   async previewProducts(
     outletId: string,
     fileBuffer: Buffer,
     fileName?: string,
     columnMapping?: Record<string, string>,
     userId?: string,
+    shouldSaveMapping = false,
   ): Promise<PreviewResult> {
+    let effectiveMapping = columnMapping;
+    if (effectiveMapping && shouldSaveMapping) {
+      await this.saveMapping(outletId, MappingEntity.PRODUCT, effectiveMapping);
+    } else if (!effectiveMapping) {
+      effectiveMapping = await this.getMapping(outletId, MappingEntity.PRODUCT);
+    }
+
     const pullResult = await this.adapter.pullProducts({
       file: fileBuffer,
-      columnMapping,
+      columnMapping: effectiveMapping,
     });
 
     const existingItems = await this.prisma.menuItem.findMany({

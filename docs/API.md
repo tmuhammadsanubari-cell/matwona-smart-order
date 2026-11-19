@@ -42,8 +42,8 @@ Catatan implementasi (S1-01):
 | ✅ | GET | `/public/tables/:token` | publik |
 | ✅ | POST | `/public/orders` | table token |
 | ✅ | GET | `/public/orders/:code` | table token |
-| ⬜ | POST | `/public/orders/:code/pay` | table token |
-| ⬜ | GET | `/public/recommendations` | publik |
+| ✅ | POST | `/public/orders/:code/pay` | table token |
+| ✅ | GET | `/public/recommendations` | publik |
 | ⬜ | POST | `/public/recommendation-events` | publik |
 
 Catatan implementasi (S1-06):
@@ -62,7 +62,12 @@ Catatan implementasi (S1-06):
 ## Pembayaran (FR-005)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | POST | `/payments/midtrans/notification` | signature |
+| ✅ | POST | `/public/orders/:code/pay` | table token |
+| ✅ | POST | `/payments/midtrans/notification` | signature |
+
+Catatan implementasi (S2-01, S2-02):
+- `POST /public/orders/:code/pay` (S2-01): Membuat transaksi Snap QRIS dengan batas waktu 15 menit. Wajib header `X-Table-Token` dari meja yang memesan. Mengembalikan `{ orderCode, snapToken, redirectUrl, expiresAt }`. Bila Midtrans API sedang mock/sandbox placeholder, token otomatis disimulasikan agar alur tetap berjalan.
+- `POST /payments/midtrans/notification` (S2-02): Webhook publik notifikasi status transaksi Midtrans. Wajib verifikasi signature SHA-512 `SHA512(order_id + status_code + gross_amount + serverKey)`. Idempoten (jika sudah PAID, abaikan). Pada status `settlement` / `capture`, pesanan ditandai `PAID` dan dipancarkan event `payment.updated`. Pada `expire`, `cancel`, atau `deny`, pesanan dibatalkan (`CANCELLED`), stok dikembalikan ke database, dan event `payment.updated` dipancarkan ke kasir dan pelanggan.
 
 ## Pesanan (FR-006, FR-008)
 | Status | Method | Endpoint | Auth |
@@ -151,22 +156,22 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | ⬜ | GET | `/analytics/recommendation-performance` | ADMIN |
 | ⬜ | GET | `/analytics/export.csv` | ADMIN |
 
-## Sinkronisasi Olsera (FR-013, FR-014)
+## Sinkronisasi Olsera (FR-013, FR-014, FR-023)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | POST | `/pos-sync/products/preview` | ADMIN |
-| ⬜ | POST | `/pos-sync/products/apply` | ADMIN |
-| ⬜ | POST | `/pos-sync/history/import` | ADMIN |
-| ⬜ | GET | `/pos-sync/transactions/export.csv` | ADMIN |
-| ⬜ | GET/PUT | `/pos-sync/mappings/:entity` | ADMIN |
-| ⬜ | GET | `/pos-sync/logs` | ADMIN |
+| ✅ | POST | `/pos-sync/preview` | ADMIN |
+| ✅ | POST | `/pos-sync/apply` | ADMIN |
+| ✅ | GET | `/pos-sync/export-transactions` | ADMIN |
+| ✅ | GET | `/pos-sync/mapping` | ADMIN |
+| ✅ | PUT | `/pos-sync/mapping` | ADMIN |
+| ✅ | GET | `/pos-sync/history` | ADMIN |
 
-## Rekomendasi admin (FR-022)
+## Rekomendasi admin (FR-019, FR-022)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET | `/recommendations/rules` | ADMIN |
-| ⬜ | GET | `/recommendations/models` | ADMIN |
-| ⬜ | POST | `/recommendations/train` | ADMIN |
+| ✅ | GET | `/recommendations/rules` | ADMIN |
+| ✅ | GET | `/recommendations/model-status` | ADMIN |
+| ✅ | GET | `/recommendations/suggest` | publik |
 
 ## AI service internal (`apps/reco`, port 8000)
 | Status | Method | Endpoint | Auth |

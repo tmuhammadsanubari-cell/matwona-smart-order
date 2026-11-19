@@ -98,7 +98,30 @@ export class OrdersService {
       FOR UPDATE`;
     const menuItems = await tx.menuItem.findMany({ where: { id: { in: ids }, outletId: ref.outletId } });
 
-    const priced: PricedOrder = priceOrder(input.items, menuItems);
+    const now = new Date();
+    const dbPromos = tx.promo
+      ? await tx.promo.findMany({
+          where: {
+            outletId: ref.outletId,
+            isActive: true,
+            startsOn: { lte: now },
+            endsOn: { gte: now },
+          },
+          include: { items: true },
+        })
+      : [];
+
+    const activePromos = dbPromos.map((p) => ({
+      id: p.id,
+      title: p.title,
+      discountType: p.discountType,
+      discountValue: p.discountValue,
+      minPurchase: p.minPurchase,
+      activeDays: p.activeDays,
+      applicableMenuItemIds: p.items.map((pi) => pi.menuItemId),
+    }));
+
+    const priced: PricedOrder = priceOrder(input.items, menuItems, activePromos, now);
 
     for (const [menuItemId, quantity] of priced.stockDecrements) {
       await tx.menuItem.update({ where: { id: menuItemId }, data: { stock: { decrement: quantity } } });

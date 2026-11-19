@@ -4,6 +4,7 @@ import {
   Get,
   Inject,
   Post,
+  Put,
   Query,
   Res,
   UploadedFile,
@@ -12,6 +13,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
 import type { ApiSuccess, AuthUser } from 'shared';
+import { MappingEntity } from '../../generated/prisma/client.js';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { PosSyncService, type PreviewResult } from './pos-sync.service.js';
@@ -28,12 +30,34 @@ interface UploadedFileShape {
 export class PosSyncController {
   constructor(@Inject(PosSyncService) private readonly posSync: PosSyncService) {}
 
+  @Get('mapping')
+  async getMapping(
+    @CurrentUser() user: AuthUser,
+    @Query('entity') entityStr?: string,
+  ): Promise<ApiSuccess<Record<string, string>>> {
+    const entity = entityStr === 'HISTORY_IMPORT' ? MappingEntity.HISTORY_IMPORT : MappingEntity.PRODUCT;
+    const mapping = await this.posSync.getMapping(user.outletId, entity);
+    return { success: true, data: mapping };
+  }
+
+  @Put('mapping')
+  async saveMapping(
+    @CurrentUser() user: AuthUser,
+    @Body('entity') entityStr: string,
+    @Body('mapping') mapping: Record<string, string>,
+  ): Promise<ApiSuccess<Record<string, string>>> {
+    const entity = entityStr === 'HISTORY_IMPORT' ? MappingEntity.HISTORY_IMPORT : MappingEntity.PRODUCT;
+    const result = await this.posSync.saveMapping(user.outletId, entity, mapping);
+    return { success: true, data: result };
+  }
+
   @Post('preview')
   @UseInterceptors(FileInterceptor('file'))
   async preview(
     @CurrentUser() user: AuthUser,
     @UploadedFile() file?: UploadedFileShape,
     @Body('columnMapping') columnMappingJson?: string,
+    @Body('saveMapping') saveMappingFlag?: string,
   ): Promise<ApiSuccess<PreviewResult>> {
     const buffer = file?.buffer;
     if (!buffer || buffer.length === 0) {
@@ -49,12 +73,15 @@ export class PosSyncController {
       }
     }
 
+    const shouldSave = saveMappingFlag === 'true' || saveMappingFlag === '1';
+
     const result = await this.posSync.previewProducts(
       user.outletId,
       buffer,
       file?.originalname,
       mapping,
       user.id,
+      shouldSave,
     );
 
     return { success: true, data: result };

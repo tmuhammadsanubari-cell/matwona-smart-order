@@ -32,4 +32,15 @@ export class RecommendationsController {
     const recs = await this.recoService.getRecommendations(outletId, ids);
     return { success: true, data: recs };
   }
+
+  @Public()
+  @Get('public')
+  async publicRecommendations(
+    @Query('outletId') outletId: string,
+    @Query('itemIds') itemIds?: string,
+  ): Promise<ApiSuccess<unknown>> {
+    const ids = itemIds ? itemIds.split(',').filter(Boolean) : [];
+    const recs = await this.recoService.getRecommendations(outletId, ids);
+    return { success: true, data: recs };
+  }
 }

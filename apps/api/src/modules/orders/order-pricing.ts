@@ -14,6 +14,17 @@ export interface OrderLine {
   lineTotal: number;
   note: string | null;
   fromRecommendation: boolean;
+  promoId?: string | null;
+}
+
+export interface ApplicablePromo {
+  id: string;
+  title: string;
+  discountType: 'PERCENT' | 'NOMINAL';
+  discountValue: number;
+  minPurchase: number;
+  activeDays: number[];
+  applicableMenuItemIds: string[]; // Kosong = berlaku untuk semua menu
 }
 
 export interface PricedOrder {
@@ -28,9 +39,14 @@ export interface PricedOrder {
 /**
  * Hitung ulang pesanan dari data menu di database (NFR-007). Harga dari klien tidak pernah
  * dipakai; `expectedUnitPrice` hanya untuk mendeteksi PRICE_CHANGED.
- * Diskon promo (FR-020) belum diterapkan sampai modul promo tersedia (S3-08).
+ * Diskon promo (FR-020, BRU-11) diterapkan otomatis dari promo yang memenuhi syarat.
  */
-export function priceOrder(requested: CreateOrderInput['items'], menuItems: PricedMenuItem[]): PricedOrder {
+export function priceOrder(
+  requested: CreateOrderInput['items'],
+  menuItems: PricedMenuItem[],
+  activePromos: ApplicablePromo[] = [],
+  currentDate = new Date(),
+): PricedOrder {
   const byId = new Map(menuItems.map((item) => [item.id, item]));
 
   // Satu menu bisa muncul di beberapa baris (catatan berbeda), stok dicek dari totalnya.
@@ -73,27 +89,70 @@ export function priceOrder(requested: CreateOrderInput['items'], menuItems: Pric
     );
   }
 
+  // Hitung subtotal awal untuk pengecekan minPurchase promo
+  const rawSubtotal = requested.reduce((sum, line) => {
+    const item = byId.get(line.menuItemId)!;
+    return sum + item.price * line.quantity;
+  }, 0);
+
+  // Filter promo yang aktif hari ini dan memenuhi syarat minimal belanja
+  // 1 = Senin ... 7 = Minggu
+  const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
+  const eligiblePromos = activePromos.filter((p) => {
+    const dayMatches = p.activeDays.length === 0 || p.activeDays.includes(dayOfWeek);
+    const minPurchaseMatches = rawSubtotal >= p.minPurchase;
+    return dayMatches && minPurchaseMatches;
+  });
+
   const lines: OrderLine[] = requested.map((line) => {
     const item = byId.get(line.menuItemId)!;
-    const discountAmount = 0;
+    let bestDiscount = 0;
+    let bestPromoId: string | null = null;
+
+    // Evaluasi semua promo yang berlaku untuk item ini, pilih diskon terbesar (BRU-11)
+    for (const promo of eligiblePromos) {
+      const appliesToItem =
+        promo.applicableMenuItemIds.length === 0 || promo.applicableMenuItemIds.includes(item.id);
+      if (!appliesToItem) continue;
+
+      let discountPerUnit = 0;
+      if (promo.discountType === 'PERCENT') {
+        discountPerUnit = Math.round((item.price * promo.discountValue) / 100);
+      } else {
+        discountPerUnit = promo.discountValue;
+      }
+      discountPerUnit = Math.min(item.price, Math.max(0, discountPerUnit));
+      const totalLineDiscount = discountPerUnit * line.quantity;
+
+      if (totalLineDiscount > bestDiscount) {
+        bestDiscount = totalLineDiscount;
+        bestPromoId = promo.id;
+      }
+    }
+
+    const lineGross = line.quantity * item.price;
+    const finalDiscount = Math.min(lineGross, bestDiscount);
+
     return {
       menuItemId: item.id,
       itemNameSnapshot: item.name,
       quantity: line.quantity,
       unitPrice: item.price,
-      discountAmount,
-      lineTotal: line.quantity * item.price - discountAmount,
+      discountAmount: finalDiscount,
+      lineTotal: lineGross - finalDiscount,
       note: line.note || null,
       fromRecommendation: line.fromRecommendation,
+      promoId: bestPromoId,
     };
   });
 
-  const subtotalAmount = lines.reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+  const subtotalAmount = rawSubtotal;
   const discountAmount = lines.reduce((sum, l) => sum + l.discountAmount, 0);
+  const totalAmount = Math.max(0, subtotalAmount - discountAmount);
 
   const stockDecrements = new Map(
     [...requiredQty].filter(([id]) => byId.get(id)!.stock !== null),
   );
 
-  return { lines, subtotalAmount, discountAmount, totalAmount: subtotalAmount - discountAmount, stockDecrements };
+  return { lines, subtotalAmount, discountAmount, totalAmount, stockDecrements };
 }

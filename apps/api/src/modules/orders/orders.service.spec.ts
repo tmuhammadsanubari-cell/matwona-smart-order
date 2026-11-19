@@ -74,6 +74,9 @@ function setup() {
         storedOrder({ ...data, items: data.items.create }),
       ),
     },
+    promo: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   };
   const prisma = {
     order: { findUnique: vi.fn().mockResolvedValue(null) },

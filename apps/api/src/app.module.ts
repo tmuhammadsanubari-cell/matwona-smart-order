@@ -14,6 +14,7 @@ import { AnalyticsModule } from './modules/analytics/analytics.module.js';
 import { StaffModule } from './modules/staff/staff.module.js';
 import { PromosModule } from './modules/promos/promos.module.js';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module.js';
+import { PaymentsModule } from './modules/payments/payments.module.js';
 
 // Modul fitur ditambahkan sesuai docs/BACKLOG.md:
 // payments (S2-01), promos (S3-08), analytics (S3-05), recommendations (S3-03), users (S2-12)
@@ -29,6 +30,7 @@ import { RecommendationsModule } from './modules/recommendations/recommendations
     TablesModule,
     MenuModule,
     OrdersModule,
+    PaymentsModule,
     RealtimeModule,
     PosSyncModule,
     AnalyticsModule,

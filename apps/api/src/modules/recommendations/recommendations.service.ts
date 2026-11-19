@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 export interface RecommendationRuleDto {
@@ -21,7 +22,10 @@ export interface RecommendationItemDto {
 
 @Injectable()
 export class RecommendationsService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(ConfigService) private readonly config: ConfigService,
+  ) {}
 
   async getRules(outletId: string): Promise<RecommendationRuleDto[]> {
     const rules = await this.prisma.recommendationRule.findMany({
@@ -127,23 +131,33 @@ export class RecommendationsService {
   }
 
   async getRecommendations(outletId: string, currentItemIds: string[]): Promise<RecommendationItemDto[]> {
-    // Try asking Python FastAPI reco service if running
+    const recoUrl = this.config.get<string>('RECO_SERVICE_URL', 'http://localhost:8000');
+    const internalKey = this.config.get<string>('RECO_INTERNAL_KEY', '');
+    const timeoutMs = Number(this.config.get<number>('RECO_TIMEOUT_MS', 300)) || 300;
+
+    // 1. Coba hubungi AI/ML microservice (FastAPI) dengan timeout 300 ms (NFR-004, NFR-020)
     try {
-      const resp = await fetch('http://127.0.0.1:8000/internal/recommend', {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (internalKey) {
+        headers['X-Internal-Key'] = internalKey;
+      }
+
+      const resp = await fetch(`${recoUrl}/internal/recommend`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ item_ids: currentItemIds }),
-        signal: AbortSignal.timeout(1500),
+        signal: AbortSignal.timeout(timeoutMs),
       });
+
       if (resp.ok) {
         const data = (await resp.json()) as { recommendations?: Array<{ item_id: string; score: number }> };
         if (data.recommendations?.length) {
-          const recIds = data.recommendations.map((r) => r.item_id);
+          const recIds = data.recommendations.map((r) => r.item_id).filter((id) => !currentItemIds.includes(id));
           const items = await this.prisma.menuItem.findMany({
-            where: { id: { in: recIds }, isAvailable: true },
+            where: { id: { in: recIds }, isAvailable: true, isArchived: false },
           });
           if (items.length) {
-            return items.map((item) => ({
+            return items.slice(0, 3).map((item) => ({
               id: item.id,
               name: item.name,
               price: item.price,
@@ -154,17 +168,56 @@ export class RecommendationsService {
         }
       }
     } catch {
-      // Fallback gracefully to database pairing
+      // Fallback gracefully bila ML service timeout atau offline (NFR-020)
     }
 
-    // Heuristic fallback: recommend top drinks or snacks not already in cart
+    // 2. Fallback cerdas: Menu terlaris dalam 30 hari terakhir
+    try {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+      const topItems = await this.prisma.orderItem.groupBy({
+        by: ['menuItemId'],
+        where: {
+          order: {
+            outletId,
+            paymentStatus: 'PAID',
+            status: { not: 'CANCELLED' },
+            createdAt: { gte: thirtyDaysAgo },
+          },
+          menuItemId: { notIn: currentItemIds },
+        },
+        _sum: { quantity: true },
+        orderBy: { _sum: { quantity: 'desc' } },
+        take: 3,
+      });
+
+      const topIds = topItems.map((t) => t.menuItemId).filter(Boolean);
+      if (topIds.length > 0) {
+        const items = await this.prisma.menuItem.findMany({
+          where: { id: { in: topIds }, isAvailable: true, isArchived: false },
+        });
+        if (items.length > 0) {
+          return items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            imageUrl: item.imageUrl,
+            reason: 'Paling sering dipesan (Populer)',
+          }));
+        }
+      }
+    } catch {
+      // Abaikan bila agregasi gagal
+    }
+
+    // 3. Fallback default: Menu kategori pelengkap / minuman
     const items = await this.prisma.menuItem.findMany({
       where: {
         outletId,
         id: { notIn: currentItemIds },
         isAvailable: true,
+        isArchived: false,
         category: {
-          name: { in: ['Minuman', 'Camilan & Dessert', 'Alacarte & Tambahan'] },
+          name: { in: ['Minuman', 'Camilan & Dessert', 'Alacarte & Tambahan', 'Teh', 'Kopi'] },
         },
       },
       take: 3,

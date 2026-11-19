@@ -50,6 +50,7 @@ describe('priceOrder (FR-004, NFR-007)', () => {
         lineTotal: 90000,
         note: 'sambal dipisah',
         fromRecommendation: false,
+        promoId: null,
       },
       {
         menuItemId: ESTEH,
@@ -60,6 +61,7 @@ describe('priceOrder (FR-004, NFR-007)', () => {
         lineTotal: 8000,
         note: null,
         fromRecommendation: true,
+        promoId: null,
       },
     ]);
     expect(Number.isInteger(priced.totalAmount)).toBe(true);
@@ -108,6 +110,74 @@ describe('priceOrder (FR-004, NFR-007)', () => {
   it('item habis didahulukan dibanding perubahan harga', () => {
     const error = errorOf(() => priceOrder([line(AYAM, 1), line(TUNA, 1, { expectedUnitPrice: 1 })], menu));
     expect(error.code).toBe(ErrorCode.ITEM_UNAVAILABLE);
+  });
+
+  it('menerapkan promo diskon otomatis dengan diskon terbesar per item (FR-020, BRU-11)', () => {
+    // Hari ini Jumat (5)
+    const jumat = new Date('2026-11-20T10:00:00Z'); // 2026-11-20 adalah Jumat (day 5)
+    const promos = [
+      {
+        id: 'promo-10pct',
+        title: 'Diskon 10% Tuna',
+        discountType: 'PERCENT' as const,
+        discountValue: 10,
+        minPurchase: 40000,
+        activeDays: [5], // Jumat saja
+        applicableMenuItemIds: [TUNA],
+      },
+      {
+        id: 'promo-nom-3k',
+        title: 'Potongan Rp 3.000',
+        discountType: 'NOMINAL' as const,
+        discountValue: 3000,
+        minPurchase: 20000,
+        activeDays: [5],
+        applicableMenuItemIds: [TUNA],
+      },
+    ];
+
+    // Tuna 45.000: Diskon 10% = 4.500. Potongan 3.000 = 3.000. Sistem wajib memilih yang terbesar (4.500)
+    const priced = priceOrder([line(TUNA, 1), line(ESTEH, 1)], menu, promos, jumat);
+    expect(priced.subtotalAmount).toBe(53000);
+    expect(priced.discountAmount).toBe(4500);
+    expect(priced.totalAmount).toBe(48500);
+    expect(priced.lines[0]?.promoId).toBe('promo-10pct');
+    expect(priced.lines[0]?.discountAmount).toBe(4500);
+    expect(priced.lines[0]?.lineTotal).toBe(40500);
+    // Es teh tidak dapat promo
+    expect(priced.lines[1]?.promoId).toBeNull();
+    expect(priced.lines[1]?.discountAmount).toBe(0);
+  });
+
+  it('promo tidak berlaku jika syarat minPurchase atau hari aktif tidak cocok', () => {
+    // Hari Sabtu (6)
+    const sabtu = new Date('2026-11-21T10:00:00Z');
+    const promos = [
+      {
+        id: 'promo-jumat',
+        title: 'Diskon Khusus Jumat',
+        discountType: 'PERCENT' as const,
+        discountValue: 20,
+        minPurchase: 10000,
+        activeDays: [5], // Hanya Jumat
+        applicableMenuItemIds: [],
+      },
+      {
+        id: 'promo-min-100k',
+        title: 'Diskon Belanja 100rb',
+        discountType: 'NOMINAL' as const,
+        discountValue: 15000,
+        minPurchase: 100000, // Minimal 100k
+        activeDays: [1, 2, 3, 4, 5, 6, 7],
+        applicableMenuItemIds: [],
+      },
+    ];
+
+    const priced = priceOrder([line(TUNA, 1)], menu, promos, sabtu);
+    expect(priced.subtotalAmount).toBe(45000);
+    expect(priced.discountAmount).toBe(0);
+    expect(priced.totalAmount).toBe(45000);
+    expect(priced.lines[0]?.promoId).toBeNull();
   });
 });
 

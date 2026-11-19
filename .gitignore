@@ -26,6 +26,14 @@ apps/reco/.ipynb_checkpoints/
 # data mitra (JANGAN di-commit: export Olsera asli, transaksi riil)
 data/
 *.olsera-export.csv
+*.xlsx
+extracted_ini/
+
+# document binaries & archives
+*.pdf
+*.docx
+*.zip
+WhatsApp Image*.jpeg
 
 # misc
 .DS_Store
@@ -37,9 +45,6 @@ test-results/
 .cursor/
 .agents/
 skills-lock.json
-*.zip
-WhatsApp Image*.jpeg
-Brand Guideline.pdf
 
 # Local design references and browser review artifacts
 /tmp/design-review/

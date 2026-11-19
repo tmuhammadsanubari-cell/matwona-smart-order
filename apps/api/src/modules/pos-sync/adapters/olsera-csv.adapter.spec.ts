@@ -9,6 +9,8 @@ describe('OlseraCsvAdapter', () => {
       expect(parseRupiah('Rp 45.000')).toBe(45000);
       expect(parseRupiah('45000')).toBe(45000);
       expect(parseRupiah('Rp. 19.500,00')).toBe(19500);
+      expect(parseRupiah('33000.0')).toBe(33000);
+      expect(parseRupiah('10837.5')).toBe(10838);
       expect(parseRupiah('')).toBeNull();
       expect(parseRupiah(null)).toBeNull();
     });
@@ -60,6 +62,30 @@ Tuna Mayo,TN-MYO,17000,Non-Spicy`;
       expect(res.items[0]?.name).toBe('Tuna Mayo');
       expect(res.items[0]?.price).toBe(17000);
       expect(res.items[0]?.categoryName).toBe('Non-Spicy');
+    });
+
+    it('mendukung format ekspor asli Olsera "Penjualan berdasarkan SKU"', async () => {
+      const csv = `product,alternative_name,variant,group,sku,barcode,brand,sold qty,currency,subtotal sales amount,discount item amount,prorate discount billing,prorate redeem billing,total sales return,total sales amount,total cost price,profit,total sales order,average qty sold
+Bakmie Abon Ayam,,,Bakmie,,,,1.0,IDR,33000.0,0.0,4950.0,0.0,0.0,28050.0,18491.0,9559.0,1.0,1.0
+Bakmie Tuna Lada Garam,,,Bakmie,,,,3.0,IDR,105000.0,0.0,15750.0,0.0,0.0,89250.0,40899.0,48351.0,2.0,1.5
+Es Kopi Susu,,,Kopi,,,,7.0,IDR,119000.0,0.0,17850.0,0.0,0.0,101150.0,57169.0,43981.0,6.0,1.17`;
+
+      const res = await adapter.pullProducts({ file: Buffer.from(csv) });
+      expect(res.errors).toHaveLength(0);
+      expect(res.items).toHaveLength(3);
+      expect(res.items[0]).toEqual({
+        externalId: 'Bakmie Abon Ayam',
+        sku: undefined,
+        name: 'Bakmie Abon Ayam',
+        categoryName: 'Bakmie',
+        price: 33000,
+        stock: 1,
+        isActive: true,
+      });
+      expect(res.items[1]?.name).toBe('Bakmie Tuna Lada Garam');
+      expect(res.items[1]?.categoryName).toBe('Bakmie');
+      expect(res.items[2]?.name).toBe('Es Kopi Susu');
+      expect(res.items[2]?.categoryName).toBe('Kopi');
     });
   });
 

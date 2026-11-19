@@ -21,29 +21,43 @@ export const DEFAULT_PRODUCT_MAPPING: Record<string, string> = {
   'nama produk': 'name',
   nama: 'name',
   'product name': 'name',
+  product: 'name',
   kategori: 'categoryName',
   category: 'categoryName',
+  group: 'categoryName',
+  grup: 'categoryName',
   'harga jual': 'price',
   harga: 'price',
   price: 'price',
+  'subtotal sales amount': 'price',
   stok: 'stock',
   stock: 'stock',
   qty: 'stock',
+  'sold qty': 'stock',
   status: 'isActive',
   aktif: 'isActive',
 };
 
-/** Normalisasi nominal Rupiah: "Rp 45.000", "45000", "45.000,00" -> 45000 */
+/** Normalisasi nominal Rupiah: "Rp 45.000", "45000", "45.000,00", "33000.0" -> 45000, 33000 */
 export function parseRupiah(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   const str = String(value).trim();
   if (!str) return null;
-  // Hapus "Rp", spasi, pemisah ribuan titik
-  const cleaned = str
-    .replace(/^rp\.?\s*/i, '')
-    .replace(/\s+/g, '')
-    .replace(/\./g, '')
-    .replace(/,.*$/, ''); // buang desimal sen
+
+  // Hapus 'Rp' dan spasi
+  const s = str.replace(/^rp\.?\s*/i, '').replace(/\s+/g, '');
+
+  // Format desimal standar (misal dari ekspor Olsera: "33000.0", "10837.5", "0.0")
+  if (/^\d+\.\d+$/.test(s)) {
+    const parts = s.split('.');
+    if (parts[0]!.length >= 4 || parts[1]!.length !== 3) {
+      const num = Number(s);
+      return Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
+    }
+  }
+
+  // Format Indonesia: titik adalah ribuan, koma adalah desimal
+  const cleaned = s.replace(/\./g, '').replace(/,.*$/, '');
   const num = Number(cleaned);
   return Number.isFinite(num) && num >= 0 ? Math.round(num) : null;
 }
@@ -101,7 +115,20 @@ export class OlseraCsvAdapter implements PosSyncAdapter {
         continue;
       }
 
-      const price = parseRupiah(mapped.price);
+      let price = parseRupiah(mapped.price);
+      if (price === null) {
+        // Fallback untuk laporan penjualan Olsera per SKU: hitung harga satuan dari subtotal / sold qty
+        const subtotal = parseRupiah(
+          record['subtotal sales amount'] ??
+            record['subtotal_sales_amount'] ??
+            record['total sales amount'] ??
+            record['total_sales_amount'],
+        );
+        const qty = Number(record['sold qty'] ?? record['sold_qty'] ?? record['qty'] ?? 1) || 1;
+        if (subtotal !== null && qty > 0) {
+          price = Math.round(subtotal / qty);
+        }
+      }
       if (price === null) {
         errors.push({ row: rowNum, reason: 'Harga kosong atau tidak valid' });
         continue;

@@ -7,3 +7,4 @@ export * from './schemas/menu.schema.js';
 export * from './schemas/auth.schema.js';
 export * from './schemas/table.schema.js';
 export * from './schemas/realtime.schema.js';
+export * from './schemas/payment.schema.js';
