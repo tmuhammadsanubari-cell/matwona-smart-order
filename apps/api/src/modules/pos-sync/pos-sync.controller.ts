@@ -12,10 +12,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
-import type { ApiSuccess, AuthUser } from 'shared';
+import { savePosMappingSchema, type ApiSuccess, type AuthUser, type SavePosMappingInput } from 'shared';
 import { MappingEntity } from '../../generated/prisma/client.js';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { PosSyncService, type PreviewResult } from './pos-sync.service.js';
 
 interface UploadedFileShape {
@@ -43,11 +44,10 @@ export class PosSyncController {
   @Put('mapping')
   async saveMapping(
     @CurrentUser() user: AuthUser,
-    @Body('entity') entityStr: string,
-    @Body('mapping') mapping: Record<string, string>,
+    @Body(new ZodValidationPipe(savePosMappingSchema)) body: SavePosMappingInput,
   ): Promise<ApiSuccess<Record<string, string>>> {
-    const entity = entityStr === 'HISTORY_IMPORT' ? MappingEntity.HISTORY_IMPORT : MappingEntity.PRODUCT;
-    const result = await this.posSync.saveMapping(user.outletId, entity, mapping);
+    const entity = body.entity === 'HISTORY_IMPORT' ? MappingEntity.HISTORY_IMPORT : MappingEntity.PRODUCT;
+    const result = await this.posSync.saveMapping(user.outletId, entity, body.mapping);
     return { success: true, data: result };
   }
 

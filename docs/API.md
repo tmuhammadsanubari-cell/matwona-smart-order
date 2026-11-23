@@ -166,6 +166,13 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | ✅ | PUT | `/pos-sync/mapping` | ADMIN |
 | ✅ | GET | `/pos-sync/history` | ADMIN |
 
+Catatan implementasi (S2-07, S2-10):
+- `GET /pos-sync/mapping?entity=PRODUCT|HISTORY_IMPORT` → `{ "<judul kolom CSV>": "<field>" }`. Bila belum pernah disimpan, server mengembalikan pemetaan default (alias umum seperti `nama produk`, `harga jual`).
+- `PUT /pos-sync/mapping` body `{ entity?: 'PRODUCT' | 'HISTORY_IMPORT', mapping }`, divalidasi `savePosMappingSchema` (`packages/shared/src/schemas/pos-sync.schema.ts`). Field tujuan: `externalId`, `sku`, `name`, `categoryName`, `price`, `stock`, `isActive`, atau `""` untuk kolom yang sengaja diabaikan. Judul kolom dicocokkan tanpa beda huruf besar/kecil. Body tidak valid → 400 `VALIDATION_ERROR`.
+- `POST /pos-sync/preview` (multipart): `file` (CSV) + `columnMapping` opsional (JSON string, format sama dengan `mapping`). Tanpa `columnMapping`, server memakai pemetaan tersimpan. Respons `PosSyncPreviewDto`: `logId`, `summary { newCount, changedCount, unchangedCount, errorCount }`, `diff[]`, `errors[{ row, reason }]`.
+- `POST /pos-sync/apply` body `{ logId }` dari hasil pratinjau.
+- `GET /pos-sync/export-transactions?from=<ISO>&to=<ISO>` → file CSV (`Content-Disposition`). Web mengirim batas hari WIB, mis. `2026-11-01T00:00:00+07:00` s.d. `2026-11-24T23:59:59.999+07:00`.
+
 ## Rekomendasi admin (FR-019, FR-022)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|

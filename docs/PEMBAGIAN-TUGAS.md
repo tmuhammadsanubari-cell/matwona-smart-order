@@ -73,7 +73,7 @@ Kolom **Terima dari** berisi hal yang harus siap sebelum task dimulai. Kolom **S
 |----|------|:------:|-------------|-------------|------------------|
 | S2-12 | Kelola akun staf (verifikasi + test, lalu centang) | 9–10 | BE (modul `staff` sudah ada) | QA | **Verifikasi.** Halaman & modul sudah ada. |
 | S4-08 | Cetak struk 58/80 mm (verifikasi print CSS, lalu centang) | 9–10 | – | QA | **Verifikasi.** `thermal-receipt.tsx` sudah ada. |
-| S2-10 | Halaman sinkronisasi: tambah UI pemetaan kolom tersimpan | 10–11 | BE (S2-07 endpoint mapping) | QA (E2E impor CSV) | **Sebagian.** Unggah, pratinjau, log, ekspor sudah memanggil API. |
+| S2-10 | Halaman sinkronisasi: tambah UI pemetaan kolom tersimpan | 10–11 | BE (S2-07 endpoint mapping) | QA (E2E impor CSV) | **Menunggu verifikasi** (24 Nov). Pemetaan kolom tersimpan, pratinjau, terapkan, ekspor rentang tanggal, dan riwayat sudah tersambung ke API + test. Sisa: cek manual 360 px & uji dengan file export Olsera asli (S0-08), lalu QA di staging. |
 | – | Badge "Lunas (QRIS)" otomatis di dashboard kasir saat `payment.updated` | 11 | BE (S2-02) | QA | Belum |
 | S3-06 | Dashboard analitik: grafik Recharts, palet brand, filter tanggal & sumber | 12–13 | AI (S3-05 endpoint) | QA, PM (bahan business plan) | **Sebagian.** Filter tanggal sudah ada; grafik belum (Recharts terpasang tapi belum dipakai). |
 | S3-07 | Halaman performa rekomendasi (impression, CTR, attach rate) + rule & model (bersama AI) | 13 | AI (endpoint performa) | QA | **Sebagian.** Halaman rule & model status sudah ada. |

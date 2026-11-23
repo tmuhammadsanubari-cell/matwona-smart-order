@@ -40,6 +40,9 @@ const TEXT_PAIRS: Array<[string, string, string]> = [
   ['neutral', 'disabled', 'Button/Input/Stepper disabled, mis. tombol "Habis"'],
   ['warning-soft', 'warning', 'ConnectionBanner'],
   ['primary-foreground', 'ink', 'Toast'],
+  ['muted', 'primary-soft', 'petunjuk di area unggah CSV (Sinkronisasi Olsera)'],
+  ['danger-strong', 'danger-soft', 'kotak error impor (Sinkronisasi Olsera)'],
+  ['warning', 'warning-soft', 'peringatan pemetaan kolom (Sinkronisasi Olsera)'],
 ];
 
 // Turunkan pasangan dari kelas Badge agar tone baru otomatis ikut diuji.
