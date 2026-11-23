@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common';
-import type { ApiSuccess, AuthUser } from 'shared';
+import type { ApiSuccess, AuthUser, ResetStaffPasswordInput } from 'shared';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { StaffService, type StaffDto } from './staff.service.js';
@@ -31,6 +31,16 @@ export class StaffController {
   ): Promise<ApiSuccess<StaffDto>> {
     const updated = await this.staffService.toggleActive(user.outletId, id, user.id);
     return { success: true, data: updated };
+  }
+
+  @Patch(':id/password')
+  async resetPassword(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() body: ResetStaffPasswordInput,
+  ): Promise<ApiSuccess<{ message: string }>> {
+    const result = await this.staffService.resetPassword(user.outletId, id, body.password);
+    return { success: true, data: result };
   }
 
   @Delete(':id')

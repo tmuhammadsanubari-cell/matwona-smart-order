@@ -12,7 +12,8 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
-import type { ApiSuccess, AuthUser } from 'shared';
+import { ErrorCode, type ApiSuccess, type AuthUser } from 'shared';
+import { AppException } from '../../common/app.exception.js';
 import { MappingEntity } from '../../generated/prisma/client.js';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
@@ -118,5 +119,31 @@ export class PosSyncController {
   async history(@CurrentUser() user: AuthUser) {
     const logs = await this.posSync.getLogs(user.outletId);
     return { success: true, data: logs };
+  }
+
+  @Post('transactions/import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importTransactions(
+    @CurrentUser() user: AuthUser,
+    @UploadedFile() file?: UploadedFileShape,
+  ): Promise<
+    ApiSuccess<{
+      importedCount: number;
+      skippedCount: number;
+      errors: unknown[];
+    }>
+  > {
+    if (!file?.buffer || file.buffer.length === 0) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'File CSV transaksi wajib diunggah.');
+    }
+
+    const result = await this.posSync.importTransactions(
+      user.outletId,
+      file.buffer,
+      file.originalname,
+      user.id,
+    );
+
+    return { success: true, data: result };
   }
 }

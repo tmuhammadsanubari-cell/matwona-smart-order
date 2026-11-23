@@ -84,14 +84,14 @@ Kolom **Terima dari** berisi hal yang harus siap sebelum task dimulai. Kolom **S
 | ID | Task | Minggu | Terima dari | Serahkan ke | Kondisi sekarang |
 |----|------|:------:|-------------|-------------|------------------|
 | S1-13 | Deploy staging (Vercel + Cloud Run + DB) dan demo MVP | 9 (**mendesak**) | – | QA (smoke test), PM (demo) | Belum ada config deploy |
-| S2-01 | Modul `payments`: `POST /public/orders/:code/pay`, Snap QRIS, expiry 15 menit | 10 | PM (kunci sandbox) | FE1 (S2-03) | **Belum ada sama sekali** |
-| S2-02 | Webhook Midtrans: signature SHA512, idempoten, emit `payment.updated`, kembalikan stok saat expire | 10–11 | S2-01 | FE1, FE2 (UI realtime), QA | Belum |
-| S2-07 | Simpan pemetaan kolom (`pos_column_mappings`) | 10–11 | PM (contoh file asli S0-08) | FE2 (S2-10) | **Sebagian.** Adapter, preview, apply, test sudah ada. |
-| S2-08 | Ekspor CSV + log + `MockOlseraAdapter`: lengkapi test, lalu centang | 10 | – | FE2, QA | **Verifikasi.** Kode sudah ada. |
-| S2-09 | Impor riwayat transaksi (`source = OLSERA_IMPORT`) (bersama AI) | 11 | PM (S0-08), S2-07 | AI (S3-01, S3-05) | Belum |
-| S3-03 | Proxy rekomendasi: URL `reco` dari env, timeout **300 ms** (NFR-020), fallback terlaris, rute `GET /public/recommendations` | 12 | AI (`/internal/recommend` final) | FE1 (S3-04) | **Sebagian.** Proxy ada, tapi URL tertulis langsung di kode dan timeout 1500 ms. |
-| S3-08 | Terapkan promo otomatis di `order-pricing.ts` (harga tetap dihitung server) | 12 | – | FE1, FE2 | **Sebagian.** CRUD ada; belum diterapkan saat checkout. |
-| – | Catat semua endpoint baru di `docs/API.md` | tiap PR | – | SA, FE1, FE2 | Endpoint analytics, promos, staff, recommendations masih ⬜ |
+| S2-01 | Modul `payments`: `POST /public/orders/:code/pay`, Snap QRIS, expiry 15 menit | 10 | PM (kunci sandbox) | FE1 (S2-03) | **Selesai.** Modul payments terimplementasi & teruji. |
+| S2-02 | Webhook Midtrans: signature SHA512, idempoten, emit `payment.updated`, kembalikan stok saat expire | 10–11 | S2-01 | FE1, FE2 (UI realtime), QA | **Selesai.** Webhook idempoten & restock teruji. |
+| S2-07 | Simpan pemetaan kolom (`pos_column_mappings`) | 10–11 | PM (contoh file asli S0-08) | FE2 (S2-10) | **Selesai.** Endpoint mapping & adapter Olsera format nyata. |
+| S2-08 | Ekspor CSV + log + `MockOlseraAdapter`: lengkapi test, lalu centang | 10 | – | FE2, QA | **Selesai.** Ekspor transaksi & log terverifikasi. |
+| S2-09 | Impor riwayat transaksi (`source = OLSERA_IMPORT`) (bersama AI) | 11 | PM (S0-08), S2-07 | AI (S3-01, S3-05) | **Selesai.** Endpoint `POST /pos-sync/transactions/import` siap pakai untuk AI. |
+| S3-03 | Proxy rekomendasi: URL `reco` dari env, timeout **300 ms** (NFR-020), fallback terlaris, rute `GET /public/recommendations` | 12 | AI (`/internal/recommend` final) | FE1 (S3-04) | **Selesai.** Timeout 300 ms & fallback cerdas 30 hari. |
+| S3-08 | Terapkan promo otomatis di `order-pricing.ts` (harga tetap dihitung server) | 12 | – | FE1, FE2 | **Selesai.** Pricing engine otomatis memilih diskon terbesar (BRU-11). |
+| – | Catat semua endpoint baru di `docs/API.md` | tiap PR | – | SA, FE1, FE2 | **Selesai.** Seluruh endpoint payments, pos-sync, staff, promo, reco dicatat ✅. |
 | S4-02 | Uji performa k6 (bersama QA) | 14 | QA (skrip k6) | QA | Belum |
 | S4-03 | Perbaikan temuan OWASP ZAP & `pnpm audit` (bersama QA) | 14 | QA (laporan temuan) | QA (retest) | Belum |
 | R-01 | Deploy production, `min-instances=1`, warm-up | 15 | QA (UAT lulus) | PM (R-02) | Belum |

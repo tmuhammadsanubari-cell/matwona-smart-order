@@ -199,25 +199,99 @@ export class OlseraCsvAdapter implements PosSyncAdapter {
 
     for (const [idx, record] of records.entries()) {
       const rowNum = idx + 2;
-      const ref = (record['kode_pesanan'] ?? record['ref'] ?? record['no_transaksi'] ?? '').trim();
+
+      // Normalisasi kunci header menjadi huruf kecil untuk kompatibilitas berbagai format ekspor Olsera
+      const lowerRecord: Record<string, string> = {};
+      for (const [k, v] of Object.entries(record)) {
+        lowerRecord[k.trim().toLowerCase()] = v;
+      }
+
+      const ref = (
+        lowerRecord['kode_pesanan'] ??
+        lowerRecord['ref'] ??
+        lowerRecord['no_transaksi'] ??
+        lowerRecord['no. transaksi'] ??
+        lowerRecord['no transaksi'] ??
+        lowerRecord['nomor transaksi'] ??
+        lowerRecord['order_no'] ??
+        lowerRecord['order no'] ??
+        lowerRecord['order_id'] ??
+        lowerRecord['order id'] ??
+        lowerRecord['invoice'] ??
+        lowerRecord['no_invoice'] ??
+        lowerRecord['no invoice'] ??
+        ''
+      ).trim();
+
       if (!ref) {
         errors.push({ row: rowNum, reason: 'Nomor transaksi/kode pesanan kosong' });
         continue;
       }
 
-      const name = (record['item'] ?? record['nama_produk'] ?? '').trim();
-      const qty = Number(record['qty'] ?? 1) || 1;
-      const price = parseRupiah(record['harga'] ?? record['unit_price']) ?? 0;
-      const discount = parseRupiah(record['diskon']) ?? 0;
-      const total = parseRupiah(record['total']) ?? price * qty - discount;
+      const name = (
+        lowerRecord['item'] ??
+        lowerRecord['nama_produk'] ??
+        lowerRecord['nama produk'] ??
+        lowerRecord['product'] ??
+        lowerRecord['product name'] ??
+        lowerRecord['menu'] ??
+        ''
+      ).trim();
+
+      const qty =
+        Number(
+          lowerRecord['qty'] ??
+            lowerRecord['jumlah'] ??
+            lowerRecord['sold qty'] ??
+            lowerRecord['sold_qty'] ??
+            lowerRecord['quantity'] ??
+            1,
+        ) || 1;
+
+      const price =
+        parseRupiah(
+          lowerRecord['harga'] ??
+            lowerRecord['unit_price'] ??
+            lowerRecord['unit price'] ??
+            lowerRecord['harga jual'] ??
+            lowerRecord['price'],
+        ) ?? 0;
+
+      const discount =
+        parseRupiah(
+          lowerRecord['diskon'] ??
+            lowerRecord['discount'] ??
+            lowerRecord['potongan'],
+        ) ?? 0;
+
+      const total =
+        parseRupiah(
+          lowerRecord['total'] ??
+            lowerRecord['subtotal'] ??
+            lowerRecord['line_total'] ??
+            lowerRecord['subtotal sales amount'] ??
+            lowerRecord['total sales amount'],
+        ) ?? (price * qty - discount);
 
       let tx = txMap.get(ref);
       if (!tx) {
-        const occurredAt = record['tanggal'] ? new Date(record['tanggal']) : new Date();
+        const dateStr =
+          lowerRecord['tanggal'] ??
+          lowerRecord['waktu'] ??
+          lowerRecord['date'] ??
+          lowerRecord['time'] ??
+          lowerRecord['created_at'];
+        const occurredAt = dateStr ? new Date(dateStr) : new Date();
         tx = {
           externalRef: ref,
           occurredAt: isNaN(occurredAt.getTime()) ? new Date() : occurredAt,
-          paymentMethod: record['metode_bayar'] ?? record['payment_method'],
+          paymentMethod:
+            lowerRecord['metode_bayar'] ??
+            lowerRecord['metode pembayaran'] ??
+            lowerRecord['metode_pembayaran'] ??
+            lowerRecord['payment_method'] ??
+            lowerRecord['payment method'] ??
+            lowerRecord['cara bayar'],
           total: 0,
           lines: [],
         };
@@ -225,8 +299,16 @@ export class OlseraCsvAdapter implements PosSyncAdapter {
       }
 
       tx.lines.push({
-        sku: record['sku']?.trim() || undefined,
-        externalProductId: record['id_produk']?.trim() || undefined,
+        sku: (lowerRecord['sku'] ?? lowerRecord['kode sku'] ?? '').trim() || undefined,
+        externalProductId:
+          (
+            lowerRecord['id_produk'] ??
+            lowerRecord['id produk'] ??
+            lowerRecord['kode produk'] ??
+            lowerRecord['product id'] ??
+            lowerRecord['external_id'] ??
+            ''
+          ).trim() || undefined,
         name: name || 'Item',
         quantity: qty,
         unitPrice: price,

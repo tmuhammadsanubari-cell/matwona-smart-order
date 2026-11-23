@@ -89,6 +89,30 @@ Es Kopi Susu,,,Kopi,,,,7.0,IDR,119000.0,0.0,17850.0,0.0,0.0,101150.0,57169.0,439
     });
   });
 
+  describe('pullTransactions', () => {
+    it('mengimpor transaksi Olsera dengan variasi kolom header', async () => {
+      const csv = `no_transaksi,tanggal,nama_produk,qty,harga,diskon,metode_bayar
+OLS-TRX-101,2026-11-08 11:30:00,Tuna Sambal Matah,2,35000,5000,QRIS
+OLS-TRX-101,2026-11-08 11:30:00,Es Teh Manis,2,8000,0,QRIS
+OLS-TRX-102,2026-11-08 12:15:00,Bakmie Tuna,1,33000,0,Tunai`;
+
+      const res = await adapter.pullTransactions({ file: Buffer.from(csv) });
+      expect(res.errors).toHaveLength(0);
+      expect(res.items).toHaveLength(2);
+
+      const trx1 = res.items.find((i) => i.externalRef === 'OLS-TRX-101');
+      expect(trx1).toBeDefined();
+      expect(trx1?.lines).toHaveLength(2);
+      expect(trx1?.total).toBe(35000 * 2 - 5000 + 8000 * 2);
+      expect(trx1?.paymentMethod).toBe('QRIS');
+
+      const trx2 = res.items.find((i) => i.externalRef === 'OLS-TRX-102');
+      expect(trx2).toBeDefined();
+      expect(trx2?.lines).toHaveLength(1);
+      expect(trx2?.lines[0]?.name).toBe('Bakmie Tuna');
+    });
+  });
+
   describe('pushTransactions', () => {
     it('menghasilkan CSV transaksi sesuai kolom Olsera', async () => {
       const res = await adapter.pushTransactions([

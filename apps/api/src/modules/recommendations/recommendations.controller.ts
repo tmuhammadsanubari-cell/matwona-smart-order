@@ -1,5 +1,5 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
-import type { ApiSuccess, AuthUser } from 'shared';
+import { Body, Controller, Get, Inject, Post, Query } from '@nestjs/common';
+import type { ApiSuccess, AuthUser, RecommendationEventBatchInput } from 'shared';
 import { Public, Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { RecommendationsService } from './recommendations.service.js';
@@ -42,5 +42,28 @@ export class RecommendationsController {
     const ids = itemIds ? itemIds.split(',').filter(Boolean) : [];
     const recs = await this.recoService.getRecommendations(outletId, ids);
     return { success: true, data: recs };
+  }
+
+  @Public()
+  @Post('events')
+  async recordEvents(
+    @Body() body: RecommendationEventBatchInput,
+  ): Promise<ApiSuccess<{ recorded: number }>> {
+    const result = await this.recoService.recordEvents(body.outletId, body.sessionId, body.events);
+    return { success: true, data: result };
+  }
+}
+
+@Controller('public/recommendation-events')
+export class PublicRecommendationEventsController {
+  constructor(@Inject(RecommendationsService) private readonly recoService: RecommendationsService) {}
+
+  @Public()
+  @Post()
+  async recordEvents(
+    @Body() body: RecommendationEventBatchInput,
+  ): Promise<ApiSuccess<{ recorded: number }>> {
+    const result = await this.recoService.recordEvents(body.outletId, body.sessionId, body.events);
+    return { success: true, data: result };
   }
 }

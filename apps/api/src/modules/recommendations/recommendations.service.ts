@@ -1,5 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { RecommendationEventItem } from 'shared';
+import { RecoEventType, RecoSource } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 
 export interface RecommendationRuleDto {
@@ -231,5 +233,31 @@ export class RecommendationsService {
       imageUrl: item.imageUrl,
       reason: 'Paling cocok mendampingi sajianmu',
     }));
+  }
+
+  async recordEvents(
+    outletId: string,
+    sessionId: string,
+    events: RecommendationEventItem[],
+  ): Promise<{ recorded: number }> {
+    if (!events || events.length === 0) {
+      return { recorded: 0 };
+    }
+
+    const data = events.map((e) => ({
+      outletId,
+      sessionId,
+      menuItemId: e.menuItemId,
+      eventType: (e.eventType as RecoEventType) ?? RecoEventType.IMPRESSION,
+      source: (e.source as RecoSource) || RecoSource.CART_ASSOCIATION,
+      modelVersion: e.modelVersion ?? null,
+      orderId: e.orderId ?? null,
+    }));
+
+    await this.prisma.recommendationEvent.createMany({
+      data,
+    });
+
+    return { recorded: data.length };
   }
 }

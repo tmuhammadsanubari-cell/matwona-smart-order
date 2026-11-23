@@ -44,7 +44,7 @@ Catatan implementasi (S1-01):
 | ✅ | GET | `/public/orders/:code` | table token |
 | ✅ | POST | `/public/orders/:code/pay` | table token |
 | ✅ | GET | `/public/recommendations` | publik |
-| ⬜ | POST | `/public/recommendation-events` | publik |
+| ✅ | POST | `/public/recommendation-events` | publik |
 
 Catatan implementasi (S1-06):
 - `POST /public/orders` wajib header `X-Table-Token` dan `Idempotency-Key` (UUID). Body `{ customerName, customerPhone?, paymentMethod: "CASHIER"|"QRIS", items: [{ menuItemId, quantity, note?, fromRecommendation?, expectedUnitPrice? }], recommendationSessionId? }` (skema `createOrderSchema`). Field lain (mis. harga/total dari klien) diabaikan.
@@ -138,11 +138,13 @@ Catatan implementasi (S2-04):
 ## Promo & Staf (FR-020, FR-021)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET/POST | `/promos` | ADMIN |
-| ⬜ | PUT/DELETE | `/promos/:id` | ADMIN |
-| ⬜ | GET/POST | `/users` | ADMIN |
-| ⬜ | PATCH | `/users/:id` | ADMIN |
-| ⬜ | POST | `/users/:id/reset-password` | ADMIN |
+| ✅ | GET/POST | `/promos` | ADMIN |
+| ✅ | PUT/DELETE | `/promos/:id` | ADMIN |
+| ✅ | GET | `/staff` | ADMIN |
+| ✅ | POST | `/staff` | ADMIN |
+| ✅ | PATCH | `/staff/:id/toggle` | ADMIN |
+| ✅ | PATCH | `/staff/:id/password` | ADMIN |
+| ✅ | DELETE | `/staff/:id` | ADMIN |
 
 ## Analitik (FR-017…019)
 Semua menerima `from`, `to`, `source=all|digital|olsera`.
@@ -161,6 +163,7 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 |---|---|---|---|
 | ✅ | POST | `/pos-sync/preview` | ADMIN |
 | ✅ | POST | `/pos-sync/apply` | ADMIN |
+| ✅ | POST | `/pos-sync/transactions/import` | ADMIN |
 | ✅ | GET | `/pos-sync/export-transactions` | ADMIN |
 | ✅ | GET | `/pos-sync/mapping` | ADMIN |
 | ✅ | PUT | `/pos-sync/mapping` | ADMIN |

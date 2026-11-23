@@ -43,18 +43,18 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 
 | | ID | Task | Ref | Prio | Peran | Bergantung |
 |---|----|------|-----|------|-------|------------|
-| [ ] | S2-01 | Modul `payments`: `POST /public/orders/:code/pay` (Midtrans Snap QRIS, expiry 15 menit) | FR-005 | 🔴 | BE | S1-06 |
-| [ ] | S2-02 | Webhook Midtrans: verifikasi signature, idempoten, update status, emit `payment.updated`, kembalikan stok saat expire | FR-005, NFR-008 | 🔴 | BE | S2-01 |
+| [x] | S2-01 | Modul `payments`: `POST /public/orders/:code/pay` (Midtrans Snap QRIS, expiry 15 menit) | FR-005 | 🔴 | BE | S1-06 |
+| [x] | S2-02 | Webhook Midtrans: verifikasi signature, idempoten, update status, emit `payment.updated`, kembalikan stok saat expire | FR-005, NFR-008 | 🔴 | BE | S2-01 |
 | [ ] | S2-03 | UI pembayaran QRIS (Snap.js) + pilih ulang metode saat gagal | FR-005 | 🔴 | FE1 | S2-01 |
 | [x] | S2-04 | Generate & regenerate token QR, `GET /tables/qr.pdf` berdesain brand | FR-011 | 🔴 | BE | S1-02 |
 | [x] | S2-05 | Admin: halaman meja & cetak QR | FR-011 | 🔴 | FE2 | S2-04 |
 | [ ] | S2-06 | Landing page (SSG/ISR): hero, cerita brand, menu read-only, promo, lokasi, WhatsApp, SEO + schema.org Restaurant | FR-012 | 🔴 | FE1 | S1-03 |
-| [ ] | S2-07 | `PosSyncAdapter` + `OlseraCsvAdapter`: preview & apply impor produk, pemetaan kolom tersimpan | FR-013 | 🔴 | BE | S0-08, S1-03 |
-| [ ] | S2-08 | Ekspor transaksi lunas ke CSV + `pos_sync_logs` + `MockOlseraAdapter` untuk test | FR-013, FR-014 | 🔴 | BE | S2-07 |
-| [ ] | S2-09 | Impor riwayat transaksi Olsera (`source = OLSERA_IMPORT`) untuk analitik & AI | FR-013 | 🔴 | BE, AI | S2-07 |
+| [x] | S2-07 | `PosSyncAdapter` + `OlseraCsvAdapter`: preview & apply impor produk, pemetaan kolom tersimpan | FR-013 | 🔴 | BE | S0-08, S1-03 |
+| [x] | S2-08 | Ekspor transaksi lunas ke CSV + `pos_sync_logs` + `MockOlseraAdapter` untuk test | FR-013, FR-014 | 🔴 | BE | S2-07 |
+| [x] | S2-09 | Impor riwayat transaksi Olsera (`source = OLSERA_IMPORT`) untuk analitik & AI | FR-013 | 🔴 | BE, AI | S2-07 |
 | [ ] | S2-10 | Admin: halaman sinkronisasi (unggah, pemetaan kolom, pratinjau, log, ekspor) | FR-013, FR-014 | 🔴 | FE2 | S2-07, S2-08 |
 | [x] | S2-11 | Upload foto menu ke Cloudinary | FR-010 | 🟡 | BE | S1-03 |
-| [ ] | S2-12 | Admin: kelola akun staf | FR-021 | 🟡 | FE2, BE | S1-01 |
+| [x] | S2-12 | Admin: kelola akun staf | FR-021 | 🟡 | FE2, BE | S1-01 |
 | [x] | S2-13 | Selaraskan UI dengan mockup S0-06: (1) token & komponen dasar, (2) alur pelanggan C1–C4/C6/C7, (3) login & kasir K1–K3, (4) admin menu & meja A2–A3 (PR #18–#22) | NFR-012, NFR-014 | 🟡 | FE1, FE2 | S0-06 |
 
 ## Sprint 3 — Intelligence (Minggu 12–13)
@@ -63,12 +63,12 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 |---|----|------|-----|------|-------|------------|
 | [ ] | S3-01 | `apps/reco`: training FP-Growth + popularitas per slot, simpan `recommendation_rules` & `recommendation_models` | FR-015, FR-016, FR-022 | 🔴 | AI | S2-09 |
 | [ ] | S3-02 | Evaluasi offline holdout: HitRate@3, Precision@3, coverage vs baseline terlaris | FR-015 | 🔴 | AI | S3-01 |
-| [ ] | S3-03 | `GET /internal/recommend` + proxy API `GET /public/recommendations` dengan timeout & fallback | FR-015, NFR-004, NFR-020 | 🔴 | AI, BE | S3-01 |
+| [x] | S3-03 | `GET /internal/recommend` + proxy API `GET /public/recommendations` dengan timeout & fallback | FR-015, NFR-004, NFR-020 | 🔴 | AI, BE | S3-01 |
 | [ ] | S3-04 | UI "Populer sekarang" & "Sering dibeli bersama" + pencatatan `recommendation_events` | FR-015, FR-016, FR-019 | 🔴 | FE1 | S3-03 |
 | [ ] | S3-05 | Modul `analytics`: summary, sales-trend, top-items, peak-hours, menu-engineering, export | FR-017, FR-018 | 🔴 | AI, BE | S2-09 |
 | [ ] | S3-06 | Dashboard analitik admin (Recharts, palet brand, filter tanggal & sumber) | FR-017, FR-018 | 🔴 | FE2 | S3-05 |
 | [ ] | S3-07 | Performa rekomendasi (impression, CTR, attach rate) + halaman rule & model | FR-019, FR-022 | 🟡 | AI, FE2 | S3-04 |
-| [ ] | S3-08 | Modul & halaman promo, penerapan otomatis saat checkout | FR-020 | 🟡 | BE, FE2 | S1-06 |
+| [x] | S3-08 | Modul & halaman promo, penerapan otomatis saat checkout | FR-020 | 🟡 | BE, FE2 | S1-06 |
 | [ ] | S3-09 | Cloud Scheduler retrain harian 03:00 WIB | FR-022 | 🟡 | AI | S3-01 |
 | [ ] | S3-10 | Uji coba di outlet Matwona (QR tercetak, data pesanan riil) | – | 🔴 | PM, QA | S2-* |
 

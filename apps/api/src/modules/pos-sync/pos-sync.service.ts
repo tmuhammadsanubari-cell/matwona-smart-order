@@ -1,6 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCode } from 'shared';
-import { MappingEntity, SyncDirection, SyncEntity, SyncStatus } from '../../generated/prisma/client.js';
+import {
+  MappingEntity,
+  OrderSource,
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+  SyncDirection,
+  SyncEntity,
+  SyncStatus,
+} from '../../generated/prisma/client.js';
 import { AppException } from '../../common/app.exception.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
@@ -347,5 +356,180 @@ export class PosSyncService {
       fileName: l.fileName,
       userName: l.triggeredBy?.name ?? 'Sistem',
     }));
+  }
+
+  async importTransactions(
+    outletId: string,
+    fileBuffer: Buffer,
+    fileName?: string,
+    userId?: string,
+  ): Promise<{
+    importedCount: number;
+    skippedCount: number;
+    errors: RowError[];
+  }> {
+    const pullResult = await this.adapter.pullTransactions({ file: fileBuffer });
+    if (pullResult.items.length === 0 && pullResult.errors.length > 0) {
+      throw new AppException(ErrorCode.SYNC_FILE_INVALID, pullResult.errors[0]?.reason ?? 'Format file transaksi tidak valid');
+    }
+
+    const existingItems = await this.prisma.menuItem.findMany({
+      where: { outletId },
+      select: { id: true, name: true, sku: true, olseraProductId: true, price: true },
+    });
+    const itemByOlsera = new Map(existingItems.filter((i) => i.olseraProductId).map((i) => [i.olseraProductId!, i]));
+    const itemBySku = new Map(existingItems.filter((i) => i.sku).map((i) => [i.sku!, i]));
+    const itemByName = new Map(existingItems.map((i) => [i.name.trim().toLowerCase(), i]));
+
+    let defaultCategory = await this.prisma.category.findFirst({
+      where: { outletId },
+      orderBy: { sortOrder: 'asc' },
+    });
+    if (!defaultCategory) {
+      defaultCategory = await this.prisma.category.create({
+        data: {
+          outletId,
+          name: 'Umum',
+          sortOrder: 0,
+        },
+      });
+    }
+
+    let importedCount = 0;
+    let skippedCount = 0;
+
+    // Kelompokkan dan lacak prefix nomor pesanan harian
+    const dailySeqMap = new Map<string, number>();
+
+    for (const tx of pullResult.items) {
+      // Cek idempotensi: bila pesanan dengan externalRef ini sudah pernah diimpor, lewati
+      const existingOrder = await this.prisma.order.findUnique({
+        where: {
+          outletId_externalRef: {
+            outletId,
+            externalRef: tx.externalRef,
+          },
+        },
+      });
+      if (existingOrder) {
+        skippedCount++;
+        continue;
+      }
+
+      const ymd = tx.occurredAt.toISOString().slice(2, 10).replace(/-/g, '');
+      const prefix = `OLS-${ymd}-`;
+
+      let currentSeq = dailySeqMap.get(prefix);
+      if (currentSeq === undefined) {
+        const lastDaily = await this.prisma.order.findFirst({
+          where: { orderCode: { startsWith: prefix } },
+          orderBy: { orderCode: 'desc' },
+          select: { orderCode: true },
+        });
+        currentSeq = lastDaily ? Number(lastDaily.orderCode.slice(prefix.length)) || 0 : 0;
+      }
+      currentSeq++;
+      dailySeqMap.set(prefix, currentSeq);
+
+      const orderCode = `${prefix}${String(currentSeq).padStart(4, '0')}`;
+      const pmLower = (tx.paymentMethod ?? '').toLowerCase();
+      const paymentMethod = pmLower.includes('qris') ? PaymentMethod.QRIS : PaymentMethod.CASHIER;
+
+      const orderItemsData: Array<{
+        menuItemId: string;
+        itemNameSnapshot: string;
+        quantity: number;
+        unitPrice: number;
+        discountAmount: number;
+        lineTotal: number;
+      }> = [];
+
+      let subtotalAmount = 0;
+      let discountAmount = 0;
+
+      for (const line of tx.lines) {
+        let menuItem =
+          (line.externalProductId && itemByOlsera.get(line.externalProductId)) ||
+          (line.sku && itemBySku.get(line.sku)) ||
+          itemByName.get(line.name.trim().toLowerCase());
+
+        if (!menuItem) {
+          menuItem = await this.prisma.menuItem.create({
+            data: {
+              outletId,
+              categoryId: defaultCategory.id,
+              name: line.name,
+              sku: line.sku,
+              olseraProductId: line.externalProductId,
+              price: line.unitPrice,
+              isAvailable: true,
+            },
+            select: { id: true, name: true, sku: true, olseraProductId: true, price: true },
+          });
+          itemByName.set(menuItem.name.trim().toLowerCase(), menuItem);
+          if (menuItem.sku) itemBySku.set(menuItem.sku, menuItem);
+          if (menuItem.olseraProductId) itemByOlsera.set(menuItem.olseraProductId, menuItem);
+        }
+
+        const lineTotal = line.unitPrice * line.quantity - line.discountAmount;
+        subtotalAmount += line.unitPrice * line.quantity;
+        discountAmount += line.discountAmount;
+
+        orderItemsData.push({
+          menuItemId: menuItem.id,
+          itemNameSnapshot: line.name,
+          quantity: line.quantity,
+          unitPrice: line.unitPrice,
+          discountAmount: line.discountAmount,
+          lineTotal: Math.max(0, lineTotal),
+        });
+      }
+
+      const totalAmount = tx.total > 0 ? tx.total : Math.max(0, subtotalAmount - discountAmount);
+
+      await this.prisma.order.create({
+        data: {
+          outletId,
+          orderCode,
+          externalRef: tx.externalRef,
+          source: OrderSource.OLSERA_IMPORT,
+          customerName: 'Pelanggan Olsera',
+          status: OrderStatus.COMPLETED,
+          paymentStatus: PaymentStatus.PAID,
+          paymentMethod,
+          subtotalAmount,
+          discountAmount,
+          totalAmount,
+          paidAt: tx.occurredAt,
+          createdAt: tx.occurredAt,
+          items: {
+            create: orderItemsData,
+          },
+        },
+      });
+
+      importedCount++;
+    }
+
+    await this.prisma.posSyncLog.create({
+      data: {
+        outletId,
+        adapter: this.adapter.name,
+        direction: SyncDirection.PULL,
+        entity: SyncEntity.TRANSACTION,
+        status: pullResult.errors.length > 0 ? SyncStatus.PARTIAL : SyncStatus.SUCCESS,
+        successCount: importedCount,
+        failedCount: pullResult.errors.length,
+        fileName: fileName ?? 'olsera_transactions.csv',
+        triggeredByUserId: userId,
+        errors: pullResult.errors.length > 0 ? JSON.parse(JSON.stringify(pullResult.errors)) : undefined,
+      },
+    });
+
+    return {
+      importedCount,
+      skippedCount,
+      errors: pullResult.errors,
+    };
   }
 }

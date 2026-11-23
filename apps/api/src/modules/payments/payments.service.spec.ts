@@ -2,7 +2,6 @@ import crypto from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
 import { ConfigService } from '@nestjs/config';
 import { ErrorCode } from 'shared';
-import { AppException } from '../../common/app.exception.js';
 import { PaymentRecordStatus, PaymentStatus, OrderStatus } from '../../generated/prisma/client.js';
 import type { PrismaService } from '../../prisma/prisma.service.js';
 import type { PublicMenuService } from '../menu/public-menu.service.js';

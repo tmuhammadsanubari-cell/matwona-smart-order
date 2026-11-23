@@ -51,6 +51,26 @@ export const SocketEvent = {
 } as const;
 export type SocketEvent = (typeof SocketEvent)[keyof typeof SocketEvent];
 
+export const OrderSource = {
+  DIGITAL: 'DIGITAL',
+  OLSERA_IMPORT: 'OLSERA_IMPORT',
+} as const;
+export type OrderSource = (typeof OrderSource)[keyof typeof OrderSource];
+
+export const RecoSource = {
+  CART_ASSOCIATION: 'CART_ASSOCIATION',
+  POPULAR_NOW: 'POPULAR_NOW',
+} as const;
+export type RecoSource = (typeof RecoSource)[keyof typeof RecoSource];
+
+export const RecoEventType = {
+  IMPRESSION: 'IMPRESSION',
+  CLICK: 'CLICK',
+  ADD_TO_CART: 'ADD_TO_CART',
+  PURCHASED: 'PURCHASED',
+} as const;
+export type RecoEventType = (typeof RecoEventType)[keyof typeof RecoEventType];
+
 export const socketRoom = {
   cashier: (outletId: string) => `outlet:${outletId}:cashier`,
   menu: (outletId: string) => `outlet:${outletId}:menu`,

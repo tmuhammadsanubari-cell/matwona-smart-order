@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
-import { RecommendationsController } from './recommendations.controller.js';
+import {
+  PublicRecommendationEventsController,
+  RecommendationsController,
+} from './recommendations.controller.js';
 import { RecommendationsService } from './recommendations.service.js';
 
 @Module({
-  controllers: [RecommendationsController],
+  controllers: [RecommendationsController, PublicRecommendationEventsController],
   providers: [RecommendationsService],
   exports: [RecommendationsService],
 })

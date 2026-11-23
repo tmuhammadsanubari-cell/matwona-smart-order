@@ -84,9 +84,10 @@ export class StaffService {
       throw new AppException(ErrorCode.NOT_FOUND, 'Staf tidak ditemukan.');
     }
 
+    const nextActiveState = !user.isActive;
     const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: { isActive: !user.isActive },
+      data: { isActive: nextActiveState },
       select: {
         id: true,
         name: true,
@@ -98,7 +99,40 @@ export class StaffService {
       },
     });
 
+    // Revoke semua sesi aktif jika akun dinonaktifkan
+    if (!nextActiveState) {
+      await this.prisma.refreshToken.deleteMany({
+        where: { userId },
+      });
+    }
+
     return updated;
+  }
+
+  async resetPassword(outletId: string, userId: string, newPassword: string): Promise<{ message: string }> {
+    if (!newPassword || newPassword.length < 8) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'Password baru minimal 8 karakter.');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, outletId },
+    });
+    if (!user) {
+      throw new AppException(ErrorCode.NOT_FOUND, 'Staf tidak ditemukan.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+
+    // Revoke semua refresh token lama agar pengguna harus login dengan password baru
+    await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
+
+    return { message: 'Password staf berhasil direset.' };
   }
 
   async deleteStaff(outletId: string, userId: string, currentUserId: string): Promise<void> {
@@ -113,6 +147,7 @@ export class StaffService {
       throw new AppException(ErrorCode.NOT_FOUND, 'Staf tidak ditemukan.');
     }
 
+    await this.prisma.refreshToken.deleteMany({ where: { userId } });
     await this.prisma.user.delete({ where: { id: userId } });
   }
 }
