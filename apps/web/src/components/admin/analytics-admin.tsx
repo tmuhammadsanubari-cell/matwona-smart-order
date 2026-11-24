@@ -18,17 +18,23 @@ interface AnalyticsData {
   paymentMethods: Array<{ method: string; count: number; total: number }>;
 }
 
-export function AnalyticsAdmin() {
+function getInitialDates() {
   const today = new Date().toISOString().slice(0, 10);
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  return { today, sevenDaysAgo };
+}
 
-  const [dateRange, setDateRange] = useState({ from: sevenDaysAgo, to: today });
+export function AnalyticsAdmin() {
+  const [{ today, sevenDaysAgo }] = useState(getInitialDates);
+  const [dateRange, setDateRange] = useState(() => ({ from: sevenDaysAgo, to: today }));
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
+    Promise.resolve().then(() => {
+      if (active) setLoading(true);
+    });
     staffFetch<AnalyticsData>(`/analytics/summary?from=${dateRange.from}&to=${dateRange.to}`)
       .then((res) => {
         if (active) setData(res);

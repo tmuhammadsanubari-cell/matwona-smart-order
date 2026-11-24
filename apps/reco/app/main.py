@@ -1,26 +1,5 @@
-from fastapi import Depends, FastAPI, Header, HTTPException
-
-from app.config import settings
-
-app = FastAPI(
-    title="Matwona Reco Service",
-    description="Rekomendasi menu: FP-Growth (sering dibeli bersama) + popularitas per slot waktu.",
-    version="0.1.0",
-)
-
-
-def require_internal_key(x_internal_key: str = Header(default="")) -> None:
-    if x_internal_key != settings.reco_internal_key:
-        raise HTTPException(status_code=403, detail="Forbidden")
-
-
-@app.get("/health")
-def health() -> dict:
-    return {"success": True, "data": {"status": "ok", "service": "reco"}}
-
-
 from datetime import datetime
-from typing import Optional
+
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 from app.config import settings
@@ -46,10 +25,34 @@ def health() -> dict:
 
 # Default knowledge base associations for Matwona menu
 DEFAULT_RULES: list[Rule] = [
-    Rule(antecedent=frozenset(["tuna-matah-reg"]), consequent="es-teh-matwona", support=0.082, confidence=0.67, lift=3.4),
-    Rule(antecedent=frozenset(["bakmie-tuna-matah"]), consequent="risol-tuna-melt-3", support=0.051, confidence=0.54, lift=2.8),
-    Rule(antecedent=frozenset(["tuna-matah-jumbo"]), consequent="soft-cookie-choco", support=0.037, confidence=0.42, lift=2.1),
-    Rule(antecedent=frozenset(["nasi-telur-barendo"]), consequent="jus-alpukat", support=0.028, confidence=0.35, lift=1.9),
+    Rule(
+        antecedent=frozenset(["tuna-matah-reg"]),
+        consequent="es-teh-matwona",
+        support=0.082,
+        confidence=0.67,
+        lift=3.4,
+    ),
+    Rule(
+        antecedent=frozenset(["bakmie-tuna-matah"]),
+        consequent="risol-tuna-melt-3",
+        support=0.051,
+        confidence=0.54,
+        lift=2.8,
+    ),
+    Rule(
+        antecedent=frozenset(["tuna-matah-jumbo"]),
+        consequent="soft-cookie-choco",
+        support=0.037,
+        confidence=0.42,
+        lift=2.1,
+    ),
+    Rule(
+        antecedent=frozenset(["nasi-telur-barendo"]),
+        consequent="jus-alpukat",
+        support=0.028,
+        confidence=0.35,
+        lift=1.9,
+    ),
 ]
 
 POPULAR_BY_SLOT: dict[str, list[str]] = {

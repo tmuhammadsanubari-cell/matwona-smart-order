@@ -39,7 +39,7 @@ OLS-ERR-1,,Menu Tanpa SKU & Harga,,0,Nonaktif`;
 
 export function OlseraSyncView() {
   const [tab, setTab] = useState<SyncTab>('import');
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string>('olsera_produk_sample.csv');
   const [fileSizeText, setFileSizeText] = useState<string>('7 baris · 1.2 KB');
   const [rawCsv, setRawCsv] = useState<string>(SAMPLE_CSV);
@@ -158,7 +158,7 @@ export function OlseraSyncView() {
           setErrors(res.data.errors);
           toast('Pratinjau CSV Olsera berhasil dimuat');
         }
-      } catch (err) {
+      } catch {
         toast('Pratinjau lokal ditampilkan');
       }
     });

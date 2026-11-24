@@ -551,7 +551,7 @@ function RecommendationsMockView() {
 
       {/* Active Rules List */}
       <div className="rounded-2xl border border-[#E3E8D9] bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-base font-extrabold text-[#1F2A24]">Aturan "Sering Dibeli Bersama" Aktif</h2>
+        <h2 className="mb-4 text-base font-extrabold text-[#1F2A24]">Aturan &quot;Sering Dibeli Bersama&quot; Aktif</h2>
         <div className="flex flex-col gap-3">
           {[
             {
