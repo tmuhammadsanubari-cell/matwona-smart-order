@@ -9,6 +9,8 @@ export interface PaymentInitiateResponse {
   snapToken: string;
   redirectUrl: string;
   expiresAt: string;
+  qrImageUrl?: string;
+  qrString?: string;
 }
 
 export const midtransNotificationSchema = z.object({

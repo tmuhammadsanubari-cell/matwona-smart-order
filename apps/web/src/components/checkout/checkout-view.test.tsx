@@ -50,14 +50,14 @@ describe('Checkout (FR-004, FR-006)', () => {
     expect(screen.getByRole('link', { name: 'Lihat menu' }).getAttribute('href')).toBe(`/m/matwona/t/${TOKEN}`);
   });
 
-  it('ringkasan pesanan, catatan, total; QRIS belum tersedia, bayar di kasir terpilih', async () => {
+  it('ringkasan pesanan, catatan, total; opsi QRIS aktif, bayar di kasir default terpilih', async () => {
     saveCart([{ menuItemId: 't1', name: 'Tuna Sambal Matah', unitPrice: 45000, quantity: 2, note: 'sambal dipisah' }]);
     renderCheckout();
     expect(await screen.findByText('2× Tuna Sambal Matah')).toBeTruthy();
     expect(screen.getByText('Catatan: sambal dipisah')).toBeTruthy();
     expect(screen.getAllByText('Rp 90.000').length).toBeGreaterThan(0);
     expect((screen.getByRole('radio', { name: /Bayar di Kasir/ }) as HTMLInputElement).checked).toBe(true);
-    expect((screen.getByRole('radio', { name: /^QRIS/ }) as HTMLInputElement).disabled).toBe(true);
+    expect((screen.getByRole('radio', { name: /^QRIS/ }) as HTMLInputElement).disabled).toBe(false);
   });
 
   it('header (desain C4): kembali ke menu, meja, langkah 3 dari 4; tombol kirim memuat total', async () => {

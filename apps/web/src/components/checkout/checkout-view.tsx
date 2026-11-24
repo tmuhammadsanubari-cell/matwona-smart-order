@@ -63,8 +63,8 @@ const PAYMENT_OPTIONS: {
     description: 'Tunai, kartu, atau QRIS outlet di kasir setelah pesanan dikirim.',
     icon: CashierIcon,
   },
-  // QRIS online (Midtrans) menyusul di S2-01/S2-03.
-  { value: 'QRIS', label: 'QRIS', description: 'Bayar dari meja pakai e-wallet atau m-banking. Segera tersedia.', icon: QrisIcon, disabled: true },
+  // QRIS online (Midtrans) aktif untuk pesanan digital (FR-005, S2-03).
+  { value: 'QRIS', label: 'QRIS', description: 'Bayar dari meja pakai e-wallet atau m-banking.', icon: QrisIcon },
 ];
 
 /** Langkah alur pelanggan: menu → keranjang → checkout → status (desain C4). */

@@ -57,33 +57,40 @@ export class PaymentsService {
     });
 
     const now = new Date();
-    if (existing?.snapToken && existing.expiresAt && existing.expiresAt > now) {
+    if (existing?.snapToken && existing.expiresAt && existing.expiresAt > now && (existing.rawResponse as Record<string, unknown> | null)?.qrImageUrl) {
+      const raw = existing.rawResponse as Record<string, unknown>;
       return {
         orderCode: order.orderCode,
         snapToken: existing.snapToken,
-        redirectUrl: `https://app.sandbox.midtrans.com/snap/v2/vtweb/${existing.snapToken}`,
+        redirectUrl: (raw?.redirectUrl as string) ?? `https://app.sandbox.midtrans.com/snap/v2/vtweb/${existing.snapToken}`,
         expiresAt: existing.expiresAt.toISOString(),
+        qrImageUrl: raw?.qrImageUrl as string | undefined,
+        qrString: raw?.qrString as string | undefined,
       };
     }
 
     const serverKey = this.config.get<string>('MIDTRANS_SERVER_KEY', '');
-    const isProduction = this.config.get<boolean>('MIDTRANS_IS_PRODUCTION', false);
-    const snapBaseUrl = isProduction
-      ? 'https://app.midtrans.com/snap/v1/transactions'
-      : 'https://app.sandbox.midtrans.com/snap/v1/transactions';
+    const isProduction = String(this.config.get('MIDTRANS_IS_PRODUCTION', 'false')).toLowerCase() === 'true';
 
     let snapToken = '';
     let redirectUrl = '';
+    let qrImageUrl: string | undefined;
+    let qrString: string | undefined;
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 menit (BRU-07)
 
     // Jika environment key belum diisi atau masih placeholder test
-    if (!serverKey || serverKey.startsWith('SB-Mid-server-') || serverKey.includes('xxxx') || serverKey.includes('mock')) {
+    if (!serverKey || serverKey.includes('xxxx') || serverKey.includes('mock')) {
       this.logger.warn('MIDTRANS_SERVER_KEY tidak valid/placeholder; menggunakan simulasi Snap sandbox.');
       snapToken = `mock-snap-${order.orderCode}-${Date.now()}`;
       redirectUrl = `https://app.sandbox.midtrans.com/snap/v2/vtweb/${snapToken}`;
     } else {
       try {
+        const chargeBaseUrl = isProduction
+          ? 'https://api.midtrans.com/v2/charge'
+          : 'https://api.sandbox.midtrans.com/v2/charge';
+
         const payload = {
+          payment_type: 'qris',
           transaction_details: {
             order_id: order.orderCode,
             gross_amount: order.totalAmount,
@@ -92,14 +99,12 @@ export class PaymentsService {
             first_name: order.customerName,
             phone: order.customerPhone || undefined,
           },
-          expiry: {
-            duration: 15,
-            unit: 'minute',
+          qris: {
+            acquirer: 'gopay',
           },
-          enabled_payments: ['gopay', 'shopeepay', 'qris', 'other_qris'],
         };
 
-        const res = await fetch(snapBaseUrl, {
+        const res = await fetch(chargeBaseUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -115,12 +120,23 @@ export class PaymentsService {
           throw new AppException(ErrorCode.PAYMENT_PROVIDER_ERROR, 'Gagal menghubungi penyedia pembayaran.');
         }
 
-        const data = (await res.json()) as { token: string; redirect_url: string };
-        snapToken = data.token;
-        redirectUrl = data.redirect_url;
+        const data = (await res.json()) as {
+          transaction_id?: string;
+          token?: string;
+          redirect_url?: string;
+          actions?: Array<{ name: string; url: string }>;
+          qr_string?: string;
+        };
+
+        const actions = Array.isArray(data.actions) ? data.actions : [];
+        const qrAction = actions.find((a) => a.name === 'generate-qr-code');
+        qrImageUrl = qrAction?.url;
+        qrString = data.qr_string;
+        snapToken = data.transaction_id ?? data.token ?? `charge-${order.orderCode}`;
+        redirectUrl = data.redirect_url ?? `https://app.sandbox.midtrans.com/snap/v2/vtweb/${snapToken}`;
       } catch (err: unknown) {
         if (err instanceof AppException) throw err;
-        this.logger.error(`Error requesting Snap token: ${err}`);
+        this.logger.error(`Error requesting Midtrans QRIS charge: ${err}`);
         throw new AppException(ErrorCode.PAYMENT_PROVIDER_ERROR, 'Gagal membuat sesi pembayaran QRIS.');
       }
     }
@@ -136,12 +152,24 @@ export class PaymentsService {
         status: PaymentRecordStatus.PENDING,
         amount: order.totalAmount,
         expiresAt,
+        rawResponse: {
+          qrImageUrl,
+          qrString,
+          snapToken,
+          redirectUrl,
+        },
       },
       update: {
         snapToken,
         status: PaymentRecordStatus.PENDING,
         amount: order.totalAmount,
         expiresAt,
+        rawResponse: {
+          qrImageUrl,
+          qrString,
+          snapToken,
+          redirectUrl,
+        },
       },
     });
 
@@ -150,6 +178,8 @@ export class PaymentsService {
       snapToken,
       redirectUrl,
       expiresAt: expiresAt.toISOString(),
+      qrImageUrl,
+      qrString,
     };
   }
 
@@ -159,6 +189,7 @@ export class PaymentsService {
    */
   verifySignature(orderId: string, statusCode: string, grossAmount: string, signatureKey: string): boolean {
     const serverKey = this.config.get<string>('MIDTRANS_SERVER_KEY', '');
+    this.logger.log(`Using serverKey: [${serverKey}] (len=${serverKey.length})`);
     if (!serverKey || serverKey.startsWith('SB-Mid-server-xxx')) {
       return true; // Bypass signature verification in dummy mock mode
     }

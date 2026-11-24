@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { ErrorCode, formatRupiah, PAYMENT_STATUS_LABEL, SocketEvent } from 'shared';
-import type { OrderUpdatedEvent, PaymentUpdatedEvent, PublicOrderDto } from 'shared';
+import type { OrderUpdatedEvent, PaymentInitiateResponse, PaymentUpdatedEvent, PublicOrderDto } from 'shared';
 import { BADGE_TONES, Button, Card, ConnectionBanner, cx, Logo, ProgressSteps, type ProgressStep } from '@/components/ui';
 import { ApiClientError, apiFetch } from '@/lib/api';
 import { timeWib } from '@/lib/cashier-board';
@@ -36,6 +36,7 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
     [raw, code],
   );
   const [connected, setConnected] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const query = useQuery({
     queryKey: ['order', code],
@@ -43,6 +44,29 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
     enabled: Boolean(placed),
     refetchInterval: connected ? false : POLL_INTERVAL_MS,
   });
+
+  const order = query.data;
+  const progress = order ? orderProgress(order) : null;
+
+  const payQuery = useQuery({
+    queryKey: ['order-pay', code],
+    queryFn: () =>
+      apiFetch<PaymentInitiateResponse>(`/public/orders/${encodeURIComponent(code)}/pay`, {
+        method: 'POST',
+        tableToken: placed!.tableToken,
+      }),
+    enabled: Boolean(placed && order?.paymentMethod === 'QRIS' && order?.paymentStatus !== 'PAID'),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const qrisData = payQuery.data ?? null;
+  const initiatingPay = payQuery.isPending;
+
+  function openMidtransPay() {
+    if (qrisData?.redirectUrl) {
+      window.open(qrisData.redirectUrl, '_blank');
+    }
+  }
 
   useEffect(() => {
     if (!placed) return;
@@ -63,9 +87,6 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
       socket.disconnect();
     };
   }, [placed, code, queryClient]);
-
-  const order = query.data;
-  const progress = order ? orderProgress(order) : null;
 
   useEffect(() => {
     if (progress?.final) markOrderDone(code);
@@ -160,20 +181,36 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
               <span className="text-xs font-bold text-muted">Pembayaran Digital Instan</span>
             </div>
 
-            <div className="relative rounded-xl border-2 border-primary/20 p-4 bg-[#FFFFCA]/20">
-              <svg width="160" height="160" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-primary">
-                <rect x="2" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
-                <rect x="4.5" y="4.5" width="2" height="2" fill="currentColor" />
-                <rect x="15" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
-                <rect x="17.5" y="4.5" width="2" height="2" fill="currentColor" />
-                <rect x="2" y="15" width="7" height="7" rx="1.5" strokeWidth="2" />
-                <rect x="4.5" y="17.5" width="2" height="2" fill="currentColor" />
-                <path d="M14 14h3v3h-3z" fill="currentColor" />
-                <path d="M19 14h2v2h-2z" fill="currentColor" />
-                <path d="M14 19h2v2h-2z" fill="currentColor" />
-                <path d="M18 18h3v3h-3z" strokeWidth="1.5" />
-                <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-              </svg>
+            <div className="relative rounded-xl border-2 border-primary/20 p-4 bg-white flex flex-col items-center justify-center min-h-[190px]">
+              {qrisData?.qrImageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={qrisData.qrImageUrl}
+                  alt="QRIS Midtrans Asli"
+                  width={200}
+                  height={200}
+                  className="rounded-lg shadow-sm"
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-2 py-4">
+                  <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="text-primary/40">
+                    <rect x="2" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
+                    <rect x="4.5" y="4.5" width="2" height="2" fill="currentColor" />
+                    <rect x="15" y="2" width="7" height="7" rx="1.5" strokeWidth="2" />
+                    <rect x="17.5" y="4.5" width="2" height="2" fill="currentColor" />
+                    <rect x="2" y="15" width="7" height="7" rx="1.5" strokeWidth="2" />
+                    <rect x="4.5" y="17.5" width="2" height="2" fill="currentColor" />
+                    <path d="M14 14h3v3h-3z" fill="currentColor" />
+                    <path d="M19 14h2v2h-2z" fill="currentColor" />
+                    <path d="M14 19h2v2h-2z" fill="currentColor" />
+                    <path d="M18 18h3v3h-3z" strokeWidth="1.5" />
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                  </svg>
+                  <span className="text-xs font-semibold text-muted animate-pulse">
+                    {initiatingPay ? 'Memuat QRIS resmi Midtrans…' : 'Menyiapkan barcode QRIS…'}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-0.5">
@@ -183,6 +220,42 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
             <p className="text-xs text-muted max-w-xs leading-relaxed">
               Buka aplikasi GoPay, OVO, Dana, BCA, Livin&apos;, ShopeePay, atau m-Banking untuk scan QRIS di atas.
             </p>
+
+            {qrisData?.qrImageUrl && (
+              <div className="flex flex-col gap-2 w-full mt-1">
+                <Button
+                  size="md"
+                  variant="secondary"
+                  className="w-full text-xs font-bold"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(qrisData.qrImageUrl!);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2500);
+                  }}
+                >
+                  {copied ? '✅ URL Gambar QR Berhasil Disalin!' : '📋 Salin URL QR (Untuk Simulator Midtrans)'}
+                </Button>
+                <a
+                  href="https://simulator.sandbox.midtrans.com/qris/index"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-bold text-primary underline text-center hover:opacity-80 py-1"
+                >
+                  Buka Simulator Pembayaran Midtrans ↗
+                </a>
+              </div>
+            )}
+
+            {qrisData?.redirectUrl && (
+              <Button
+                size="md"
+                className="mt-1 w-full font-bold bg-[#14654C] text-white hover:bg-[#0f4b38]"
+                disabled={initiatingPay}
+                onClick={openMidtransPay}
+              >
+                💳 Buka Halaman Snap Midtrans
+              </Button>
+            )}
           </Card>
         )}
 
