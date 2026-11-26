@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SocketEvent, socketRoom } from 'shared';
-import type { OrderCreatedEvent, OrderUpdatedEvent, PaymentUpdatedEvent, StaffOrderDto } from 'shared';
+import type { OrderCreatedEvent, OrderUpdatedEvent, PaymentUpdatedEvent, StaffOrderDto, StockReminderEvent } from 'shared';
 import type { Namespace } from 'socket.io';
 
 /**
@@ -32,6 +32,10 @@ export class RealtimeService {
     const event: PaymentUpdatedEvent = { orderCode: order.orderCode, paymentStatus: order.paymentStatus };
     this.emit(socketRoom.cashier(outletId), SocketEvent.PAYMENT_UPDATED, { ...event, order });
     this.emit(socketRoom.order(order.orderCode), SocketEvent.PAYMENT_UPDATED, event);
+  }
+
+  stockReminder(outletId: string, payload: StockReminderEvent) {
+    this.emit(socketRoom.cashier(outletId), SocketEvent.STOCK_REMINDER, payload);
   }
 
   private emit(room: string, event: SocketEvent, payload: unknown) {

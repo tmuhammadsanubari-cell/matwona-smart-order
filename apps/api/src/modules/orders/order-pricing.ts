@@ -25,6 +25,9 @@ export interface ApplicablePromo {
   minPurchase: number;
   activeDays: number[];
   applicableMenuItemIds: string[]; // Kosong = berlaku untuk semua menu
+  /** Kuota porsi maksimal (null/undefined = tanpa batas). */
+  maxQuantity?: number | null;
+  usedQuantity?: number;
 }
 
 export interface PricedOrder {
@@ -34,6 +37,8 @@ export interface PricedOrder {
   totalAmount: number;
   /** Jumlah yang dikurangkan dari stok, hanya untuk item yang stoknya dilacak. */
   stockDecrements: Map<string, number>;
+  /** Tambahan pemakaian kuota per promoId (hanya untuk promo yang benar-benar dipakai). */
+  promoUsageIncrements?: Map<string, number>;
 }
 
 /**
@@ -95,25 +100,38 @@ export function priceOrder(
     return sum + item.price * line.quantity;
   }, 0);
 
-  // Filter promo yang aktif hari ini dan memenuhi syarat minimal belanja
+  // Filter promo yang aktif hari ini, memenuhi syarat minimal belanja, dan kuota masih cukup
   // 1 = Senin ... 7 = Minggu
   const dayOfWeek = currentDate.getDay() === 0 ? 7 : currentDate.getDay();
+  const remainingQuota = new Map<string, number>();
   const eligiblePromos = activePromos.filter((p) => {
     const dayMatches = p.activeDays.length === 0 || p.activeDays.includes(dayOfWeek);
     const minPurchaseMatches = rawSubtotal >= p.minPurchase;
+    if (p.maxQuantity != null) {
+      const remaining = p.maxQuantity - (p.usedQuantity ?? 0);
+      if (remaining <= 0) return false;
+      remainingQuota.set(p.id, remaining);
+    }
     return dayMatches && minPurchaseMatches;
   });
+
+  const promoUsageIncrements = new Map<string, number>();
 
   const lines: OrderLine[] = requested.map((line) => {
     const item = byId.get(line.menuItemId)!;
     let bestDiscount = 0;
     let bestPromoId: string | null = null;
+    let bestDiscountedQty = 0;
 
     // Evaluasi semua promo yang berlaku untuk item ini, pilih diskon terbesar (BRU-11)
     for (const promo of eligiblePromos) {
       const appliesToItem =
         promo.applicableMenuItemIds.length === 0 || promo.applicableMenuItemIds.includes(item.id);
       if (!appliesToItem) continue;
+
+      const capRemaining = remainingQuota.get(promo.id);
+      const applicableQty = capRemaining === undefined ? line.quantity : Math.min(line.quantity, capRemaining);
+      if (applicableQty <= 0) continue;
 
       let discountPerUnit = 0;
       if (promo.discountType === 'PERCENT') {
@@ -122,11 +140,19 @@ export function priceOrder(
         discountPerUnit = promo.discountValue;
       }
       discountPerUnit = Math.min(item.price, Math.max(0, discountPerUnit));
-      const totalLineDiscount = discountPerUnit * line.quantity;
+      const totalLineDiscount = discountPerUnit * applicableQty;
 
       if (totalLineDiscount > bestDiscount) {
         bestDiscount = totalLineDiscount;
         bestPromoId = promo.id;
+        bestDiscountedQty = applicableQty;
+      }
+    }
+
+    if (bestPromoId && bestDiscountedQty > 0) {
+      promoUsageIncrements.set(bestPromoId, (promoUsageIncrements.get(bestPromoId) ?? 0) + bestDiscountedQty);
+      if (remainingQuota.has(bestPromoId)) {
+        remainingQuota.set(bestPromoId, Math.max(0, remainingQuota.get(bestPromoId)! - bestDiscountedQty));
       }
     }
 
@@ -154,5 +180,12 @@ export function priceOrder(
     [...requiredQty].filter(([id]) => byId.get(id)!.stock !== null),
   );
 
-  return { lines, subtotalAmount, discountAmount, totalAmount, stockDecrements };
+  return {
+    lines,
+    subtotalAmount,
+    discountAmount,
+    totalAmount,
+    stockDecrements,
+    ...(promoUsageIncrements.size > 0 ? { promoUsageIncrements } : {}),
+  };
 }

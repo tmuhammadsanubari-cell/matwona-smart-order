@@ -60,6 +60,18 @@ describe('Checkout (FR-004, FR-006)', () => {
     expect((screen.getByRole('radio', { name: /^QRIS/ }) as HTMLInputElement).disabled).toBe(false);
   });
 
+  it('outlet qrisEnabled=false menyembunyikan opsi QRIS dan menampilkan info pager kasir', async () => {
+    saveCart([{ menuItemId: 't1', name: 'Tuna Sambal Matah', unitPrice: 45000, quantity: 1 }]);
+    const noQrisMenu: PublicMenu = {
+      ...MENU,
+      outlet: { ...MENU.outlet, qrisEnabled: false, serviceMode: 'SELF_PICKUP_PAGER' },
+    };
+    render(<CheckoutView token={TOKEN} outletSlug="matwona" tableLabel="5" menu={noQrisMenu} />);
+    expect(await screen.findByText('1× Tuna Sambal Matah')).toBeTruthy();
+    expect(screen.queryByRole('radio', { name: /^QRIS/ })).toBeNull();
+    expect(screen.getByText(/mengambil pager antrean/i)).toBeTruthy();
+  });
+
   it('header (desain C4): kembali ke menu, meja, langkah 3 dari 4; tombol kirim memuat total', async () => {
     saveCart([{ menuItemId: 't1', name: 'Tuna Sambal Matah', unitPrice: 45000, quantity: 2 }]);
     renderCheckout();

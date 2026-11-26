@@ -25,6 +25,7 @@ export class PromosController {
       discountType: 'PERCENT' | 'NOMINAL';
       discountValue: number;
       minPurchase?: number;
+      maxQuantity?: number | null;
       startsOn?: string;
       endsOn?: string;
       menuItemIds?: string[];

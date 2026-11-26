@@ -12,11 +12,23 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
-import { ErrorCode, type ApiSuccess, type AuthUser } from 'shared';
+import {
+  ErrorCode,
+  olseraTestProbeSchema,
+  olseraTestTokenSchema,
+  type ApiSuccess,
+  type AuthUser,
+  type OlseraTestProbeInput,
+  type OlseraTestProbeResult,
+  type OlseraTestTokenInput,
+  type OlseraTestTokenResult,
+} from 'shared';
 import { AppException } from '../../common/app.exception.js';
 import { MappingEntity } from '../../generated/prisma/client.js';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
+import { OlseraTestService } from './olsera-test.service.js';
 import { PosSyncService, type PreviewResult } from './pos-sync.service.js';
 
 interface UploadedFileShape {
@@ -29,7 +41,29 @@ interface UploadedFileShape {
 @Roles('ADMIN')
 @Controller('pos-sync')
 export class PosSyncController {
-  constructor(@Inject(PosSyncService) private readonly posSync: PosSyncService) {}
+  constructor(
+    @Inject(PosSyncService) private readonly posSync: PosSyncService,
+    @Inject(OlseraTestService) private readonly olseraTest: OlseraTestService,
+  ) {}
+
+  @Get('olsera-test/endpoints')
+  listSafeOlseraEndpoints() {
+    return { success: true, data: this.olseraTest.getSafeEndpoints() };
+  }
+
+  @Post('olsera-test/token')
+  async testOlseraToken(
+    @Body(new ZodValidationPipe(olseraTestTokenSchema)) body: OlseraTestTokenInput,
+  ): Promise<ApiSuccess<OlseraTestTokenResult>> {
+    return { success: true, data: await this.olseraTest.fetchToken(body) };
+  }
+
+  @Post('olsera-test/probe')
+  async testOlseraReadProbe(
+    @Body(new ZodValidationPipe(olseraTestProbeSchema)) body: OlseraTestProbeInput,
+  ): Promise<ApiSuccess<OlseraTestProbeResult>> {
+    return { success: true, data: await this.olseraTest.probeReadOnly(body) };
+  }
 
   @Get('mapping')
   async getMapping(

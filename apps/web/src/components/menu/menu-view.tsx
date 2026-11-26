@@ -5,13 +5,16 @@ import { useEffect, useMemo, useState } from 'react';
 import type { PublicMenu, PublicMenuItem } from 'shared';
 import { CartBar } from '@/components/cart/cart-bar';
 import { CartSheet } from '@/components/cart/cart-sheet';
-import { Button, EmptyState, Logo, toast, Toaster } from '@/components/ui';
+import { BottomSheet, Button, cx, EmptyState, Logo, toast, Toaster } from '@/components/ui';
 import { filterMenu, photoTonesByItem } from '@/lib/menu';
+import { buildMenuDisplayEntries } from '@/lib/menu-groups';
 import { activeOrderForTable, type PlacedOrder } from '@/lib/placed-orders';
 import { loadCartForTable, summarizeCart, useCart } from '@/stores/cart';
 import { CategoryTabs } from './category-tabs';
 import { MenuDetailSheet } from './menu-detail-sheet';
+import { MenuGroupCard } from './menu-group-card';
 import { MenuItemCard } from './menu-item-card';
+import { MenuVariantSheet, type MenuVariantGroupSelection } from './menu-variant-sheet';
 
 export interface MenuViewProps {
   token: string;
@@ -60,6 +63,8 @@ export function MenuView({ token, tableLabel, menu }: MenuViewProps) {
   const [cartOpen, setCartOpen] = useState(false);
   const [activeOrder, setActiveOrder] = useState<PlacedOrder | undefined>(undefined);
   const [detailItem, setDetailItem] = useState<PublicMenuItem | null>(null);
+  const [variantGroup, setVariantGroup] = useState<MenuVariantGroupSelection | null>(null);
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const lines = useCart((s) => s.lines);
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
@@ -273,25 +278,104 @@ export function MenuView({ token, tableLabel, menu }: MenuViewProps) {
               <h2 id={`${sectionId(category.id)}-judul`} className="text-xl font-extrabold text-primary">
                 {category.name}
               </h2>
-              {category.items.map((item) => (
-                <MenuItemCard
-                  key={item.id}
-                  item={item}
-                  photoTone={photoTones.get(item.id) ?? 'none'}
-                  quantity={quantityOf(item.id)}
-                  onAdd={() => addItem(item)}
-                  onQuantityChange={(qty) => setQuantity(item.id, qty)}
-                  onOpenDetail={() => setDetailItem(item)}
-                />
-              ))}
+              {buildMenuDisplayEntries(category.items).map((entry) =>
+                entry.kind === 'group' ? (
+                  <MenuGroupCard
+                    key={entry.key}
+                    name={entry.name}
+                    description={entry.description}
+                    imageUrl={entry.imageUrl}
+                    minPrice={entry.minPrice}
+                    maxPrice={entry.maxPrice}
+                    items={entry.items}
+                    isAvailable={entry.isAvailable}
+                    photoTone={photoTones.get(entry.items[0]!.id) ?? 'none'}
+                    totalInCart={entry.items.reduce((sum, v) => sum + quantityOf(v.id), 0)}
+                    onSelect={() => setVariantGroup(entry)}
+                  />
+                ) : (
+                  <MenuItemCard
+                    key={entry.key}
+                    item={entry.item}
+                    photoTone={photoTones.get(entry.item.id) ?? 'none'}
+                    quantity={quantityOf(entry.item.id)}
+                    onAdd={() => addItem(entry.item)}
+                    onQuantityChange={(qty) => setQuantity(entry.item.id, qty)}
+                    onOpenDetail={() => setDetailItem(entry.item)}
+                  />
+                ),
+              )}
             </section>
           ))}
+        </div>
+      )}
+
+      {categories.length > 1 && (
+        <div
+          className={cx(
+            'pointer-events-none fixed inset-x-0 z-15 flex justify-end px-4',
+            cartReady && lines.length > 0 ? 'bottom-22' : 'bottom-5',
+          )}
+        >
+          <div className="mx-auto flex w-full max-w-md justify-end">
+            <button
+              type="button"
+              onClick={() => setCategorySheetOpen(true)}
+              aria-label="Buka daftar kategori menu"
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border-[1.5px] border-primary bg-cream px-4 py-2 text-xs font-extrabold text-primary shadow-float transition-transform hover:bg-primary-soft active:scale-95"
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                <path d="M4 7h16M4 12h16M4 17h10" />
+              </svg>
+              Kategori ({categories.length})
+            </button>
+          </div>
         </div>
       )}
 
       {cartReady && lines.length > 0 && (
         <CartBar itemCount={summary.itemCount} total={summary.total} onOpen={() => setCartOpen(true)} />
       )}
+      <MenuVariantSheet
+        group={variantGroup}
+        photoTone={variantGroup?.items[0] ? (photoTones.get(variantGroup.items[0].id) ?? 'none') : 'none'}
+        onClose={() => setVariantGroup(null)}
+        onAdd={(selectedItem, quantity, note) => {
+          addItem(selectedItem, quantity, note);
+          setVariantGroup(null);
+        }}
+      />
+      <BottomSheet
+        open={categorySheetOpen}
+        onClose={() => setCategorySheetOpen(false)}
+        title="Pilih Kategori Menu"
+      >
+        <ul className="flex flex-col gap-2 pb-2">
+          {categories.map((cat) => {
+            const isCurrent = cat.id === activeId;
+            return (
+              <li key={cat.id}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategorySheetOpen(false);
+                    selectCategory(cat.id);
+                  }}
+                  className={cx(
+                    'flex min-h-12 w-full items-center justify-between rounded-control border-[1.5px] px-4 text-left text-sm font-bold transition-colors',
+                    isCurrent
+                      ? 'border-primary bg-primary-soft text-primary'
+                      : 'border-line bg-surface text-ink hover:border-primary/50',
+                  )}
+                >
+                  <span>{cat.name}</span>
+                  <span className="text-xs font-semibold text-muted">{cat.items.length} menu</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </BottomSheet>
       <MenuDetailSheet
         item={detailItem}
         photoTone={detailItem ? (photoTones.get(detailItem.id) ?? 'none') : 'none'}

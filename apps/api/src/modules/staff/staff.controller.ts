@@ -1,7 +1,9 @@
 import { Body, Controller, Delete, Get, Inject, Param, Patch, Post } from '@nestjs/common';
-import type { ApiSuccess, AuthUser, ResetStaffPasswordInput } from 'shared';
+import { resetStaffPasswordSchema, setStaffPinSchema } from 'shared';
+import type { ApiSuccess, AuthUser, ResetStaffPasswordInput, SetStaffPinInput } from 'shared';
 import { Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { StaffService, type StaffDto } from './staff.service.js';
 
 @Roles('ADMIN')
@@ -18,7 +20,7 @@ export class StaffController {
   @Post()
   async create(
     @CurrentUser() user: AuthUser,
-    @Body() body: { name: string; email: string; password?: string; role: 'ADMIN' | 'CASHIER' },
+    @Body() body: { name: string; email: string; password?: string; role: 'ADMIN' | 'CASHIER'; pin?: string },
   ): Promise<ApiSuccess<StaffDto>> {
     const created = await this.staffService.create(user.outletId, body);
     return { success: true, data: created };
@@ -37,10 +39,20 @@ export class StaffController {
   async resetPassword(
     @CurrentUser() user: AuthUser,
     @Param('id') id: string,
-    @Body() body: ResetStaffPasswordInput,
+    @Body(new ZodValidationPipe(resetStaffPasswordSchema)) body: ResetStaffPasswordInput,
   ): Promise<ApiSuccess<{ message: string }>> {
     const result = await this.staffService.resetPassword(user.outletId, id, body.password);
     return { success: true, data: result };
+  }
+
+  @Patch(':id/pin')
+  async setPin(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(setStaffPinSchema)) body: SetStaffPinInput,
+  ): Promise<ApiSuccess<StaffDto>> {
+    const updated = await this.staffService.setPin(user.outletId, id, body.pin);
+    return { success: true, data: updated };
   }
 
   @Delete(':id')

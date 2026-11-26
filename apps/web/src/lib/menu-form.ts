@@ -10,6 +10,9 @@ export interface MenuItemFormValues {
   /** Kosong = stok tidak dilacak. */
   stock: string;
   sku: string;
+  variantGroup: string;
+  variantLabel: string;
+  spiceLevel: string;
   sortOrder: string;
   isAvailable: boolean;
 }
@@ -23,6 +26,9 @@ export const emptyMenuItemForm = (categoryId = ''): MenuItemFormValues => ({
   price: '',
   stock: '',
   sku: '',
+  variantGroup: '',
+  variantLabel: '',
+  spiceLevel: '',
   sortOrder: '0',
   isAvailable: true,
 });
@@ -34,6 +40,9 @@ export const menuItemToForm = (item: MenuItemDto): MenuItemFormValues => ({
   price: String(item.price),
   stock: item.stock === null ? '' : String(item.stock),
   sku: item.sku ?? '',
+  variantGroup: item.variantGroup ?? '',
+  variantLabel: item.variantLabel ?? '',
+  spiceLevel: item.spiceLevel ?? '',
   sortOrder: String(item.sortOrder),
   isAvailable: item.isAvailable,
 });
@@ -53,6 +62,9 @@ function toPayload(values: MenuItemFormValues) {
     price: toInt(values.price),
     stock: values.stock.trim() === '' ? null : toInt(values.stock),
     sku: values.sku.trim() || null,
+    variantGroup: values.variantGroup.trim() || null,
+    variantLabel: values.variantLabel.trim() || null,
+    spiceLevel: values.spiceLevel.trim() || null,
     sortOrder: values.sortOrder.trim() === '' ? 0 : toInt(values.sortOrder),
     isAvailable: values.isAvailable,
   };
@@ -72,7 +84,21 @@ function collectErrors(issues: { path: PropertyKey[]; message: string }[]): Menu
 
 /** Validasi form "Tambah menu" dengan skema shared (FR-010). */
 export function parseNewMenuItem(values: MenuItemFormValues): ParseResult<MenuItemInput> {
-  const parsed = menuItemSchema.safeParse(toPayload(values));
+  const raw = toPayload(values);
+  const compact = {
+    categoryId: raw.categoryId,
+    name: raw.name,
+    description: raw.description,
+    price: raw.price,
+    stock: raw.stock,
+    sku: raw.sku,
+    sortOrder: raw.sortOrder,
+    isAvailable: raw.isAvailable,
+    ...(raw.variantGroup ? { variantGroup: raw.variantGroup } : {}),
+    ...(raw.variantLabel ? { variantLabel: raw.variantLabel } : {}),
+    ...(raw.spiceLevel ? { spiceLevel: raw.spiceLevel } : {}),
+  };
+  const parsed = menuItemSchema.safeParse(compact);
   return parsed.success ? { ok: true, data: parsed.data } : { ok: false, errors: collectErrors(parsed.error.issues) };
 }
 

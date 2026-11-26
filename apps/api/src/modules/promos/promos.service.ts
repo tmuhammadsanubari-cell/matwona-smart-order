@@ -10,6 +10,8 @@ export interface PromoDto {
   discountType: 'PERCENT' | 'NOMINAL';
   discountValue: number;
   minPurchase: number;
+  maxQuantity: number | null;
+  usedQuantity: number;
   activeDays: number[];
   startsOn: Date;
   endsOn: Date;
@@ -38,6 +40,8 @@ export class PromosService {
       discountType: p.discountType,
       discountValue: p.discountValue,
       minPurchase: p.minPurchase,
+      maxQuantity: p.maxQuantity,
+      usedQuantity: p.usedQuantity,
       activeDays: p.activeDays,
       startsOn: p.startsOn,
       endsOn: p.endsOn,
@@ -55,6 +59,7 @@ export class PromosService {
       discountType: 'PERCENT' | 'NOMINAL';
       discountValue: number;
       minPurchase?: number;
+      maxQuantity?: number | null;
       startsOn?: string;
       endsOn?: string;
       menuItemIds?: string[];
@@ -65,6 +70,11 @@ export class PromosService {
       ? new Date(data.endsOn)
       : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
+    const maxQty =
+      data.maxQuantity !== undefined && data.maxQuantity !== null && Number(data.maxQuantity) > 0
+        ? Math.floor(Number(data.maxQuantity))
+        : null;
+
     const promo = await this.prisma.promo.create({
       data: {
         outletId,
@@ -73,6 +83,7 @@ export class PromosService {
         discountType: data.discountType,
         discountValue: Number(data.discountValue),
         minPurchase: Number(data.minPurchase ?? 0),
+        maxQuantity: maxQty,
         startsOn,
         endsOn,
         isActive: true,
@@ -96,6 +107,8 @@ export class PromosService {
       discountType: promo.discountType,
       discountValue: promo.discountValue,
       minPurchase: promo.minPurchase,
+      maxQuantity: promo.maxQuantity,
+      usedQuantity: promo.usedQuantity,
       activeDays: promo.activeDays,
       startsOn: promo.startsOn,
       endsOn: promo.endsOn,
@@ -127,6 +140,8 @@ export class PromosService {
       discountType: updated.discountType,
       discountValue: updated.discountValue,
       minPurchase: updated.minPurchase,
+      maxQuantity: updated.maxQuantity,
+      usedQuantity: updated.usedQuantity,
       activeDays: updated.activeDays,
       startsOn: updated.startsOn,
       endsOn: updated.endsOn,

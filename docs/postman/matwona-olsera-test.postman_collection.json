@@ -1,0 +1,379 @@
+{
+  "info": {
+    "name": "Matwona Smart Order & Olsera Open API (Read-Only Safe Test)",
+    "description": "Koleksi Postman internal untuk menguji Backend Matwona (/api/*) dan endpoint READ-ONLY Olsera Open API v1 tanpa memodifikasi data POS maupun database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "apiBaseUrl", "value": "http://localhost:4000/api" },
+    { "key": "olseraBaseUrl", "value": "https://api-open.olsera.co.id" },
+    { "key": "olseraLang", "value": "en" },
+    { "key": "olseraAppId", "value": "" },
+    { "key": "olseraSecretKey", "value": "" },
+    { "key": "olseraAccessToken", "value": "" },
+    { "key": "olseraRefreshToken", "value": "" },
+    { "key": "adminEmail", "value": "admin@matwona.local" },
+    { "key": "adminPassword", "value": "Admin123!" },
+    { "key": "matwonaCsrfToken", "value": "" },
+    { "key": "tableToken", "value": "tok-meja-01" },
+    { "key": "orderId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Olsera Open API (Langsung - Read-Only Aman)",
+      "description": "Panggilan langsung ke Olsera Open API v1 hanya untuk otentikasi & GET baca-saja.",
+      "item": [
+        {
+          "name": "Auth - Ambil Token (grant_type=secret_key)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  const tok = body.access_token || body.data?.access_token;",
+                  "  const ref = body.refresh_token || body.data?.refresh_token;",
+                  "  if (tok) pm.collectionVariables.set('olseraAccessToken', tok);",
+                  "  if (ref) pm.collectionVariables.set('olseraRefreshToken', ref);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "app_id", "value": "{{olseraAppId}}", "type": "text" },
+                { "key": "secret_key", "value": "{{olseraSecretKey}}", "type": "text" },
+                { "key": "grant_type", "value": "secret_key", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/id/token",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "id", "token"]
+            }
+          }
+        },
+        {
+          "name": "Auth - Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  const tok = body.access_token || body.data?.access_token;",
+                  "  const ref = body.refresh_token || body.data?.refresh_token;",
+                  "  if (tok) pm.collectionVariables.set('olseraAccessToken', tok);",
+                  "  if (ref) pm.collectionVariables.set('olseraRefreshToken', ref);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "refresh_token", "value": "{{olseraRefreshToken}}", "type": "text" },
+                { "key": "grant_type", "value": "refresh_token", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/id/token",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "id", "token"]
+            }
+          }
+        },
+        {
+          "name": "Global - Daftar Toko / Outlet",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/global/store?per_page=15&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "global", "store"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Produk - Daftar Kategori (Collection)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/collection?per_page=25&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "collection"],
+              "query": [
+                { "key": "per_page", "value": "25" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Produk - Daftar Produk (SKU, Harga, Stok)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/product?per_page=20&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "product"],
+              "query": [
+                { "key": "per_page", "value": "20" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Produk - Daftar Varian",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/productvariantonlysearch?per_page=20&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "productvariantonlysearch"],
+              "query": [
+                { "key": "per_page", "value": "20" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Order - Close Order (Riwayat Selesai)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/order/closeorder?start_date=2026-11-01&end_date=2026-11-26&per_page=15&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "order", "closeorder"],
+              "query": [
+                { "key": "start_date", "value": "2026-11-01" },
+                { "key": "end_date", "value": "2026-11-26" },
+                { "key": "per_page", "value": "15" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Report - Sales Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{olseraAccessToken}}" }
+            ],
+            "url": {
+              "raw": "{{olseraBaseUrl}}/api/open-api/v1/{{olseraLang}}/report/salesdetails?from=2026-11-01&to=2026-11-26&per_page=15&page=1",
+              "host": ["{{olseraBaseUrl}}"],
+              "path": ["api", "open-api", "v1", "{{olseraLang}}", "report", "salesdetails"],
+              "query": [
+                { "key": "from", "value": "2026-11-01" },
+                { "key": "to", "value": "2026-11-26" },
+                { "key": "per_page", "value": "15" },
+                { "key": "page", "value": "1" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Matwona Backend API (Internal & Sandbox Proxy)",
+      "description": "Endpoint backend NestJS Matwona. Login terlebih dahulu agar cookie sesi & X-CSRF-Token otomatis tersimpan oleh Postman.",
+      "item": [
+        {
+          "name": "Auth - Login Admin (Simpan Cookie & CSRF)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const body = pm.response.json();",
+                  "  if (body.data?.csrfToken) {",
+                  "    pm.collectionVariables.set('matwonaCsrfToken', body.data.csrfToken);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/auth/login",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Auth - Profil Login (GET /auth/me)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/auth/me",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Olsera Test Proxy - Daftar Endpoint Aman",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/pos-sync/olsera-test/endpoints",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["pos-sync", "olsera-test", "endpoints"]
+            }
+          }
+        },
+        {
+          "name": "Olsera Test Proxy - Tukar Key Jadi Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-csrf-token", "value": "{{matwonaCsrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"environment\": \"production\",\n  \"lang\": \"id\",\n  \"grantType\": \"secret_key\",\n  \"appId\": \"{{olseraAppId}}\",\n  \"secretKey\": \"{{olseraSecretKey}}\",\n  \"bodyFormat\": \"json\"\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/pos-sync/olsera-test/token",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["pos-sync", "olsera-test", "token"]
+            }
+          }
+        },
+        {
+          "name": "Olsera Test Proxy - Probe Produk Read-Only",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-csrf-token", "value": "{{matwonaCsrfToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"environment\": \"production\",\n  \"lang\": \"en\",\n  \"accessToken\": \"{{olseraAccessToken}}\",\n  \"path\": \"product\",\n  \"query\": {\n    \"per_page\": 15,\n    \"page\": 1\n  }\n}"
+            },
+            "url": {
+              "raw": "{{apiBaseUrl}}/pos-sync/olsera-test/probe",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["pos-sync", "olsera-test", "probe"]
+            }
+          }
+        },
+        {
+          "name": "Outlet - Pengaturan Outlet",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/outlet/settings",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["outlet", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Kasir - Daftar Pesanan",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Kasir - Split Print Tickets (Order)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/orders/{{orderId}}/tickets",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["orders", "{{orderId}}", "tickets"]
+            }
+          }
+        },
+        {
+          "name": "Absensi - Status Staf & PIN",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/attendance/staff-options",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["attendance", "staff-options"]
+            }
+          }
+        },
+        {
+          "name": "Publik - Menu Meja",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{apiBaseUrl}}/public/tables/{{tableToken}}",
+              "host": ["{{apiBaseUrl}}"],
+              "path": ["public", "tables", "{{tableToken}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

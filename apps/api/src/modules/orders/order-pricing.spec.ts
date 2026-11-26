@@ -179,6 +179,33 @@ describe('priceOrder (FR-004, NFR-007)', () => {
     expect(priced.totalAmount).toBe(45000);
     expect(priced.lines[0]?.promoId).toBeNull();
   });
+
+  it('mematuhi kuota promo maxQuantity dan menghitung sisa kuota dengan benar', () => {
+    const promos = [
+      {
+        id: 'promo-quota',
+        title: 'Promo 1000 Porsi Pertama',
+        discountType: 'NOMINAL' as const,
+        discountValue: 5000,
+        minPurchase: 0,
+        maxQuantity: 1000,
+        usedQuantity: 998,
+        activeDays: [],
+        applicableMenuItemIds: [TUNA],
+      },
+    ];
+
+    // Pesan 3 porsi Tuna, sisa kuota hanya 2 → hanya 2 porsi yang didiskon (2 × 5.000 = 10.000)
+    const priced = priceOrder([line(TUNA, 3)], menu, promos);
+    expect(priced.discountAmount).toBe(10000);
+    expect(priced.totalAmount).toBe(125000);
+    expect(priced.promoUsageIncrements?.get('promo-quota')).toBe(2);
+
+    // Jika kuota sudah habis (usedQuantity === maxQuantity), diskon 0
+    const exhausted = priceOrder([line(TUNA, 1)], menu, [{ ...promos[0]!, usedQuantity: 1000 }]);
+    expect(exhausted.discountAmount).toBe(0);
+    expect(exhausted.lines[0]?.promoId).toBeNull();
+  });
 });
 
 describe('kode pesanan MTW-YYMMDD-XXXX', () => {

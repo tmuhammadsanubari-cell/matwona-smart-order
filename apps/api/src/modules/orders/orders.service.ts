@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Optional } from '@nestjs/common';
 import { ErrorCode } from 'shared';
 import type { CreateOrderInput, PublicOrderDto } from 'shared';
 import { AppException } from '../../common/app.exception.js';
@@ -6,6 +6,7 @@ import type { Prisma } from '../../generated/prisma/client.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { RateLimitService } from '../../redis/rate-limit.service.js';
 import { PublicMenuService } from '../menu/public-menu.service.js';
+import { NotificationsService } from '../notifications/notifications.service.js';
 import { RealtimeService } from '../realtime/realtime.service.js';
 import { TablesService } from '../tables/tables.service.js';
 import { nextOrderCode, ORDER_CODE_PATTERN, orderCodePrefix } from './order-code.js';
@@ -40,10 +41,31 @@ export class OrdersService {
     @Inject(PublicMenuService) private readonly menu: PublicMenuService,
     @Inject(RateLimitService) private readonly rateLimit: RateLimitService,
     @Inject(RealtimeService) private readonly realtime: RealtimeService,
+    @Optional() @Inject(NotificationsService) private readonly notifications?: NotificationsService,
   ) {}
 
   async create(input: CreateOrderInput, ctx: CreateOrderContext): Promise<PublicOrderDto> {
     const { table, outlet } = await this.tables.resolveToken(ctx.tableToken);
+
+    const outletMeta = this.prisma.outlet?.findUnique
+      ? await this.prisma.outlet.findUnique({
+          where: { id: outlet.id },
+          select: {
+            name: true,
+            qrisEnabled: true,
+            telegramBotToken: true,
+            telegramChatId: true,
+            whatsappWebhookUrl: true,
+          },
+        })
+      : null;
+
+    if (input.paymentMethod === 'QRIS' && outletMeta?.qrisEnabled === false) {
+      throw new AppException(
+        ErrorCode.VALIDATION_ERROR,
+        'Pembayaran QRIS saat ini dinonaktifkan untuk outlet ini. Silakan bayar di kasir.',
+      );
+    }
 
     // Double-tap / retry: kembalikan pesanan awal tanpa menghitung rate limit lagi.
     const existing = await this.findByIdempotencyKey(ctx.idempotencyKey);
@@ -51,7 +73,11 @@ export class OrdersService {
 
     await this.enforceRateLimit(table.id, ctx.ip);
 
-    let created: { order: OrderWithItems; stockChanged: boolean };
+    let created: {
+      order: OrderWithItems;
+      stockChanged: boolean;
+      lowStockItems: Array<{ name: string; stock: number | null }>;
+    };
     try {
       created = await this.prisma.$transaction((tx) =>
         this.insertOrder(tx, input, { outletId: outlet.id, tableId: table.id, idempotencyKey: ctx.idempotencyKey }),
@@ -67,6 +93,14 @@ export class OrdersService {
 
     if (created.stockChanged) await this.menu.invalidate(outlet.id);
     this.realtime.orderCreated(outlet.id, toStaffOrderDto(created.order));
+
+    if (this.notifications && outletMeta) {
+      void this.notifications.sendOrderAlert(outletMeta, created.order);
+      if (created.lowStockItems.length > 0) {
+        void this.notifications.sendLowStockAlert(outletMeta, created.lowStockItems);
+      }
+    }
+
     return toPublicOrderDto(created.order);
   }
 
@@ -118,13 +152,31 @@ export class OrdersService {
       discountValue: p.discountValue,
       minPurchase: p.minPurchase,
       activeDays: p.activeDays,
+      maxQuantity: p.maxQuantity,
+      usedQuantity: p.usedQuantity,
       applicableMenuItemIds: p.items.map((pi) => pi.menuItemId),
     }));
 
     const priced: PricedOrder = priceOrder(input.items, menuItems, activePromos, now);
 
+    const lowStockItems: Array<{ name: string; stock: number | null }> = [];
     for (const [menuItemId, quantity] of priced.stockDecrements) {
-      await tx.menuItem.update({ where: { id: menuItemId }, data: { stock: { decrement: quantity } } });
+      const updatedItem = await tx.menuItem.update({
+        where: { id: menuItemId },
+        data: { stock: { decrement: quantity } },
+      });
+      if (updatedItem && updatedItem.stock !== null && updatedItem.stock <= 5) {
+        lowStockItems.push({ name: updatedItem.name, stock: updatedItem.stock });
+      }
+    }
+
+    if (priced.promoUsageIncrements && tx.promo?.updateMany) {
+      for (const [promoId, qtyUsed] of priced.promoUsageIncrements) {
+        await tx.promo.updateMany({
+          where: { id: promoId },
+          data: { usedQuantity: { increment: qtyUsed } },
+        });
+      }
     }
 
     // Serialisasi nomor urut harian antar transaksi; lock lepas saat commit/rollback.
@@ -155,7 +207,7 @@ export class OrdersService {
       include: orderInclude,
     });
 
-    return { order, stockChanged: priced.stockDecrements.size > 0 };
+    return { order, stockChanged: priced.stockDecrements.size > 0, lowStockItems };
   }
 
   private async enforceRateLimit(tableId: string, ip: string) {

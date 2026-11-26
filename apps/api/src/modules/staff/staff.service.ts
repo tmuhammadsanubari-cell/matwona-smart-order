@@ -10,9 +10,41 @@ export interface StaffDto {
   email: string;
   role: 'ADMIN' | 'CASHIER';
   isActive: boolean;
+  hasPin?: boolean;
   lastLoginAt: Date | null;
   createdAt: Date;
 }
+
+const staffSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  isActive: true,
+  pinHash: true,
+  lastLoginAt: true,
+  createdAt: true,
+} as const;
+
+const toStaffDto = (u: {
+  id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'CASHIER';
+  isActive: boolean;
+  pinHash?: string | null;
+  lastLoginAt: Date | null;
+  createdAt: Date;
+}): StaffDto => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  isActive: u.isActive,
+  hasPin: Boolean(u.pinHash),
+  lastLoginAt: u.lastLoginAt,
+  createdAt: u.createdAt,
+});
 
 @Injectable()
 export class StaffService {
@@ -21,23 +53,15 @@ export class StaffService {
   async list(outletId: string): Promise<StaffDto[]> {
     const users = await this.prisma.user.findMany({
       where: { outletId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        lastLoginAt: true,
-        createdAt: true,
-      },
+      select: staffSelect,
       orderBy: { createdAt: 'asc' },
     });
-    return users;
+    return users.map(toStaffDto);
   }
 
   async create(
     outletId: string,
-    data: { name: string; email: string; password?: string; role: 'ADMIN' | 'CASHIER' },
+    data: { name: string; email: string; password?: string; role: 'ADMIN' | 'CASHIER'; pin?: string },
   ): Promise<StaffDto> {
     const existing = await this.prisma.user.findUnique({
       where: { email: data.email.toLowerCase().trim() },
@@ -48,6 +72,7 @@ export class StaffService {
 
     const defaultPassword = data.password ?? (data.role === 'ADMIN' ? 'Admin123!' : 'Kasir123!');
     const passwordHash = await bcrypt.hash(defaultPassword, 10);
+    const pinHash = data.pin ? await bcrypt.hash(data.pin.trim(), 8) : null;
 
     const user = await this.prisma.user.create({
       data: {
@@ -55,21 +80,14 @@ export class StaffService {
         name: data.name.trim(),
         email: data.email.toLowerCase().trim(),
         passwordHash,
+        ...(pinHash ? { pinHash } : {}),
         role: data.role,
         isActive: true,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        lastLoginAt: true,
-        createdAt: true,
-      },
+      select: staffSelect,
     });
 
-    return user;
+    return toStaffDto(user);
   }
 
   async toggleActive(outletId: string, userId: string, currentUserId: string): Promise<StaffDto> {
@@ -88,15 +106,7 @@ export class StaffService {
     const updated = await this.prisma.user.update({
       where: { id: userId },
       data: { isActive: nextActiveState },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isActive: true,
-        lastLoginAt: true,
-        createdAt: true,
-      },
+      select: staffSelect,
     });
 
     // Revoke semua sesi aktif jika akun dinonaktifkan
@@ -106,7 +116,7 @@ export class StaffService {
       });
     }
 
-    return updated;
+    return toStaffDto(updated);
   }
 
   async resetPassword(outletId: string, userId: string, newPassword: string): Promise<{ message: string }> {
@@ -133,6 +143,28 @@ export class StaffService {
     });
 
     return { message: 'Password staf berhasil direset.' };
+  }
+
+  async setPin(outletId: string, userId: string, pin: string): Promise<StaffDto> {
+    if (!/^\d{4,6}$/.test(pin.trim())) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'PIN absensi harus 4–6 digit angka.');
+    }
+
+    const user = await this.prisma.user.findFirst({
+      where: { id: userId, outletId },
+    });
+    if (!user) {
+      throw new AppException(ErrorCode.NOT_FOUND, 'Staf tidak ditemukan.');
+    }
+
+    const pinHash = await bcrypt.hash(pin.trim(), 8);
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: { pinHash },
+      select: staffSelect,
+    });
+
+    return toStaffDto(updated);
   }
 
   async deleteStaff(outletId: string, userId: string, currentUserId: string): Promise<void> {

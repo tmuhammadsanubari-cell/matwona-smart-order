@@ -10,3 +10,5 @@ export * from './schemas/realtime.schema.js';
 export * from './schemas/payment.schema.js';
 export * from './schemas/staff.schema.js';
 export * from './schemas/recommendation.schema.js';
+export * from './schemas/outlet.schema.js';
+export * from './schemas/pos-sync.schema.js';

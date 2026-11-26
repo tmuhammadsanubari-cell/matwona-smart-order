@@ -113,6 +113,18 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
     };
   }, [token, menuItems]);
 
+  const qrisAllowed = menu.outlet.qrisEnabled !== false;
+  const selfPickupPager = menu.outlet.serviceMode !== 'TABLE_SERVICE';
+  const paymentOptions = PAYMENT_OPTIONS.filter((opt) => qrisAllowed || opt.value !== 'QRIS').map((opt) =>
+    opt.value === 'CASHIER' && selfPickupPager
+      ? {
+          ...opt,
+          description: 'Tunai, kartu, atau QRIS di kasir sekaligus pengambilan pager antrean.',
+        }
+      : opt,
+  );
+  const selectedMethod: PaymentMethod = !qrisAllowed && method === 'QRIS' ? 'CASHIER' : method;
+
   async function submit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
@@ -137,7 +149,7 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
         idempotencyKey: idempotencyKey.current,
         customerName: parsed.data.customerName,
         customerPhone: parsed.data.customerPhone,
-        paymentMethod: method,
+        paymentMethod: selectedMethod,
         lines: useCart.getState().lines,
       });
       rememberOrder({ code: order.orderCode, outlet: outletSlug, tableToken: token, createdAt: order.createdAt });
@@ -247,8 +259,8 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
 
         <fieldset className="flex flex-col gap-2.5">
           <legend className="mb-2.5 text-sm font-bold text-ink">Metode pembayaran</legend>
-          {PAYMENT_OPTIONS.map((option) => {
-            const selected = !option.disabled && method === option.value;
+          {paymentOptions.map((option) => {
+            const selected = !option.disabled && selectedMethod === option.value;
             const Icon = option.icon;
             return (
               <label
@@ -264,7 +276,7 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
                   type="radio"
                   name="paymentMethod"
                   value={option.value}
-                  checked={method === option.value}
+                  checked={selectedMethod === option.value}
                   disabled={option.disabled}
                   onChange={() => setMethod(option.value)}
                   className="mt-0.5 size-5 shrink-0 accent-primary"
@@ -286,6 +298,11 @@ export function CheckoutView({ token, outletSlug, tableLabel, menu }: CheckoutVi
               </label>
             );
           })}
+          {!qrisAllowed && (
+            <p className="rounded-control bg-primary-soft/60 px-3 py-2 text-xs font-semibold text-primary">
+              Self Pick-up Service: silakan selesaikan pembayaran di kasir untuk mengambil pager antrean.
+            </p>
+          )}
         </fieldset>
 
         <Card padding="none" className="overflow-hidden">

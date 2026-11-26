@@ -74,6 +74,7 @@ function makeUser(overrides: Partial<User> = {}): User {
     name: 'Kasir 1',
     email: 'kasir@matwona.local',
     passwordHash,
+    pinHash: null,
     role: 'CASHIER',
     isActive: true,
     failedLoginCount: 0,

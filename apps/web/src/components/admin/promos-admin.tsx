@@ -12,6 +12,8 @@ interface PromoItem {
   discountType: 'PERCENT' | 'NOMINAL';
   discountValue: number;
   minPurchase: number;
+  maxQuantity?: number | null;
+  usedQuantity?: number;
   activeDays: number[];
   startsOn: string;
   endsOn: string;
@@ -28,6 +30,7 @@ export function PromosAdmin() {
   const [type, setType] = useState<'PERCENT' | 'NOMINAL'>('NOMINAL');
   const [value, setValue] = useState(5000);
   const [minPurchase, setMinPurchase] = useState(25000);
+  const [maxQuantity, setMaxQuantity] = useState('');
   const [saving, setSaving] = useState(false);
 
   const loadPromos = () => {
@@ -95,10 +98,12 @@ export function PromosAdmin() {
           discountType: type,
           discountValue: Number(value),
           minPurchase: Number(minPurchase),
+          maxQuantity: maxQuantity.trim() === '' ? null : Number(maxQuantity),
         }),
       });
       setTitle('');
       setDesc('');
+      setMaxQuantity('');
       setShowModal(false);
       loadPromos();
     } catch (e: unknown) {
@@ -165,6 +170,14 @@ export function PromosAdmin() {
                   <div className="flex justify-between">
                     <span className="text-muted">Min. Pembelian:</span>
                     <span>{formatRupiah(p.minPurchase)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted">Kuota Pemakaian:</span>
+                    <span>
+                      {p.maxQuantity !== null && p.maxQuantity !== undefined
+                        ? `${p.usedQuantity ?? 0} / ${p.maxQuantity}`
+                        : `${p.usedQuantity ?? 0} (Tanpa Batas)`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -264,6 +277,18 @@ export function PromosAdmin() {
                   type="number"
                   value={minPurchase}
                   onChange={(e) => setMinPurchase(Number(e.target.value))}
+                  className="mt-1 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-muted">Batas Kuota Promo (Porsi/Unit, Opsional)</label>
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Kosongkan untuk tanpa batas (mis. 1000)"
+                  value={maxQuantity}
+                  onChange={(e) => setMaxQuantity(e.target.value)}
                   className="mt-1 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-sm text-ink focus:border-primary focus:outline-none"
                 />
               </div>

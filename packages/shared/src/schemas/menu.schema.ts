@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Sumber: PRD 2.2.7 & tabel categories, menu_items (4.2)
+import type { ServiceMode } from './outlet.schema.js';
 
 const categoryName = z.string().trim().min(1, 'Nama kategori wajib diisi').max(60);
 const itemName = z.string().trim().min(1, 'Nama menu wajib diisi').max(100);
@@ -11,11 +11,16 @@ const price = z.number().int('Harga harus bilangan bulat').min(0, 'Harga tidak b
 const stock = z.number().int().min(0, 'Stok tidak boleh negatif').nullable();
 const sku = z.string().trim().min(1).max(64).nullable();
 const sortOrder = z.number().int().min(0);
+const printerStation = z.string().trim().min(1).max(40);
+const variantGroup = z.string().trim().min(1).max(80).nullable();
+const variantLabel = z.string().trim().min(1).max(60).nullable();
+const spiceLevel = z.string().trim().min(1).max(40).nullable();
 
 export const categorySchema = z.object({
   name: categoryName,
   sortOrder: sortOrder.default(0),
   isActive: z.boolean().default(true),
+  printerStation: printerStation.optional(),
 });
 export type CategoryInput = z.infer<typeof categorySchema>;
 
@@ -24,7 +29,7 @@ export type CategoryInput = z.infer<typeof categorySchema>;
  * sehingga field yang tidak dikirim akan ikut tertimpa.
  */
 export const categoryUpdateSchema = z
-  .object({ name: categoryName, sortOrder, isActive: z.boolean() })
+  .object({ name: categoryName, sortOrder, isActive: z.boolean(), printerStation })
   .partial()
   .refine((v) => Object.keys(v).length > 0, 'Tidak ada data yang diubah');
 export type CategoryUpdateInput = z.infer<typeof categoryUpdateSchema>;
@@ -46,6 +51,9 @@ export const menuItemSchema = z.object({
   price,
   stock: stock.optional(),
   sku: sku.optional(),
+  variantGroup: variantGroup.optional(),
+  variantLabel: variantLabel.optional(),
+  spiceLevel: spiceLevel.optional(),
   isAvailable: z.boolean().default(true),
   sortOrder: sortOrder.default(0),
 });
@@ -59,6 +67,9 @@ export const menuItemUpdateSchema = z
     price,
     stock,
     sku,
+    variantGroup,
+    variantLabel,
+    spiceLevel,
     isAvailable: z.boolean(),
     sortOrder,
   })
@@ -86,6 +97,7 @@ export interface CategoryDto {
   name: string;
   sortOrder: number;
   isActive: boolean;
+  printerStation?: string;
   /** Jumlah item yang belum diarsipkan. */
   itemCount: number;
 }
@@ -100,6 +112,9 @@ export interface MenuItemDto {
   imageUrl: string | null;
   stock: number | null;
   sku: string | null;
+  variantGroup?: string | null;
+  variantLabel?: string | null;
+  spiceLevel?: string | null;
   isAvailable: boolean;
   isArchived: boolean;
   sortOrder: number;
@@ -116,11 +131,21 @@ export interface PublicMenuItem {
   price: number;
   imageUrl: string | null;
   isAvailable: boolean;
+  stock?: number | null;
+  variantGroup?: string | null;
+  variantLabel?: string | null;
+  spiceLevel?: string | null;
 }
 
 /** Response GET /public/outlets/:slug/menu. Kategori & item sudah terurut `sortOrder`. */
 export interface PublicMenu {
-  outlet: { id: string; slug: string; name: string };
+  outlet: {
+    id: string;
+    slug: string;
+    name: string;
+    qrisEnabled?: boolean;
+    serviceMode?: ServiceMode;
+  };
   categories: { id: string; name: string; items: PublicMenuItem[] }[];
 }
 

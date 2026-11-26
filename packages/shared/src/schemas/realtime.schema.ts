@@ -34,3 +34,10 @@ export interface PaymentUpdatedEvent {
   /** Hanya untuk room kasir. */
   order?: StaffOrderDto;
 }
+
+/** `stock.reminder` → room kasir. Pengingat cek stok berkala atau notifikasi stok menipis. */
+export interface StockReminderEvent {
+  message: string;
+  lowStockItems: Array<{ id: string; name: string; stock: number | null }>;
+  triggeredAt: string;
+}

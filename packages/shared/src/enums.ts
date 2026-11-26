@@ -48,6 +48,7 @@ export const SocketEvent = {
   ORDER_UPDATED: 'order.updated',
   PAYMENT_UPDATED: 'payment.updated',
   MENU_UPDATED: 'menu.updated',
+  STOCK_REMINDER: 'stock.reminder',
 } as const;
 export type SocketEvent = (typeof SocketEvent)[keyof typeof SocketEvent];
 

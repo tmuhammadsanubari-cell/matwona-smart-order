@@ -1,5 +1,7 @@
 'use client';
 
+import { StaffAttendanceCard, StaffPinButton } from './staff-attendance-card';
+
 import { useEffect, useState } from 'react';
 import { Badge, Button, Card } from '@/components/ui';
 import { staffFetch } from '@/lib/staff-api';
@@ -177,6 +179,7 @@ export function StaffAdmin() {
                       >
                         {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
                       </button>
+                      <StaffPinButton userId={u.id} userName={u.name} />
                       <button
                         type="button"
                         onClick={() => handleDelete(u.id)}
@@ -195,6 +198,8 @@ export function StaffAdmin() {
           </tbody>
         </table>
       </Card>
+
+      <StaffAttendanceCard />
 
       {/* Modal Tambah Staf */}
       {showModal && (

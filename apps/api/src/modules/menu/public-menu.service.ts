@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ErrorCode } from 'shared';
-import type { PublicMenu } from 'shared';
+import type { PublicMenu, ServiceMode } from 'shared';
 import { AppException } from '../../common/app.exception.js';
 import { PrismaService } from '../../prisma/prisma.service.js';
 import { CacheService } from '../../redis/cache.service.js';
@@ -28,7 +28,7 @@ export class PublicMenuService {
 
     const outlet = await this.prisma.outlet.findUnique({
       where: { slug: targetSlug },
-      select: { id: true, slug: true, name: true },
+      select: { id: true, slug: true, name: true, qrisEnabled: true, serviceMode: true },
     });
     if (!outlet) throw this.outletNotFound();
 
@@ -43,8 +43,16 @@ export class PublicMenuService {
       },
     });
 
+    const outletDto: PublicMenu['outlet'] = {
+      id: outlet.id,
+      slug: outlet.slug,
+      name: outlet.name,
+      ...(outlet.qrisEnabled !== undefined ? { qrisEnabled: outlet.qrisEnabled } : {}),
+      ...(outlet.serviceMode !== undefined ? { serviceMode: outlet.serviceMode as ServiceMode } : {}),
+    };
+
     const menu: PublicMenu = {
-      outlet,
+      outlet: outletDto,
       categories: categories
         .filter((c) => c.menuItems.length > 0)
         .map((c) => ({
@@ -58,6 +66,10 @@ export class PublicMenuService {
             imageUrl: item.imageUrl,
             // Habis bila ditandai manual atau stok terlacak sudah 0 (FR-002).
             isAvailable: item.isAvailable && item.stock !== 0,
+            ...(item.stock !== null && item.stock > 0 && item.stock <= 5 ? { stock: item.stock } : {}),
+            ...(item.variantGroup ? { variantGroup: item.variantGroup } : {}),
+            ...(item.variantLabel ? { variantLabel: item.variantLabel } : {}),
+            ...(item.spiceLevel ? { spiceLevel: item.spiceLevel } : {}),
           })),
         })),
     };

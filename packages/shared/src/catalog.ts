@@ -9,11 +9,15 @@ export interface CatalogItem {
   description: string;
   imageUrl?: string;
   spicy?: boolean;
+  variantGroup?: string;
+  variantLabel?: string;
+  spiceLevel?: string;
 }
 
 export interface CatalogSection {
   id: string;
   name: string;
+  printerStation?: 'kitchen' | 'bar' | 'cashier';
   items: CatalogItem[];
 }
 
@@ -25,6 +29,9 @@ const item = (
   description: string,
   image?: string,
   spicy?: boolean,
+  variantGroup?: string,
+  variantLabel?: string,
+  spiceLevel?: string,
 ): CatalogItem => ({
   sku,
   name,
@@ -32,28 +39,38 @@ const item = (
   description,
   ...(image ? { imageUrl: photo(image) } : {}),
   ...(spicy ? { spicy } : {}),
+  ...(variantGroup ? { variantGroup } : {}),
+  ...(variantLabel ? { variantLabel } : {}),
+  ...(spiceLevel ? { spiceLevel } : {}),
 });
 
 export const MATWONA_CATALOG: CatalogSection[] = [
   {
     id: 'tuna',
     name: 'Olahan Tuna',
+    printerStation: 'kitchen',
     items: [
       item(
         'TN-SMT-R',
         'Matwona Sambal Matah Reguler',
         19000,
-        'Tuna suwir dengan sambal matah segar, nasi, jukut goreng, dan kremesan.',
+        'Tuna suwir berbumbu khas dengan nasi, jukut goreng, dan kremesan (porsi reguler).',
         'tuna-matah-reguler.png',
         true,
+        'Matwona Tuna Reguler',
+        'Sambal Matah',
+        'Pedas Level 2',
       ),
       item(
         'TN-SMT-J',
         'Matwona Sambal Matah Jumbo',
         29000,
-        'Tuna suwir dengan sambal matah segar dalam porsi jumbo, nasi, jukut goreng, dan kremesan.',
+        'Tuna suwir berbumbu khas dalam porsi jumbo dengan nasi, jukut goreng, dan kremesan.',
         'tuna-matah-jumbo.png',
         true,
+        'Matwona Tuna Jumbo',
+        'Sambal Matah',
+        'Pedas Level 2',
       ),
       item(
         'TN-DAB-R',
@@ -62,6 +79,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tuna suwir dengan sambal dabu-dabu segar, nasi, jukut goreng, dan kremesan.',
         'tuna-dabu-reguler.png',
         true,
+        'Matwona Tuna Reguler',
+        'Sambal Dabu-Dabu',
+        'Pedas Level 1',
       ),
       item(
         'TN-DAB-J',
@@ -70,6 +90,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tuna suwir dengan sambal dabu-dabu segar dalam porsi jumbo, nasi, jukut goreng, dan kremesan.',
         'tuna-dabu-jumbo.png',
         true,
+        'Matwona Tuna Jumbo',
+        'Sambal Dabu-Dabu',
+        'Pedas Level 1',
       ),
       item(
         'TN-LDG-R',
@@ -78,6 +101,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tuna suwir berbumbu lada garam dengan nasi, jukut goreng, dan kremesan.',
         'tuna-lada-reguler.png',
         true,
+        'Matwona Tuna Reguler',
+        'Lada Garam',
+        'Pedas Level 1',
       ),
       item(
         'TN-LDG-J',
@@ -86,30 +112,45 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tuna suwir berbumbu lada garam dalam porsi jumbo dengan nasi, jukut goreng, dan kremesan.',
         'tuna-lada-jumbo.png',
         true,
+        'Matwona Tuna Jumbo',
+        'Lada Garam',
+        'Pedas Level 1',
       ),
     ],
   },
   {
     id: 'non-spicy',
     name: 'Non-Spicy',
+    printerStation: 'kitchen',
     items: [
       item(
         'TN-MYO-R',
         'Matwona Mayo Reguler',
         17000,
-        'Olahan tuna dengan mayo, pilihan non-pedas dalam porsi reguler.',
+        'Olahan tuna dengan mayo, pilihan non-pedas.',
+        undefined,
+        false,
+        'Matwona Mayo',
+        'Reguler',
+        'Non-Pedas',
       ),
       item(
         'TN-MYO-J',
         'Matwona Mayo Jumbo',
         26000,
         'Olahan tuna dengan mayo, pilihan non-pedas dalam porsi jumbo.',
+        undefined,
+        false,
+        'Matwona Mayo',
+        'Jumbo',
+        'Non-Pedas',
       ),
     ],
   },
   {
     id: 'bakmie',
     name: 'Bakmie Series',
+    printerStation: 'kitchen',
     items: [
       item(
         'BM-AY-LDG',
@@ -117,6 +158,10 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         35000,
         'Mi homemade berbahan tepung mocaf, dengan ayam kampung suwir berbumbu lada garam dan jukut goreng.',
         'bakmie-ayam.png',
+        false,
+        'Bakmie Ayam Kampung',
+        'Original Lada Garam',
+        'Non-Pedas',
       ),
       item(
         'BM-AY-CHO',
@@ -125,6 +170,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Mi homemade berbahan tepung mocaf, ayam kampung lada garam, jukut goreng, dan chilli oil.',
         'bakmie-ayam-chilli.png',
         true,
+        'Bakmie Ayam Kampung',
+        'Chilli Oil',
+        'Pedas Level 2',
       ),
       item(
         'BM-TN-ORI',
@@ -132,6 +180,10 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         35000,
         'Mi homemade berbahan tepung mocaf, dengan tuna suwir berbumbu lada garam dan jukut goreng.',
         'bakmie-tuna.png',
+        false,
+        'Bakmie Tuna',
+        'Original Lada Garam',
+        'Non-Pedas',
       ),
       item(
         'BM-TN-CHO',
@@ -140,6 +192,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Mi homemade berbahan tepung mocaf, tuna lada garam, jukut goreng, dan chilli oil.',
         'bakmie-tuna-chilli.png',
         true,
+        'Bakmie Tuna',
+        'Chilli Oil',
+        'Pedas Level 2',
       ),
       item(
         'BM-AY-ABN',
@@ -152,8 +207,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
   {
     id: 'nasi-telur',
     name: 'Paket Nasi Telur Barendo',
+    printerStation: 'kitchen',
     items: [
-      item('TL-NSP', 'Paket Nasi Telur Barendo', 13000, 'Nasi dengan telur barendo.'),
+      item('TL-NSP', 'Paket Nasi Telur Barendo', 13000, 'Nasi dengan telur barendo renyah.', undefined, false, 'Paket Nasi Telur Barendo', 'Original', 'Non-Pedas'),
       item(
         'TL-CHO',
         'Paket Nasi Telur Barendo Chilli Oil',
@@ -161,6 +217,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Nasi dan telur barendo dengan chilli oil.',
         undefined,
         true,
+        'Paket Nasi Telur Barendo',
+        'Chilli Oil',
+        'Pedas Level 2',
       ),
       item(
         'TL-SMT',
@@ -169,6 +228,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Nasi dan telur barendo dengan sambal matah.',
         undefined,
         true,
+        'Paket Nasi Telur Barendo',
+        'Sambal Matah',
+        'Pedas Level 2',
       ),
       item(
         'TL-DAB',
@@ -177,12 +239,16 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Nasi dan telur barendo dengan sambal dabu-dabu.',
         undefined,
         true,
+        'Paket Nasi Telur Barendo',
+        'Sambal Dabu-Dabu',
+        'Pedas Level 1',
       ),
     ],
   },
   {
     id: 'camilan',
     name: 'Camilan & Dessert',
+    printerStation: 'kitchen',
     items: [
       item('CM-SC-ORI', 'Soft Cookies Chocolate', 10000, 'Soft cookies rasa cokelat.'),
       item('CM-RS-GRG', 'Risol Tuna Melt', 10000, 'Risol dengan isian tuna melt.'),
@@ -197,6 +263,7 @@ export const MATWONA_CATALOG: CatalogSection[] = [
   {
     id: 'tambahan',
     name: 'Alacarte & Tambahan',
+    printerStation: 'kitchen',
     items: [
       item(
         'TB-TWN-MTH',
@@ -205,6 +272,9 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tambahan olahan tuna sambal matah tanpa nasi.',
         undefined,
         true,
+        'Xtra Olahan Tuna',
+        'Sambal Matah',
+        'Pedas Level 2',
       ),
       item(
         'TB-TWN-DAB',
@@ -213,18 +283,26 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Tambahan olahan tuna sambal dabu-dabu tanpa nasi.',
         undefined,
         true,
+        'Xtra Olahan Tuna',
+        'Sambal Dabu-Dabu',
+        'Pedas Level 1',
       ),
       item(
         'TB-TWN-LDG',
         'Xtra Twona Lada Garam',
         12000,
         'Tambahan olahan tuna lada garam tanpa nasi.',
+        undefined,
+        true,
+        'Xtra Olahan Tuna',
+        'Lada Garam',
+        'Pedas Level 1',
       ),
       item('TB-NSP', 'Xtra Nasi', 6000, 'Tambahan nasi putih.'),
       item('TB-CHIPS', 'Xtra Chips', 5000, 'Tambahan chips renyah.'),
-      item('TB-SB-MTH', 'Xtra Sambal Matah', 6000, 'Tambahan sambal matah.', undefined, true),
-      item('TB-SB-DAB', 'Xtra Sambal Dabu', 6000, 'Tambahan sambal dabu-dabu.', undefined, true),
-      item('TB-CHO', 'Xtra Chilli Oil', 6000, 'Tambahan chilli oil.', undefined, true),
+      item('TB-SB-MTH', 'Xtra Sambal Matah', 6000, 'Tambahan sambal matah.', undefined, true, 'Xtra Sambal', 'Sambal Matah', 'Pedas Level 2'),
+      item('TB-SB-DAB', 'Xtra Sambal Dabu', 6000, 'Tambahan sambal dabu-dabu.', undefined, true, 'Xtra Sambal', 'Sambal Dabu-Dabu', 'Pedas Level 1'),
+      item('TB-CHO', 'Xtra Chilli Oil', 6000, 'Tambahan chilli oil.', undefined, true, 'Xtra Sambal', 'Chilli Oil', 'Pedas Level 2'),
       item('TB-JKT-GRG', 'Jukut Goreng', 7000, 'Tambahan jukut goreng.'),
       item('TB-KRM', 'Xtra Kremesan', 3000, 'Tambahan kremesan renyah.'),
     ],
@@ -232,6 +310,7 @@ export const MATWONA_CATALOG: CatalogSection[] = [
   {
     id: 'kopi',
     name: 'Signature Coffee',
+    printerStation: 'bar',
     items: [
       item(
         'MN-KSB',
@@ -240,21 +319,27 @@ export const MATWONA_CATALOG: CatalogSection[] = [
         'Kopi susu hangat dengan butter.',
         'kopi-butter.png',
       ),
-      item('MN-KSC', 'Kopi Susu Classic', 15000, 'Kopi susu classic hangat.', 'kopi-susu.png'),
+      item('MN-KSC', 'Kopi Susu Classic', 15000, 'Kopi susu classic hangat.', 'kopi-susu.png', false, 'Kopi Susu Classic', 'Hot (Hangat)'),
       item(
         'MN-KSCI',
         'Kopi Susu Classic Ice',
         17000,
         'Kopi susu classic dingin.',
         'kopi-susu-ice.png',
+        false,
+        'Kopi Susu Classic',
+        'Ice (Dingin)',
       ),
-      item('MN-KHC', 'Kopi Hitam Classic', 10000, 'Kopi hitam classic hangat.', 'kopi-hitam.webp'),
+      item('MN-KHC', 'Kopi Hitam Classic', 10000, 'Kopi hitam classic hangat.', 'kopi-hitam.webp', false, 'Kopi Hitam Classic', 'Hot (Hangat)'),
       item(
         'MN-KHCI',
         'Kopi Hitam Classic Ice',
         12000,
         'Kopi hitam classic dingin.',
         'kopi-hitam-ice.png',
+        false,
+        'Kopi Hitam Classic',
+        'Ice (Dingin)',
       ),
       item('MN-KL', 'Kopi Lemon', 17000, 'Kopi dengan lemon.', 'kopi-lemon.png'),
     ],
@@ -262,23 +347,25 @@ export const MATWONA_CATALOG: CatalogSection[] = [
   {
     id: 'black-tea',
     name: 'Signature Black Tea',
+    printerStation: 'bar',
     items: [
-      item('MN-BMTH', 'Black Milk Tea Hot', 16000, 'Black milk tea hangat.', 'black-tea-hot.png'),
-      item('MN-BMTI', 'Black Milk Tea Ice', 18000, 'Black milk tea dingin.', 'black-tea-ice.png'),
+      item('MN-BMTH', 'Black Milk Tea Hot', 16000, 'Black milk tea hangat.', 'black-tea-hot.png', false, 'Black Milk Tea', 'Hot (Hangat)'),
+      item('MN-BMTI', 'Black Milk Tea Ice', 18000, 'Black milk tea dingin.', 'black-tea-ice.png', false, 'Black Milk Tea', 'Ice (Dingin)'),
     ],
   },
   {
     id: 'minuman',
     name: 'Minuman Segar',
+    printerStation: 'bar',
     items: [
       item('MN-IL', 'Ice Lemon', 16000, 'Minuman lemon dingin.'),
-      item('MN-LMT', 'Ice Lemon Tea', 16000, 'Teh lemon dingin.'),
-      item('MN-ETM', 'Sweet Iced Tea', 8000, 'Es teh manis.'),
-      item('MN-ETT', 'Plain Iced Tea', 6000, 'Es teh tawar.'),
+      item('MN-LMT', 'Ice Lemon Tea', 16000, 'Teh lemon dingin.', undefined, false, 'Lemon Tea', 'Ice (Dingin)'),
+      item('MN-HLT', 'Hot Lemon Tea', 14000, 'Teh lemon hangat.', undefined, false, 'Lemon Tea', 'Hot (Hangat)'),
+      item('MN-ETM', 'Sweet Iced Tea', 8000, 'Es teh manis.', undefined, false, 'Sweet Tea', 'Ice (Dingin)'),
+      item('MN-HST', 'Hot Sweet Tea', 7000, 'Teh manis hangat.', undefined, false, 'Sweet Tea', 'Hot (Hangat)'),
+      item('MN-ETT', 'Plain Iced Tea', 6000, 'Es teh tawar.', undefined, false, 'Plain Tea', 'Ice (Dingin)'),
+      item('MN-HPT', 'Hot Plain Tea', 5000, 'Teh tawar hangat.', undefined, false, 'Plain Tea', 'Hot (Hangat)'),
       item('MN-AIR', 'Mineral Water', 6000, 'Air mineral.'),
-      item('MN-HLT', 'Hot Lemon Tea', 14000, 'Teh lemon hangat.'),
-      item('MN-HST', 'Hot Sweet Tea', 7000, 'Teh manis hangat.'),
-      item('MN-HPT', 'Hot Plain Tea', 5000, 'Teh tawar hangat.'),
     ],
   },
 ];

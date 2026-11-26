@@ -24,6 +24,7 @@ export class CategoriesService {
       name: c.name,
       sortOrder: c.sortOrder,
       isActive: c.isActive,
+      ...(c.printerStation ? { printerStation: c.printerStation } : {}),
       itemCount: c._count.menuItems,
     }));
   }
@@ -79,7 +80,13 @@ export class CategoriesService {
     return category;
   }
 
-  private toDto(c: { id: string; name: string; sortOrder: number; isActive: boolean }) {
-    return { id: c.id, name: c.name, sortOrder: c.sortOrder, isActive: c.isActive };
+  private toDto(c: { id: string; name: string; sortOrder: number; isActive: boolean; printerStation?: string }) {
+    return {
+      id: c.id,
+      name: c.name,
+      sortOrder: c.sortOrder,
+      isActive: c.isActive,
+      ...(c.printerStation ? { printerStation: c.printerStation } : {}),
+    };
   }
 }

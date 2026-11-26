@@ -22,17 +22,23 @@ export interface CategoryFormSheetProps {
 export function CategoryFormSheet({ category, busy, serverError, onClose, onCreate, onUpdate }: CategoryFormSheetProps) {
   const [name, setName] = useState(category?.name ?? '');
   const [isActive, setIsActive] = useState(category?.isActive ?? true);
+  const [printerStation, setPrinterStation] = useState(category?.printerStation ?? 'kitchen');
   const [error, setError] = useState<string | undefined>();
 
   const submit = () => {
     if (!category) {
-      const parsed = categorySchema.safeParse({ name, isActive });
+      const parsed = categorySchema.safeParse({
+        name,
+        isActive,
+        ...(printerStation !== 'kitchen' ? { printerStation } : {}),
+      });
       if (!parsed.success) return setError(parsed.error.issues[0]?.message);
       return onCreate(parsed.data);
     }
     const changes = {
       ...(name.trim() !== category.name ? { name } : {}),
       ...(isActive !== category.isActive ? { isActive } : {}),
+      ...(printerStation !== (category.printerStation ?? 'kitchen') ? { printerStation } : {}),
     };
     if (Object.keys(changes).length === 0) return onClose();
     const parsed = categoryUpdateSchema.safeParse(changes);
@@ -53,6 +59,24 @@ export function CategoryFormSheet({ category, busy, serverError, onClose, onCrea
     >
       <div className="flex flex-col gap-4">
         <Input label="Nama kategori" maxLength={60} value={name} onChange={(e) => setName(e.target.value)} error={error} />
+        <div>
+          <label htmlFor="category-printer-station" className="text-sm font-bold text-ink">
+            Stasiun Cetak Tiket
+          </label>
+          <select
+            id="category-printer-station"
+            value={printerStation}
+            onChange={(e) => setPrinterStation(e.target.value)}
+            className="mt-1.5 min-h-11 w-full rounded-control border-[1.5px] border-line-strong bg-surface px-3.5 text-sm font-semibold text-ink focus:border-primary focus:outline-none"
+          >
+            <option value="kitchen">Dapur (kitchen)</option>
+            <option value="bar">Bar &amp; Minuman (bar)</option>
+            <option value="cashier">Kasir Depan (cashier)</option>
+          </select>
+          <p className="mt-1 text-xs text-muted">
+            Tiket pesanan kategori ini otomatis dipisahkan ke stasiun printer tersebut.
+          </p>
+        </div>
         <label className="flex min-h-11 items-center gap-3 text-ink">
           <input
             type="checkbox"

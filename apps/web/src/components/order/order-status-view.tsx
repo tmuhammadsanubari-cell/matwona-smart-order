@@ -167,7 +167,7 @@ export function OrderStatusView({ outlet, code }: OrderStatusViewProps) {
             {order.paymentMethod === 'CASHIER'
               ? order.paymentStatus === 'PAID'
                 ? 'Sudah dibayar di kasir. Terima kasih!'
-                : `Bayar di kasir sebesar ${formatRupiah(order.totalAmount)} dengan menyebut kode pesananmu.`
+                : `Bayar di kasir sebesar ${formatRupiah(order.totalAmount)} dengan menyebut kode pesananmu untuk pelunasan & pengambilan pager.`
               : order.paymentStatus === 'PAID'
                 ? 'Pembayaran QRIS berhasil diterima. Terima kasih!'
                 : `Scan kode QRIS di bawah sebesar ${formatRupiah(order.totalAmount)} lalu konfirmasi ke kasir saat disajikan.`}

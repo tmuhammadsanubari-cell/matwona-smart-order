@@ -25,6 +25,8 @@ async function main() {
       description:
         'Rumah makan spesialis tuna dan ayam kampung dengan dapur terbuka. Protein terpenuhi, dengan tuna setiap hari.',
       address: 'Jl. Matwona No. 12, Bandung',
+      serviceMode: 'SELF_PICKUP_PAGER',
+      stockReminderHours: [11, 15, 18],
       openingHours: {
         mon: ['10:00', '21:00'],
         tue: ['10:00', '21:00'],
@@ -42,6 +44,9 @@ async function main() {
       description:
         'Rumah makan spesialis tuna dan ayam kampung dengan dapur terbuka. Protein terpenuhi, dengan tuna setiap hari.',
       address: 'Jl. Matwona No. 12, Bandung',
+      qrisEnabled: false,
+      serviceMode: 'SELF_PICKUP_PAGER',
+      stockReminderHours: [11, 15, 18],
       openingHours: {
         mon: ['10:00', '21:00'],
         tue: ['10:00', '21:00'],
@@ -55,6 +60,7 @@ async function main() {
   });
 
   const cost = Number(process.env.BCRYPT_COST ?? 12);
+  const defaultPinHash = await bcrypt.hash('1234', Math.min(cost, 8));
   await prisma.user.upsert({
     where: { email: 'admin@matwona.local' },
     update: {},
@@ -63,6 +69,7 @@ async function main() {
       name: 'Owner Matwona',
       email: 'admin@matwona.local',
       passwordHash: await bcrypt.hash('Admin123!', cost),
+      pinHash: defaultPinHash,
       role: 'ADMIN',
     },
   });
@@ -74,6 +81,7 @@ async function main() {
       name: 'Kasir 1',
       email: 'kasir@matwona.local',
       passwordHash: await bcrypt.hash('Kasir123!', cost),
+      pinHash: defaultPinHash,
       role: 'CASHIER',
     },
   });
@@ -82,17 +90,18 @@ async function main() {
   const catalog = MATWONA_CATALOG;
 
   for (const [ci, cat] of catalog.entries()) {
+    const printerStation = cat.printerStation ?? 'kitchen';
     let category = await prisma.category.findFirst({
       where: { outletId: outlet.id, name: cat.name },
     });
     if (!category) {
       category = await prisma.category.create({
-        data: { outletId: outlet.id, name: cat.name, sortOrder: ci },
+        data: { outletId: outlet.id, name: cat.name, sortOrder: ci, printerStation },
       });
     } else {
       category = await prisma.category.update({
         where: { id: category.id },
-        data: { sortOrder: ci },
+        data: { sortOrder: ci, printerStation },
       });
     }
 
@@ -112,6 +121,9 @@ async function main() {
           description: item.description,
           sortOrder: ii,
           imageUrl,
+          variantGroup: item.variantGroup ?? null,
+          variantLabel: item.variantLabel ?? null,
+          spiceLevel: item.spiceLevel ?? null,
           isAvailable: true,
         },
         create: {
@@ -123,6 +135,9 @@ async function main() {
           sku: item.sku,
           sortOrder: ii,
           imageUrl,
+          variantGroup: item.variantGroup ?? null,
+          variantLabel: item.variantLabel ?? null,
+          spiceLevel: item.spiceLevel ?? null,
           isAvailable: true,
         },
       });

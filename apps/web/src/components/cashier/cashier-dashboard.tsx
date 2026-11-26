@@ -1,5 +1,8 @@
 'use client';
 
+import { AttendancePinModal } from './attendance-pin-modal';
+import { StockCheckSheet, useCashierOperationalInfo } from './stock-check-sheet';
+
 import { useCallback, useEffect, useState } from 'react';
 import type { StaffOrderDto } from 'shared';
 import { useStaffSession } from '@/components/auth/use-staff-session';
@@ -59,6 +62,19 @@ export function CashierDashboard() {
   const [highlighted, setHighlighted] = useState<Set<string>>(new Set());
   const [cancelling, setCancelling] = useState<StaffOrderDto | null>(null);
   const [printingOrder, setPrintingOrder] = useState<StaffOrderDto | null>(null);
+  const [stockSheetOpen, setStockSheetOpen] = useState(false);
+  const [attendanceOpen, setAttendanceOpen] = useState(false);
+  const [dismissedStockHour, setDismissedStockHour] = useState<number | null>(null);
+  const [wibHour] = useState<number>(() =>
+    Number(
+      new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Jakarta',
+        hour: '2-digit',
+        hour12: false,
+      }).format(new Date()),
+    ),
+  );
+  const operationalQuery = useCashierOperationalInfo(Boolean(session));
   const [actionError, setActionError] = useState<string | null>(null);
   const action = useOrderAction();
 
@@ -145,6 +161,15 @@ export function CashierDashboard() {
           <Logo width={118} priority />
           <h1 className="border-l border-cream/40 pl-2.5 text-lg font-extrabold text-cream">Kasir</h1>
         </div>
+        <Button type="button" variant="inverse" onClick={() => setStockSheetOpen(true)}>
+          Cek Stok
+          {operationalQuery.data && operationalQuery.data.lowStockItems.length > 0
+            ? ` (${operationalQuery.data.lowStockItems.length})`
+            : ''}
+        </Button>
+        <Button type="button" variant="inverse" onClick={() => setAttendanceOpen(true)}>
+          Absensi (PIN)
+        </Button>
         {connected && (
           <span className={cx(HEADER_CHIP, 'max-sm:hidden')}>
             <span aria-hidden="true" className="size-2.5 rounded-full bg-accent ring-3 ring-accent/30" />
@@ -311,6 +336,36 @@ export function CashierDashboard() {
           onClose={() => setPrintingOrder(null)}
         />
       )}
+      {operationalQuery.data &&
+        (operationalQuery.data.stockReminderHours.includes(wibHour) ||
+          operationalQuery.data.lowStockItems.length > 0) &&
+        dismissedStockHour !== wibHour && (
+          <div className="fixed bottom-4 left-4 z-40 flex max-w-md items-center gap-3 rounded-card border border-warning/40 bg-warning-soft px-4 py-3 text-xs text-warning shadow-toast">
+            <div className="min-w-0 flex-1">
+              <p className="font-extrabold">Pengingat Cek Stok ({String(wibHour).padStart(2, '0')}:00 WIB)</p>
+              <p className="mt-0.5 text-ink">
+                {operationalQuery.data.lowStockItems.length > 0
+                  ? `${operationalQuery.data.lowStockItems.length} menu stok menipis atau habis. Pastikan status menu sesuai dapur.`
+                  : 'Jadwal pengecekan stok harian aktif. Verifikasi ketersediaan menu.'}
+              </p>
+            </div>
+            <Button type="button" variant="primary" onClick={() => setStockSheetOpen(true)}>
+              Cek
+            </Button>
+            <button
+              type="button"
+              onClick={() => setDismissedStockHour(wibHour)}
+              className="px-1.5 py-1 font-bold text-muted hover:text-ink"
+              aria-label="Tutup pengingat stok"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+      {stockSheetOpen && (
+        <StockCheckSheet open={stockSheetOpen} onClose={() => setStockSheetOpen(false)} />
+      )}
+      <AttendancePinModal open={attendanceOpen} onClose={() => setAttendanceOpen(false)} />
 
       <CancelOrderSheet
         order={cancelling}

@@ -15,6 +15,9 @@ import { StaffModule } from './modules/staff/staff.module.js';
 import { PromosModule } from './modules/promos/promos.module.js';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module.js';
 import { PaymentsModule } from './modules/payments/payments.module.js';
+import { NotificationsModule } from './modules/notifications/notifications.module.js';
+import { OutletModule } from './modules/outlet/outlet.module.js';
+import { AttendanceModule } from './modules/attendance/attendance.module.js';
 
 // Modul fitur ditambahkan sesuai docs/BACKLOG.md:
 // payments (S2-01), promos (S3-08), analytics (S3-05), recommendations (S3-03), users (S2-12)
@@ -26,6 +29,7 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
     }),
     PrismaModule,
     RedisModule,
+    NotificationsModule,
     AuthModule,
     TablesModule,
     MenuModule,
@@ -37,6 +41,8 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
     StaffModule,
     PromosModule,
     RecommendationsModule,
+    OutletModule,
+    AttendanceModule,
   ],
   controllers: [HealthController],
 })

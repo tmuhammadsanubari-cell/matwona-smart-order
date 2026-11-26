@@ -29,6 +29,13 @@ export class PaymentsService {
   async createQrisCharge(orderCode: string, tableToken: string): Promise<PaymentInitiateResponse> {
     const { table, outlet } = await this.tables.resolveToken(tableToken);
 
+    const outletMeta = this.prisma.outlet?.findUnique
+      ? await this.prisma.outlet.findUnique({ where: { id: outlet.id }, select: { qrisEnabled: true } })
+      : null;
+    if (outletMeta?.qrisEnabled === false) {
+      throw new AppException(ErrorCode.VALIDATION_ERROR, 'Pembayaran QRIS sedang dinonaktifkan oleh outlet.');
+    }
+
     const order = await this.prisma.order.findFirst({
       where: { orderCode, outletId: outlet.id, tableId: table.id },
       include: orderInclude,
@@ -332,9 +339,22 @@ export class PaymentsService {
 
   private async restoreOrderStock(tx: Prisma.TransactionClient, order: OrderWithItems): Promise<boolean> {
     const quantities = new Map<string, number>();
+    const byPromo = new Map<string, number>();
     for (const item of order.items) {
       if (item.menuItemId) {
         quantities.set(item.menuItemId, (quantities.get(item.menuItemId) ?? 0) + item.quantity);
+      }
+      if (item.promoId) {
+        byPromo.set(item.promoId, (byPromo.get(item.promoId) ?? 0) + item.quantity);
+      }
+    }
+
+    if (tx.promo?.updateMany) {
+      for (const [promoId, qty] of byPromo) {
+        await tx.promo.updateMany({
+          where: { id: promoId, usedQuantity: { gte: qty } },
+          data: { usedQuantity: { decrement: qty } },
+        });
       }
     }
 

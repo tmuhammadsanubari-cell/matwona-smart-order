@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { ServiceMode } from './outlet.schema.js';
 
 // Sumber: PRD 2.2.1, 2.2.8 & tabel dining_tables (4.2)
 
@@ -54,5 +55,11 @@ export interface DiningTableDto {
 /** Response GET /public/tables/:token — konteks meja untuk halaman menu pelanggan. */
 export interface PublicTableInfo {
   table: { id: string; label: string };
-  outlet: { id: string; slug: string; name: string };
+  outlet: {
+    id: string;
+    slug: string;
+    name: string;
+    qrisEnabled?: boolean;
+    serviceMode?: ServiceMode;
+  };
 }

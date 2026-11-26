@@ -3,7 +3,13 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { ErrorCode, SocketEvent } from 'shared';
-import type { OrderStatus, OrderUpdatedEvent, PaymentUpdatedEvent, StaffOrderDto } from 'shared';
+import type {
+  OrderStatus,
+  OrderUpdatedEvent,
+  PaymentUpdatedEvent,
+  StaffOrderDto,
+  StockReminderEvent,
+} from 'shared';
 import { ApiClientError } from '@/lib/api';
 import { todayWib, upsertOrder } from '@/lib/cashier-board';
 import { connectRealtime } from '@/lib/socket';
@@ -36,8 +42,19 @@ function applyOrder(queryClient: QueryClient, order: StaffOrderDto) {
  * Pesanan dashboard kasir (FR-008): GET /orders + room `outlet:<id>:cashier`. Event realtime langsung
  * memperbarui cache; setelah (re)connect daftar diambil ulang agar perubahan selama putus tidak hilang.
  */
-export function useCashierOrders(filters: OrderFilters, options: { enabled: boolean; onNewOrder: (order: StaffOrderDto) => void }) {
+export function useCashierOrders(
+  filters: OrderFilters,
+  options: {
+    enabled: boolean;
+    onNewOrder: (order: StaffOrderDto) => void;
+    onStockReminder?: (event: StockReminderEvent) => void;
+  },
+) {
   const queryClient = useQueryClient();
+  const onStockReminderRef = useRef(options.onStockReminder);
+  useEffect(() => {
+    onStockReminderRef.current = options.onStockReminder;
+  }, [options.onStockReminder]);
   const [connected, setConnected] = useState(false);
   const onNewOrder = useRef(options.onNewOrder);
   useEffect(() => {
@@ -77,6 +94,10 @@ export function useCashierOrders(filters: OrderFilters, options: { enabled: bool
     const onChange = (event: OrderUpdatedEvent | PaymentUpdatedEvent) => event.order && applyOrder(queryClient, event.order);
     socket.on(SocketEvent.ORDER_UPDATED, onChange);
     socket.on(SocketEvent.PAYMENT_UPDATED, onChange);
+    socket.on(SocketEvent.STOCK_REMINDER, (event: StockReminderEvent) => {
+      onStockReminderRef.current?.(event);
+      void queryClient.invalidateQueries({ queryKey: ['cashier-operational-info'] });
+    });
     return () => {
       socket.disconnect();
     };

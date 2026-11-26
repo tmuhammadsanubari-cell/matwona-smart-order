@@ -90,6 +90,7 @@ export class StaffOrdersService {
         cancelReason: reason,
         handledByUserId: order.handledByUserId ?? user.id,
       });
+      await this.restorePromoQuota(tx, order);
       return this.restoreStock(tx, order);
     });
 
@@ -117,6 +118,20 @@ export class StaffOrdersService {
       changed ||= count > 0;
     }
     return changed;
+  }
+
+  private async restorePromoQuota(tx: Prisma.TransactionClient, order: OrderWithItems): Promise<void> {
+    if (!tx.promo?.updateMany) return;
+    const byPromo = new Map<string, number>();
+    for (const item of order.items) {
+      if (item.promoId) byPromo.set(item.promoId, (byPromo.get(item.promoId) ?? 0) + item.quantity);
+    }
+    for (const [promoId, qty] of byPromo) {
+      await tx.promo.updateMany({
+        where: { id: promoId, usedQuantity: { gte: qty } },
+        data: { usedQuantity: { decrement: qty } },
+      });
+    }
   }
 
   /**

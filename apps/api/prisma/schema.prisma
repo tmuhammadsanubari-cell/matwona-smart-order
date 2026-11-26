@@ -126,10 +126,18 @@ model Outlet {
   latitude      Decimal? @db.Decimal(9, 6)
   longitude     Decimal? @db.Decimal(9, 6)
   /// { "mon": ["10:00","21:00"], ... }
-  openingHours  Json     @map("opening_hours")
-  socialLinks   Json?    @map("social_links")
-  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  openingHours       Json     @map("opening_hours")
+  socialLinks        Json?    @map("social_links")
+  qrisEnabled        Boolean  @default(true) @map("qris_enabled")
+  /// SELF_PICKUP_PAGER | TABLE_SERVICE
+  serviceMode        String   @default("SELF_PICKUP_PAGER") @map("service_mode") @db.VarChar(30)
+  stockReminderHours Int[]    @default([11, 15, 18]) @map("stock_reminder_hours") @db.SmallInt
+  telegramBotToken   String?  @map("telegram_bot_token") @db.VarChar(200)
+  telegramChatId     String?  @map("telegram_chat_id") @db.VarChar(64)
+  whatsappWebhookUrl String?  @map("whatsapp_webhook_url") @db.VarChar(500)
+  printerStations    Json?    @map("printer_stations")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   users                User[]
   tables               DiningTable[]
@@ -142,6 +150,7 @@ model Outlet {
   recommendationRules  RecommendationRule[]
   recommendationModels RecommendationModel[]
   recommendationEvents RecommendationEvent[]
+  attendances          StaffAttendance[]
 
   @@map("outlets")
 }
@@ -152,6 +161,7 @@ model User {
   name             String    @db.VarChar(100)
   email            String    @unique @db.VarChar(150)
   passwordHash     String    @map("password_hash") @db.VarChar(255)
+  pinHash          String?   @map("pin_hash") @db.VarChar(255)
   role             UserRole
   isActive         Boolean   @default(true) @map("is_active")
   failedLoginCount Int       @default(0) @map("failed_login_count") @db.SmallInt
@@ -160,11 +170,12 @@ model User {
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
   updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
-  outlet          Outlet         @relation(fields: [outletId], references: [id])
+  outlet          Outlet            @relation(fields: [outletId], references: [id])
   refreshTokens   RefreshToken[]
-  handledOrders   Order[]        @relation("OrderHandledBy")
-  paidOrders      Order[]        @relation("OrderPaidBy")
+  handledOrders   Order[]           @relation("OrderHandledBy")
+  paidOrders      Order[]           @relation("OrderPaidBy")
   posSyncLogs     PosSyncLog[]
+  attendances     StaffAttendance[]
 
   @@map("users")
 }
@@ -206,6 +217,7 @@ model Category {
   outletId         String   @map("outlet_id") @db.Uuid
   name             String   @db.VarChar(60)
   sortOrder        Int      @default(0) @map("sort_order")
+  printerStation   String   @default("kitchen") @map("printer_station") @db.VarChar(40)
   olseraCategoryId String?  @map("olsera_category_id") @db.VarChar(64)
   isActive         Boolean  @default(true) @map("is_active")
   createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -229,6 +241,9 @@ model MenuItem {
   /// null = stok tidak dilacak
   stock           Int?
   sku             String?   @db.VarChar(64)
+  variantGroup    String?   @map("variant_group") @db.VarChar(80)
+  variantLabel    String?   @map("variant_label") @db.VarChar(60)
+  spiceLevel      String?   @map("spice_level") @db.VarChar(40)
   olseraProductId String?   @map("olsera_product_id") @db.VarChar(64)
   isAvailable     Boolean   @default(true) @map("is_available")
   isArchived      Boolean   @default(false) @map("is_archived")
@@ -344,6 +359,9 @@ model Promo {
   /// Persen (1-100) atau Rupiah
   discountValue Int          @map("discount_value")
   minPurchase   Int          @default(0) @map("min_purchase")
+  /// Kuota maksimal porsi/unit promo (null = tanpa batas kuota)
+  maxQuantity   Int?         @map("max_quantity")
+  usedQuantity  Int          @default(0) @map("used_quantity")
   /// 1=Senin … 7=Minggu; kosong = setiap hari
   activeDays    Int[]        @map("active_days") @db.SmallInt
   startsOn      DateTime     @map("starts_on") @db.Date
@@ -464,4 +482,21 @@ model RecommendationEvent {
 
   @@index([outletId, createdAt])
   @@map("recommendation_events")
+}
+
+model StaffAttendance {
+  id         String    @id @default(uuid()) @db.Uuid
+  outletId   String    @map("outlet_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  clockInAt  DateTime  @default(now()) @map("clock_in_at") @db.Timestamptz
+  clockOutAt DateTime? @map("clock_out_at") @db.Timestamptz
+  note       String?   @db.VarChar(200)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  outlet Outlet @relation(fields: [outletId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([outletId, clockInAt])
+  @@index([userId, clockInAt])
+  @@map("staff_attendances")
 }

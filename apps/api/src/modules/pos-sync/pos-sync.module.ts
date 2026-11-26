@@ -5,6 +5,7 @@ import { OlseraCsvAdapter } from './adapters/olsera-csv.adapter.js';
 import { POS_SYNC_ADAPTER, PosSyncAdapter } from './adapters/pos-sync.adapter.js';
 import { PosSyncController } from './pos-sync.controller.js';
 import { PosSyncService } from './pos-sync.service.js';
+import { OlseraTestService } from './olsera-test.service.js';
 
 /**
  * Modul integrasi POS Olsera (ADR 0002, FR-013, FR-014).
@@ -15,6 +16,7 @@ import { PosSyncService } from './pos-sync.service.js';
   controllers: [PosSyncController],
   providers: [
     PosSyncService,
+    OlseraTestService,
     {
       provide: POS_SYNC_ADAPTER,
       useFactory: (): PosSyncAdapter => {

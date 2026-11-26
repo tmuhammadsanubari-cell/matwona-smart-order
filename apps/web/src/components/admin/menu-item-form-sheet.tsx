@@ -142,6 +142,34 @@ export function MenuItemFormSheet(props: MenuItemFormSheetProps) {
           />
         </div>
         <Input label="SKU" hint="Opsional, unik per outlet." maxLength={64} value={values.sku} onChange={(e) => set('sku', e.target.value)} error={fieldErrors.sku} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Input
+            label="Grup Varian (Opsional)"
+            hint="Gabungkan beberapa SKU ke 1 kartu menu."
+            maxLength={120}
+            placeholder="Contoh: Matwona Tuna Jumbo"
+            value={values.variantGroup}
+            onChange={(e) => set('variantGroup', e.target.value)}
+            error={fieldErrors.variantGroup}
+          />
+          <Input
+            label="Label Varian (Opsional)"
+            hint="Teks varian pada pemilih bawah."
+            maxLength={80}
+            placeholder="Contoh: Sambal Matah"
+            value={values.variantLabel}
+            onChange={(e) => set('variantLabel', e.target.value)}
+            error={fieldErrors.variantLabel}
+          />
+        </div>
+        <Input
+          label="Level Pedas (Opsional)"
+          hint="Contoh: Tidak Pedas, Sedang, Pedas"
+          maxLength={40}
+          value={values.spiceLevel}
+          onChange={(e) => set('spiceLevel', e.target.value)}
+          error={fieldErrors.spiceLevel}
+        />
         <label className="flex min-h-11 items-center gap-3 text-ink">
           <input
             type="checkbox"

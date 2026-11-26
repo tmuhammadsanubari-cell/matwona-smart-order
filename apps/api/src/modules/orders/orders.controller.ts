@@ -14,7 +14,9 @@ import type {
   CancelOrderInput,
   CreateOrderInput,
   OrderListQuery,
+  PrintStationResult,
   PublicOrderDto,
+  SplitPrintTicket,
   StaffOrderDto,
   UpdateOrderStatusInput,
 } from 'shared';
@@ -23,6 +25,7 @@ import { Public, Roles } from '../../common/decorators/auth.decorators.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
 import { uuidParam, ZodValidationPipe } from '../../common/pipes/zod-validation.pipe.js';
 import { OrdersService } from './orders.service.js';
+import { PrintService } from './print.service.js';
 import { StaffOrdersService } from './staff-orders.service.js';
 
 /** Pesanan pelanggan, akses dengan X-Table-Token (FR-004, FR-006). */
@@ -65,7 +68,10 @@ export class PublicOrdersController {
 @Roles('CASHIER', 'ADMIN')
 @Controller('orders')
 export class OrdersController {
-  constructor(@Inject(StaffOrdersService) private readonly orders: StaffOrdersService) {}
+  constructor(
+    @Inject(StaffOrdersService) private readonly orders: StaffOrdersService,
+    @Inject(PrintService) private readonly printService: PrintService,
+  ) {}
 
   @Get()
   async list(
@@ -101,5 +107,22 @@ export class OrdersController {
     @Body(new ZodValidationPipe(cancelOrderSchema)) body: CancelOrderInput,
   ): Promise<ApiSuccess<StaffOrderDto>> {
     return { success: true, data: await this.orders.cancel(user, id, body.reason) };
+  }
+
+  @Get(':id/tickets')
+  async tickets(
+    @CurrentUser() user: AuthUser,
+    @Param('id', uuidParam()) id: string,
+  ): Promise<ApiSuccess<SplitPrintTicket[]>> {
+    return { success: true, data: await this.printService.getSplitTickets(user.outletId, id) };
+  }
+
+  @Post(':id/print')
+  async print(
+    @CurrentUser() user: AuthUser,
+    @Param('id', uuidParam()) id: string,
+    @Body() body?: { stationId?: string },
+  ): Promise<ApiSuccess<PrintStationResult[]>> {
+    return { success: true, data: await this.printService.printOrder(user.outletId, id, body?.stationId) };
   }
 }
