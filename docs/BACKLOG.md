@@ -18,7 +18,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [x] | S0-05 | Design token brand di `globals.css` + komponen dasar (Button, Card, Badge, Input, BottomSheet) | 4.9, NFR-014 | 🔴 | FE1 | S0-02 |
 | [x] | S0-06 | Wireframe & mockup UI (kanvas Claude Design, lihat `docs/design/BRAND.md`): menu, keranjang, checkout, status, kasir, admin, landing | FR-001…008 | 🔴 | FE1 | – |
 | [ ] | S0-07 | Finalisasi BRS & SRS draft (`docs/compro/`) + notulen validasi mitra | – | 🔴 | SA, PM | – |
-| [ ] | S0-08 | Minta contoh export produk & transaksi Olsera + konfirmasi akses API (simpan bukti) | Lampiran G | 🔴 | PM | – |
+| [ ] | S0-08 | Minta contoh export produk & transaksi Olsera + konfirmasi akses API (simpan bukti). *28 Nov: API key Olsera sudah didapat & dicoba, akses menunggu approval Olsera; lanjut di S3-27* | Lampiran G | 🔴 | PM | – |
 
 ## Sprint 1 — Core Order (Minggu 8) → target MVP minggu 9
 
@@ -45,7 +45,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 |---|----|------|-----|------|-------|------------|
 | [x] | S2-01 | Modul `payments`: `POST /public/orders/:code/pay` (Midtrans Snap QRIS, expiry 15 menit) | FR-005 | 🔴 | BE | S1-06 |
 | [x] | S2-02 | Webhook Midtrans: verifikasi signature, idempoten, update status, emit `payment.updated`, kembalikan stok saat expire | FR-005, NFR-008 | 🔴 | BE | S2-01 |
-| [ ] | S2-03 | UI pembayaran QRIS (Snap.js) + pilih ulang metode saat gagal | FR-005 | 🔴 | FE1 | S2-01 |
+| [ ] | S2-03 | UI pembayaran QRIS + pilih ulang metode saat gagal. *Prioritas turun: QRIS dimatikan untuk Matwona (24 Nov); barcode QRIS dinamis sudah ada (`fb2a196`)* | FR-005 | 🟡 | FE1 | S2-01 |
 | [x] | S2-04 | Generate & regenerate token QR, `GET /tables/qr.pdf` berdesain brand | FR-011 | 🔴 | BE | S1-02 |
 | [x] | S2-05 | Admin: halaman meja & cetak QR | FR-011 | 🔴 | FE2 | S2-04 |
 | [ ] | S2-06 | Landing page (SSG/ISR): hero, cerita brand, menu read-only, promo, lokasi, WhatsApp, SEO + schema.org Restaurant | FR-012 | 🔴 | FE1 | S1-03 |
@@ -72,6 +72,30 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [ ] | S3-09 | Cloud Scheduler retrain harian 03:00 WIB | FR-022 | 🟡 | AI | S3-01 |
 | [ ] | S3-10 | Uji coba di outlet Matwona (QR tercetak, data pesanan riil) | – | 🔴 | PM, QA | S2-* |
 
+## Sprint 3B — Masukan Mitra 24 Nov (Minggu 11–13, target 7 Des, paling lambat 14 Des)
+
+Sumber: [notulen & analisis gap](notulen/2026-11-24-analisis-gap-diskusi-mitra.md). S3-11 s.d. S3-17 **sudah ada kodenya** di commit `fc6dbba`, dan seluruh test yang ada lulus (28 Nov: API 194/194, web 201/201). Sebagian belum punya test: modul `outlet` (pengaturan, tes printer/notifikasi), `notifications`, penolakan QRIS saat dimatikan, dan `PATCH /staff/:id/pin`. Centang setelah test-nya ditambahkan, acceptance criteria di PRD 2.2.14–2.2.19 diverifikasi, dan tampilan dicek di 360 px.
+
+| | ID | Task | Ref | Prio | Peran | Bergantung |
+|---|----|------|-----|------|-------|------------|
+| [ ] | S3-11 | Mode layanan (`SELF_PICKUP_PAGER`/`TABLE_SERVICE`) + toggle QRIS di pengaturan outlet, penolakan QRIS di server, instruksi "bayar di kasir & ambil pager" di status pesanan | FR-026, FR-005 | 🔴 | BE, FE2 | – |
+| [ ] | S3-12 | Varian menu dalam satu kartu + pop-up pilih varian & level pedas + pop-up daftar kategori | FR-027 | 🟡 | FE1, BE | – |
+| [ ] | S3-13 | Station printer per kategori, pemecahan struk kasir + tiket dapur/bar, ESC/POS LAN, tes printer, preview cetak di kasir | FR-024 | 🔴 | BE, FE2 | – |
+| [ ] | S3-14 | Notifikasi pesanan baru & stok menipis ke Telegram + webhook WhatsApp, tombol tes notifikasi | FR-029 | 🟡 | BE | – |
+| [ ] | S3-15 | Pengingat cek stok di dashboard kasir (jam diatur admin) + sheet cek stok + event `stock.reminder` | FR-028 | 🟡 | FE2, BE | – |
+| [ ] | S3-16 | Absensi staf dengan PIN (atur PIN, absen masuk/pulang, rekap admin) | FR-030 | 🟢 | BE, FE2 | – |
+| [ ] | S3-17 | Kuota promo (`maxQuantity`/`usedQuantity`), dikembalikan saat batal/kedaluwarsa | FR-020 | 🟡 | BE | S3-08 |
+| [ ] | S3-18 | Mode *self pick-up*: pesanan bayar di kasir wajib `PAID` sebelum `CONFIRMED` (aturan di `order-status.machine.ts` + test) | FR-026 | 🔴 | BE | S3-11 |
+| [ ] | S3-19 | Nomor pager opsional saat tandai lunas (`orders.pager_number`), tampil di kartu kasir, tiket, dan status pelanggan | FR-026 | 🟡 | BE, FE2 | S3-18 |
+| [ ] | S3-20 | Agen cetak lokal di perangkat kasir: terima tiket lewat Socket.IO, teruskan ke IP printer LAN (pengganti kirim TCP dari server cloud) | FR-024, R-11 | 🔴 | BE | S3-13 |
+| [ ] | S3-21 | Cetak otomatis tiket station saat pesanan lunas (*self pick-up*) / dikonfirmasi (layanan meja) + cetak ulang manual | FR-024 | 🔴 | FE2, BE | S3-13, S3-20 |
+| [ ] | S3-22 | Uji cetak di outlet: printer dapur LAN "Silicon" & printer depan Bluetooth di tablet (termasuk aplikasi perantara bila perlu), catat hasil | FR-024, R-12 | 🔴 | QA, PM | S3-20, S3-21 |
+| [ ] | S3-23 | Pengingat stok terjadwal dari server (sesuai `stock_reminder_hours`) ke Telegram/WhatsApp, tanpa perlu dashboard terbuka | FR-028 | 🟡 | BE | S3-14, S3-15 |
+| [ ] | S3-24 | Pindahkan pemanggilan Olsera dari `pos-sync/olsera-test.service.ts` ke folder `adapters/` (aturan 7 CLAUDE.md) | FR-023 | 🟡 | BE | – |
+| [ ] | S3-25 | Batasi percobaan PIN absensi salah (mis. 5×/10 menit per staf) | FR-030, NFR-006 | 🟢 | BE | S3-16 |
+| [ ] | S3-26 | Petakan kolom varian (`variant_group`, `variant_label`, `spice_level`) di impor CSV produk Olsera | FR-027, FR-013 | 🟢 | BE | S3-12 |
+| [ ] | S3-27 | Tindak lanjut approval Olsera Open API, simpan bukti, dan tanyakan apakah API bisa membuat pesanan (open order) | FR-023, R-01 | 🔴 | PM | S0-08 |
+
 ## Sprint 4 — Hardening & UAT (Minggu 14)
 
 | | ID | Task | Ref | Prio | Peran | Bergantung |
@@ -83,7 +107,7 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 | [ ] | S4-05 | User guide pelanggan, kasir, admin (`docs/user-guide/`) | – | 🔴 | SA, QA | S3-* |
 | [ ] | S4-06 | Business plan / go-to-market final | Lampiran F | 🔴 | PM | – |
 | [ ] | S4-07 | Poster & video promosi produk | – | 🔴 | QA, FE1 | – |
-| [ ] | S4-08 | Cetak ringkasan pesanan (print CSS 58/80 mm) | FR-024 | 🟢 | FE2 | S1-10 |
+| [ ] | S4-08 | ~~Cetak ringkasan pesanan (print CSS 58/80 mm)~~ Digantikan S3-13 & S3-21 (FR-024 naik ke Must) | FR-024 | – | FE2 | S3-13 |
 
 ## Rilis
 
@@ -95,6 +119,9 @@ Prioritas: 🔴 Must · 🟡 Should · 🟢 Could
 
 ## Parkir (Could / Won't v1)
 
-- FR-023 Adapter API Olsera (aktifkan bila akses didapat)
+- FR-023 Adapter API Olsera, termasuk kirim pesanan lunas ke Olsera sebagai alternatif jalur cetak (aktifkan setelah approval Olsera keluar; lihat S3-27)
 - FR-025 Panggil pelayan
+- Perhitungan HPP & margin per menu (masukan mitra 24 Nov)
+- Saran operasional dari analisis jam ramai (kapan siapkan stok/staf)
+- Varian dua dimensi (ukuran × sambal dalam satu pop-up)
 - Kitchen Display System, multi-outlet, loyalitas (roadmap v2)
