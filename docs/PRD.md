@@ -1,7 +1,7 @@
 # 📄 Matwona Smart Order — Product Requirement Document
 
-> **Versi:** 1.1
-> **Tanggal:** 30 Oktober 2026
+> **Versi:** 1.2
+> **Tanggal:** 28 November 2026 (revisi dari diskusi mitra 24 November 2026)
 > **Author:** Tim Computing Project (disusun dengan bantuan AI)
 > **Status:** Draft
 > **Bahasa Dokumen:** Bahasa Indonesia
@@ -39,8 +39,8 @@ Produk terdiri dari empat bagian dalam satu sistem:
 | Bagian | Pengguna | Ringkasan |
 |--------|----------|-----------|
 | Landing Page | Publik / calon pelanggan | Profil usaha, menu, lokasi, promo |
-| Menu Digital (QR Meja) | Pelanggan (tamu) | Scan QR → lihat menu + rekomendasi → pesan → bayar QRIS atau di kasir |
-| Dashboard Kasir | Kasir | Antrean pesanan realtime, konfirmasi, tandai lunas |
+| Menu Digital (QR Meja) | Pelanggan (tamu) | Scan QR → lihat menu + rekomendasi → pesan → bayar di kasir (default Matwona) atau QRIS bila diaktifkan outlet |
+| Dashboard Kasir | Kasir | Antrean pesanan realtime, konfirmasi, tandai lunas, cetak tiket per station, pengingat cek stok, absensi PIN |
 | Dashboard Admin/Owner | Owner | Kelola menu, meja & QR, promo, staf, sinkronisasi Olsera, analitik penjualan |
 
 ### 1.2 Latar Belakang & Tujuan
@@ -56,7 +56,8 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 **Tujuan Utama:**
 - Memangkas waktu dari pelanggan duduk sampai pesanan terkonfirmasi kasir menjadi < 3 menit.
-- Menyediakan dua opsi pembayaran: QRIS online dan bayar di kasir.
+- Menyediakan pembayaran di kasir sebagai alur utama Matwona (layanan *self pick-up*: pelanggan bayar di kasir sekaligus mengambil pager), dengan QRIS online sebagai opsi yang bisa diaktifkan per outlet (FR-026).
+- Meneruskan pesanan ke dapur dan bar secara otomatis lewat tiket cetak per station, sehingga kasir tidak perlu menyalin pesanan manual (FR-024).
 - Menampilkan menu yang selalu akurat (harga & ketersediaan) karena bersumber dari data yang tersinkron dengan Olsera.
 - Meningkatkan nilai rata-rata transaksi (AOV) melalui rekomendasi menu berbasis AI.
 - Memberi owner dashboard analitik penjualan untuk keputusan menu dan operasional.
@@ -67,33 +68,38 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 |-------|-----------|-----------------|
 | Pelanggan (Tamu) | Pengunjung yang makan di tempat, memesan via ponsel tanpa login | Menu jelas dengan foto & harga, pesan cepat, bayar fleksibel, tahu status pesanan |
 | Pengunjung Landing Page | Calon pelanggan yang mencari info Matwona di internet | Info profil, menu, lokasi (peta), promo terbaru |
-| Kasir | Staf yang menerima pesanan dan pembayaran | Notifikasi pesanan realtime, konfirmasi cepat, tandai pembayaran tunai/di kasir |
-| Admin/Owner | Pemilik Matwona | Kelola menu/meja/promo/staf, sinkronisasi Olsera, lihat analitik & performa rekomendasi |
+| Kasir | Staf yang menerima pesanan dan pembayaran | Notifikasi pesanan realtime, konfirmasi cepat, tandai pembayaran tunai/di kasir, tiket dapur/bar tercetak otomatis, pengingat cek stok |
+| Admin/Owner | Pemilik Matwona | Kelola menu/meja/promo/staf, pengaturan outlet (mode layanan, printer, notifikasi), sinkronisasi Olsera, lihat analitik & performa rekomendasi, notifikasi pesanan via Telegram/WhatsApp |
 
-> Catatan: pesanan diteruskan ke dapur secara **manual** oleh kasir, sehingga tidak ada role Dapur dan tidak ada Kitchen Display System pada versi ini.
+> Catatan: pesanan diteruskan ke dapur dan bar lewat **tiket cetak per station** (FR-024), mengikuti cara Matwona memakai printer per grup produk di Olsera. Tetap tidak ada role Dapur dan tidak ada Kitchen Display System (layar dapur) pada versi ini.
 
 ### 1.4 Ruang Lingkup (Scope)
 
 **Dalam Scope:**
 - Landing page publik (profil, menu, lokasi, promo) dengan SEO dasar.
 - Menu digital via QR per meja, keranjang, catatan per item, checkout sebagai tamu.
-- Pembayaran QRIS via Midtrans (mode sandbox untuk prototipe) dan opsi bayar di kasir.
+- Bayar di kasir sebagai alur utama, dan pembayaran QRIS via Midtrans (mode sandbox untuk prototipe) yang bisa diaktifkan/dimatikan per outlet.
+- Mode layanan outlet: *self pick-up* dengan pager (Matwona) atau layanan meja.
 - Halaman status pesanan untuk pelanggan (realtime).
-- Dashboard kasir realtime (WebSocket) dengan notifikasi suara.
-- Dashboard admin: CRUD kategori & menu, toggle ketersediaan, stok, manajemen meja + generate & cetak QR, promo, akun staf.
+- Dashboard kasir realtime (WebSocket) dengan notifikasi suara, pengingat cek stok berkala, dan absensi staf dengan PIN.
+- Cetak struk kasir dan tiket per station (dapur, bar) berdasarkan kategori menu, ke printer thermal LAN atau Bluetooth.
+- Menu dengan varian (ukuran, sambal, level pedas) dalam satu kartu dan navigasi kategori cepat.
+- Notifikasi pesanan dan stok menipis ke owner lewat Telegram dan webhook WhatsApp.
+- Dashboard admin: CRUD kategori & menu, toggle ketersediaan, stok, manajemen meja + generate & cetak QR, promo (dengan kuota), akun staf, pengaturan outlet.
 - Rekomendasi menu berbasis AI (association rules + popularitas per jam).
 - Dashboard analitik penjualan (tren, menu terlaris, jam ramai, menu engineering, performa rekomendasi).
 - Sinkronisasi data dengan Olsera (menu, harga, stok, transaksi) melalui **adapter layer**: implementasi CSV import/export untuk prototipe, siap diganti adapter API saat akses tersedia.
 - Deployment cloud dan dokumentasi (BRS, SRS, SDD, UAT, user guide).
 
 **Di Luar Scope:**
-- Kitchen Display System dan role Dapur.
+- Kitchen Display System (layar dapur) dan role Dapur. Tiket cetak per station (FR-024) tetap masuk scope.
+- Perhitungan HPP dan margin per menu (masukan mitra 24 Nov 2026, masuk roadmap).
 - Aplikasi native Android/iOS (cukup PWA).
 - Login/akun pelanggan, program loyalitas, poin member.
 - Pesan antar (delivery) dan takeaway online dari luar outlet.
 - Manajemen bahan baku/resep (inventory level bahan).
 - Multi-outlet dan multi-tenant (struktur data disiapkan, fitur belum diaktifkan).
-- Integrasi API Olsera dua arah realtime (bergantung akses dari Olsera; lihat Lampiran D).
+- Integrasi API Olsera dua arah realtime. API key Olsera sudah didapat, tetapi akses masih menunggu approval dari pihak Olsera (status 28 Nov 2026; lihat 2.2.10 dan Lampiran D R-01).
 - Settlement pembayaran produksi Midtrans (prototipe memakai sandbox kecuali mitra menyediakan akun produksi).
 
 ### 1.5 Kebutuhan Fungsional
@@ -104,7 +110,7 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 | FR-002 | Lihat menu digital | Must Have | Menu tampil per kategori dengan foto, deskripsi, harga, label habis, dan pencarian |
 | FR-003 | Keranjang & catatan | Must Have | Tambah/kurangi item, catatan per item (mis. "tidak pedas"), ringkasan total |
 | FR-004 | Checkout sebagai tamu | Must Have | Isi nama (wajib) dan no. HP (opsional), pilih metode bayar, buat pesanan |
-| FR-005 | Pembayaran QRIS | Must Have | Membuat transaksi QRIS via Midtrans dan memperbarui status lewat webhook |
+| FR-005 | Pembayaran QRIS | Should Have | Membuat transaksi QRIS via Midtrans dan memperbarui status lewat webhook. Opsional per outlet (FR-026); dimatikan untuk Matwona |
 | FR-006 | Bayar di kasir | Must Have | Pesanan dibuat dengan status belum bayar; kasir menandai lunas setelah menerima pembayaran |
 | FR-007 | Status pesanan pelanggan | Must Have | Halaman status pesanan yang diperbarui realtime |
 | FR-008 | Dashboard kasir realtime | Must Have | Pesanan baru muncul < 2 detik dengan notifikasi suara; kasir mengubah status pesanan |
@@ -119,12 +125,17 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 | FR-017 | Dashboard analitik penjualan | Must Have | Omzet, jumlah pesanan, AOV, tren harian/mingguan/bulanan, menu terlaris, jam ramai |
 | FR-018 | Menu engineering | Should Have | Klasifikasi menu ke Star/Plowhorse/Puzzle/Dog berdasarkan popularitas & kontribusi omzet |
 | FR-019 | Performa rekomendasi | Should Have | Impression, klik, add-to-cart dari rekomendasi, dan attach rate |
-| FR-020 | Manajemen promo | Should Have | CRUD promo (persentase/nominal, periode aktif, item terkait) yang tampil di landing & menu |
+| FR-020 | Manajemen promo | Should Have | CRUD promo (persentase/nominal, periode aktif, item terkait, kuota porsi) yang tampil di landing & menu |
 | FR-021 | Manajemen akun staf | Should Have | Admin membuat, menonaktifkan, dan reset password akun kasir |
 | FR-022 | Retrain model rekomendasi | Should Have | Training ulang terjadwal harian dan tombol manual di dashboard admin |
-| FR-023 | Adapter API Olsera | Could Have | Implementasi `OlseraApiAdapter` jika akses API diberikan oleh Olsera |
-| FR-024 | Cetak struk/ringkasan pesanan | Could Have | Kasir mencetak ringkasan pesanan untuk diteruskan ke dapur |
+| FR-023 | Adapter API Olsera | Could Have | Implementasi `OlseraApiAdapter` setelah akses API di-approve Olsera (key sudah ada, approval belum keluar per 28 Nov 2026) |
+| FR-024 | Cetak struk & tiket per station | Must Have | Struk kasir dan tiket dapur/bar dipisah otomatis berdasarkan kategori, dikirim ke printer thermal LAN/Bluetooth di outlet |
 | FR-025 | Panggil pelayan | Won't Have (v1) | Tombol "panggil pelayan" dari meja; masuk roadmap v2 |
+| FR-026 | Mode layanan & opsi pembayaran outlet | Must Have | Admin memilih mode layanan (*self pick-up* dengan pager / layanan meja) dan mengaktifkan/mematikan QRIS; aturan pesanan menyesuaikan mode |
+| FR-027 | Varian menu & navigasi kategori | Should Have | Menu sejenis (mis. Tuna Jumbo dengan sambal berbeda) tampil sebagai satu kartu dengan pilihan varian di pop-up; tombol pop-up daftar kategori |
+| FR-028 | Pengingat & peringatan stok | Should Have | Pengingat cek stok pada jam yang diatur admin dan peringatan menu dengan stok menipis/habis |
+| FR-029 | Notifikasi owner | Should Have | Notifikasi pesanan baru (dengan catatan item) dan stok menipis ke Telegram dan webhook WhatsApp |
+| FR-030 | Absensi staf dengan PIN | Could Have | Staf absen masuk/pulang dengan PIN 4–6 digit di perangkat kasir; admin melihat rekap per rentang tanggal |
 
 ### 1.6 Kebutuhan Non-Fungsional
 
@@ -155,13 +166,14 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 **Asumsi:**
 - Mitra menyediakan file export produk dan riwayat transaksi dari backoffice Olsera (minimal 3 bulan terakhir) sebagai data awal sinkronisasi dan data latih rekomendasi.
-- Outlet memiliki koneksi internet stabil dan minimal satu perangkat (tablet/laptop) untuk dashboard kasir.
+- Outlet memiliki koneksi internet stabil dan minimal satu perangkat (tablet/laptop) untuk dashboard kasir. Hasil diskusi 24 Nov 2026: kasir memakai laptop untuk Olsera dan tablet untuk pesanan QR; printer depan memakai Bluetooth, printer dapur memakai LAN (merek "Silicon", diatur lewat IP address).
 - Pelanggan memakai ponsel dengan kamera dan browser modern (Chrome/Safari 2 versi terakhir).
 - Jumlah meja belum pasti; sistem mendukung jumlah meja dinamis (dikelola admin).
 - Mitra bersedia meluangkan waktu untuk validasi kebutuhan, review mockup, dan UAT.
 
 **Batasan:**
-- Belum ada akses API Olsera. Sinkronisasi prototipe berbasis file (CSV) sehingga **tidak realtime**; dilakukan terjadwal/manual oleh admin.
+- API key dan secret key Olsera Open API sudah didapat dan sudah dicoba, tetapi pemanggilan API belum berhasil karena akses masih menunggu approval dari pihak Olsera (status 28 Nov 2026). Sampai approval keluar, sinkronisasi memakai file (CSV) sehingga **tidak realtime**; dilakukan terjadwal/manual oleh admin.
+- Printer LAN di outlet tidak bisa dijangkau langsung dari API yang di-deploy di cloud (Cloud Run). Pengiriman tiket ke printer LAN harus lewat perangkat yang berada di jaringan outlet (agen cetak lokal), atau lewat Olsera setelah approval API keluar.
 - Belum dipastikan apakah backoffice Olsera mendukung impor transaksi. Jika tidak, CSV transaksi dipakai untuk rekonsiliasi dan kasir tetap mencatat transaksi di Olsera (lihat Lampiran D, R-01).
 - Pembayaran QRIS memakai Midtrans sandbox selama pengembangan; aktivasi produksi butuh akun dan verifikasi bisnis milik mitra.
 - Waktu pengembangan efektif ±9 minggu (minggu 7–15) dengan tim 7 orang.
@@ -195,9 +207,9 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 |----|-------|-----------|--------|-----------|
 | 1 | Scan QR Meja & Menu Digital | 🔴 Must Have | Planned | FR-001, FR-002 |
 | 2 | Keranjang & Checkout Tamu | 🔴 Must Have | Planned | FR-003, FR-004 |
-| 3 | Pembayaran (QRIS & Bayar di Kasir) | 🔴 Must Have | Planned | FR-005, FR-006 |
+| 3 | Pembayaran (Bayar di Kasir & QRIS opsional) | 🔴 Must Have | Planned | FR-005, FR-006 |
 | 4 | Status Pesanan Pelanggan | 🔴 Must Have | Planned | FR-007 |
-| 5 | Dashboard Kasir Realtime | 🔴 Must Have | Planned | FR-008, FR-024 |
+| 5 | Dashboard Kasir Realtime | 🔴 Must Have | Planned | FR-008 |
 | 6 | Autentikasi Staf & RBAC | 🔴 Must Have | Planned | FR-009, FR-021 |
 | 7 | Manajemen Menu | 🔴 Must Have | Planned | FR-010 |
 | 8 | Manajemen Meja & QR | 🔴 Must Have | Planned | FR-011 |
@@ -206,6 +218,14 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 | 11 | Rekomendasi Menu Berbasis AI | 🔴 Must Have | Planned | FR-015, FR-016, FR-022 |
 | 12 | Dashboard Analitik Penjualan | 🔴 Must Have | Planned | FR-017, FR-018, FR-019 |
 | 13 | Manajemen Promo | 🟡 Should Have | Planned | FR-020 |
+| 14 | Mode Layanan & Opsi Pembayaran Outlet | 🔴 Must Have | Sebagian | FR-026 |
+| 15 | Cetak Struk & Tiket per Station | 🔴 Must Have | Sebagian | FR-024 |
+| 16 | Varian Menu & Navigasi Kategori | 🟡 Should Have | Sebagian | FR-027 |
+| 17 | Pengingat & Peringatan Stok | 🟡 Should Have | Sebagian | FR-028 |
+| 18 | Notifikasi Owner (Telegram/WhatsApp) | 🟡 Should Have | Sebagian | FR-029 |
+| 19 | Absensi Staf dengan PIN | 🟢 Could Have | Sebagian | FR-030 |
+
+Fitur 14–19 ditambahkan dari diskusi mitra 24 Nov 2026 (`docs/notulen/`). "Sebagian" berarti kode dasarnya sudah ada di commit `fc6dbba`, tetapi belum semua acceptance criteria terpenuhi dan teruji.
 
 ### 2.2 Detail Fitur
 
@@ -258,15 +278,17 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 ---
 
-#### 2.2.3 Pembayaran (QRIS & Bayar di Kasir)
+#### 2.2.3 Pembayaran (Bayar di Kasir & QRIS opsional)
 
 **Deskripsi:** Dua metode pembayaran:
-1. **QRIS (online):** server membuat transaksi Midtrans Snap; pelanggan membayar dengan aplikasi e-wallet/m-banking. Status diperbarui lewat webhook Midtrans. Batas waktu bayar 15 menit; lewat dari itu pesanan kedaluwarsa dan stok dikembalikan.
-2. **Bayar di kasir:** pesanan langsung masuk ke kasir dengan status pembayaran `UNPAID`. Pelanggan membayar di kasir (tunai/EDC/QRIS milik outlet), lalu kasir menekan "Tandai Lunas".
+1. **Bayar di kasir (alur utama Matwona):** pesanan langsung masuk ke kasir dengan status pembayaran `UNPAID`. Pelanggan membayar di kasir (tunai/EDC/QRIS milik outlet), lalu kasir menekan "Tandai Lunas". Pada mode *self pick-up*, pelanggan sekaligus menerima pager saat membayar (FR-026).
+2. **QRIS (online, opsional per outlet):** server membuat transaksi Midtrans; pelanggan membayar dengan aplikasi e-wallet/m-banking. Status diperbarui lewat webhook Midtrans. Batas waktu bayar 15 menit; lewat dari itu pesanan kedaluwarsa dan stok dikembalikan.
+
+> **Keputusan mitra (24 Nov 2026):** karena Matwona memakai layanan *self pick-up*, pelanggan harus ke kasir untuk mengambil pager, sehingga QRIS dari meja **dimatikan** untuk Matwona (`qris_enabled = false`). Fitur QRIS tetap dibangun lengkap agar bisa diaktifkan untuk outlet lain yang memakai pelayan/runner.
 
 **User Stories:**
-- Sebagai pelanggan, saya ingin membayar dengan QRIS langsung dari meja, agar tidak perlu ke kasir.
-- Sebagai pelanggan, saya ingin tetap bisa membayar di kasir, agar saya bisa memakai uang tunai.
+- Sebagai pelanggan, saya ingin membayar di kasir dengan menyebut kode pesanan, agar saya bisa memakai uang tunai dan langsung mengambil pager.
+- Sebagai pelanggan di outlet yang mengaktifkan QRIS, saya ingin membayar dengan QRIS langsung dari meja, agar tidak perlu ke kasir.
 - Sebagai kasir, saya ingin tahu pesanan mana yang sudah lunas online, agar tidak menagih dua kali.
 - Sebagai owner, saya ingin status pembayaran tercatat akurat, agar laporan omzet benar.
 
@@ -278,6 +300,7 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 - [ ] Notifikasi webhook yang sama dua kali tidak menyebabkan perubahan ganda (idempoten).
 - [ ] Pesanan "Bayar di kasir" tampil di dashboard kasir dengan badge "Belum Bayar"; tombol "Tandai Lunas" mengubah status menjadi `PAID` dan mencatat `paid_by_user_id`.
 - [ ] Pelanggan dengan QRIS gagal/kedaluwarsa bisa memilih ulang metode pembayaran dari halaman status.
+- [ ] Bila QRIS dimatikan outlet, opsi QRIS tidak tampil di checkout, dan server menolak `POST /public/orders` dengan metode QRIS maupun `POST /public/orders/:code/pay` (400 `VALIDATION_ERROR`).
 
 **Catatan Teknis:**
 - Verifikasi signature: `SHA512(order_id + status_code + gross_amount + MIDTRANS_SERVER_KEY)` dibandingkan dengan `signature_key`.
@@ -307,7 +330,7 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 #### 2.2.5 Dashboard Kasir Realtime
 
-**Deskripsi:** Tampilan kanban/daftar untuk kasir dengan kolom: Baru, Diproses, Disajikan, Selesai. Pesanan baru memicu notifikasi suara dan highlight. Kasir dapat mengonfirmasi pesanan, menandai lunas (untuk bayar di kasir), mengubah status, membatalkan dengan alasan, dan mencetak ringkasan pesanan untuk diteruskan ke dapur secara manual.
+**Deskripsi:** Tampilan kanban/daftar untuk kasir dengan kolom: Baru, Diproses, Disajikan, Selesai. Pesanan baru memicu notifikasi suara dan highlight. Kasir dapat mengonfirmasi pesanan, menandai lunas (untuk bayar di kasir), mengubah status, membatalkan dengan alasan, dan mencetak struk serta tiket dapur/bar (FR-024). Dashboard juga menampilkan pengingat cek stok (FR-028) dan tombol absensi PIN (FR-030).
 
 **User Stories:**
 - Sebagai kasir, saya ingin langsung tahu ketika ada pesanan baru, agar pelanggan tidak menunggu lama.
@@ -319,13 +342,14 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 - [ ] Kartu pesanan menampilkan: kode pesanan, nomor meja, nama pelanggan, daftar item + catatan, total, metode & status bayar, waktu masuk.
 - [ ] Transisi status mengikuti aturan state machine (lihat 4.2, tabel `orders`); transisi tidak valid ditolak server (`INVALID_STATUS_TRANSITION`).
 - [ ] Pesanan QRIS yang belum lunas tidak bisa dipindah ke "Diproses".
+- [ ] Pada mode *self pick-up*, pesanan bayar di kasir yang belum lunas tidak bisa dikonfirmasi (lihat FR-026).
 - [ ] Pembatalan wajib mengisi alasan (min. 5 karakter); stok item dikembalikan.
 - [ ] Filter pesanan hari ini/rentang tanggal dan pencarian kode pesanan/nomor meja tersedia.
 - [ ] Jika WebSocket terputus, muncul banner "Koneksi terputus, mencoba menyambung..." dan data di-refresh otomatis setelah tersambung.
 
 **Catatan Teknis:**
 - Kasir bergabung ke room `outlet:<outlet_id>:cashier` setelah autentikasi JWT pada handshake Socket.IO.
-- Cetak ringkasan (Could Have) memakai halaman print CSS ukuran 58/80 mm.
+- Cetak struk dan tiket per station dijelaskan di 2.2.15 (FR-024).
 
 ---
 
@@ -349,7 +373,7 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 #### 2.2.7 Manajemen Menu
 
-**Deskripsi:** Admin mengelola kategori dan item menu: nama, deskripsi, harga, foto, stok, SKU, `olsera_product_id`, urutan tampil, dan status tersedia. Perubahan langsung terlihat di menu digital dan landing page.
+**Deskripsi:** Admin mengelola kategori dan item menu: nama, deskripsi, harga, foto, stok, SKU, `olsera_product_id`, urutan tampil, dan status tersedia. Kategori juga menentukan station printer tujuan tiketnya (FR-024), dan item bisa dikelompokkan sebagai varian (FR-027). Perubahan langsung terlihat di menu digital dan landing page.
 
 **User Stories:**
 - Sebagai owner, saya ingin menandai menu "Habis" dengan satu klik, agar pelanggan tidak memesannya.
@@ -403,7 +427,11 @@ Matwona adalah rumah makan dengan konsep *small, lively food house* dan open kit
 
 #### 2.2.10 Sinkronisasi Olsera (Adapter)
 
-**Deskripsi:** Modul `pos-sync` dirancang dengan pola **Adapter**: interface `PosSyncAdapter` dengan beberapa implementasi. Karena API Olsera belum tersedia, prototipe memakai `OlseraCsvAdapter`:
+**Deskripsi:** Modul `pos-sync` dirancang dengan pola **Adapter**: interface `PosSyncAdapter` dengan beberapa implementasi. Karena akses API Olsera belum di-approve, prototipe memakai `OlseraCsvAdapter`:
+
+> **Status API Olsera (28 Nov 2026):** Olsera menyediakan Open API (App ID + secret key). Kunci sudah didapat dan sudah dicoba lewat konsol uji read-only (`/admin/olsera-test`), tetapi pemanggilan API belum berhasil karena akses masih menunggu approval dari pihak Olsera. Setelah approval keluar, langkah berikutnya: (1) pastikan endpoint yang tersedia, terutama apakah API bisa **membuat pesanan** (open order) atau hanya membaca; (2) implementasikan `OlseraApiAdapter` (FR-023) di folder `adapters/`; (3) tarik riwayat transaksi lewat endpoint `order/closeorder` untuk analitik dan data latih AI.
+>
+> Kalau API bisa membuat pesanan, pesanan digital yang lunas bisa dikirim ke Olsera dan dicetak oleh printer per station yang sudah diatur Matwona di Olsera. Ini menjadi alternatif jalur cetak FR-024.
 
 | Data | Arah | Mekanisme Prototipe (CSV) | Mekanisme Target (API) |
 |------|------|---------------------------|------------------------|
@@ -520,8 +548,129 @@ Model dilatih ulang setiap hari pukul 03:00 WIB dan bisa dipicu manual oleh admi
 **Acceptance Criteria:**
 - [ ] Promo memiliki judul, deskripsi, gambar banner opsional, tipe (`PERCENT`/`NOMINAL`), nilai, minimal belanja, item terkait (opsional), tanggal mulai-selesai, dan hari aktif.
 - [ ] Maksimal satu promo diterapkan per item (dipilih diskon terbesar); diskon tidak membuat harga negatif.
+- [ ] Promo bisa diberi kuota porsi (mis. hanya untuk 1.000 porsi). Kuota berkurang saat pesanan dibuat dan dikembalikan saat pesanan dibatalkan atau QRIS kedaluwarsa; promo yang kuotanya habis tidak berlaku lagi. (Masukan mitra 24 Nov 2026.)
 - [ ] Promo kedaluwarsa otomatis tidak tampil dan tidak berlaku.
 - [ ] Nilai diskon tersimpan per baris di `order_items.discount_amount` untuk analitik dan ekspor Olsera.
+
+---
+
+> Bagian 2.2.14–2.2.19 ditambahkan pada revisi 1.2 berdasarkan diskusi mitra 24 Nov 2026 (`docs/notulen/2026-11-24-analisis-gap-diskusi-mitra.md`). Setiap bagian memuat **status implementasi per 28 Nov 2026** (commit `fc6dbba`).
+
+#### 2.2.14 Mode Layanan & Opsi Pembayaran Outlet (FR-026)
+
+**Deskripsi:** Admin mengatur cara outlet melayani pesanan dari QR meja:
+- **`SELF_PICKUP_PAGER` (Matwona):** pelanggan memesan dari meja, lalu ke kasir untuk membayar dan mengambil pager. Pesanan baru diproses dapur setelah lunas.
+- **`TABLE_SERVICE`:** pesanan diantar pelayan/runner ke meja; cocok dipadukan dengan QRIS.
+
+Admin juga mengaktifkan atau mematikan QRIS (`qris_enabled`). Pengaturan berlaku untuk menu digital, checkout, dan isi struk.
+
+**User Stories:**
+- Sebagai owner, saya ingin mematikan QRIS dari meja, agar pelanggan tetap ke kasir untuk bayar dan mengambil pager.
+- Sebagai kasir, saya ingin pesanan baru diproses setelah pelanggan membayar, agar dapur tidak memasak pesanan yang belum dibayar.
+- Sebagai pelanggan, saya ingin tahu bahwa saya harus ke kasir setelah memesan, agar tidak menunggu di meja tanpa kepastian.
+
+**Acceptance Criteria:**
+- [ ] Admin bisa mengubah `service_mode` dan `qris_enabled` dari halaman Pengaturan; perubahan langsung berlaku di menu publik (cache menu di-invalidate).
+- [ ] Bila `qris_enabled = false`, opsi QRIS tidak tampil di checkout dan server menolak pembayaran QRIS (lihat 2.2.3).
+- [ ] Pada mode `SELF_PICKUP_PAGER`, halaman status pesanan menampilkan instruksi "bayar di kasir dengan menyebut kode pesanan untuk pelunasan & pengambilan pager".
+- [ ] Pada mode `SELF_PICKUP_PAGER`, pesanan bayar di kasir yang belum lunas tidak bisa dipindah ke `CONFIRMED`; aturan ini berada di `order-status.machine.ts`.
+- [ ] Kasir bisa mencatat nomor pager saat menandai lunas (opsional), dan nomor pager tampil di kartu pesanan, tiket dapur, dan halaman status pelanggan.
+
+**Status implementasi:** toggle QRIS, mode layanan, penolakan QRIS di server, dan instruksi di halaman status sudah ada. Aturan "lunas sebelum dikonfirmasi" dan nomor pager belum ada.
+
+---
+
+#### 2.2.15 Cetak Struk & Tiket per Station (FR-024)
+
+**Deskripsi:** Seperti Olsera yang dipakai Matwona, satu pesanan dipecah menjadi beberapa tiket sesuai **station**: struk kasir (lengkap dengan harga), tiket dapur, dan tiket bar (tanpa harga, huruf besar, dengan catatan item). Station tujuan setiap item ditentukan oleh kategori menunya (`categories.printer_station`). Setiap station dihubungkan ke satu printer thermal:
+- **LAN (Ethernet/Wi-Fi):** dikirim langsung ke IP address printer port 9100 dengan perintah ESC/POS. Dipakai untuk printer dapur Matwona (merek "Silicon").
+- **Bluetooth / browser:** dicetak lewat dialog cetak perangkat kasir. Dipakai untuk printer depan.
+
+**User Stories:**
+- Sebagai kasir, saya ingin tiket dapur dan bar keluar otomatis saat pesanan lunas, agar tidak perlu menyampaikan pesanan secara lisan.
+- Sebagai staf dapur, saya ingin tiket hanya berisi item untuk station saya beserta catatannya, agar tidak salah buat.
+- Sebagai owner, saya ingin mengatur printer per station sendiri (nama, tipe, IP), agar bisa menyesuaikan saat ganti printer.
+
+**Acceptance Criteria:**
+- [ ] Admin mengelola daftar station (id, nama, tipe `NETWORK_LAN`/`BLUETOOTH`/`BROWSER`, host, port, merek, aktif) dan bisa menekan "Tes Printer".
+- [ ] Admin menentukan station untuk setiap kategori.
+- [ ] Satu pesanan menghasilkan struk kasir + satu tiket per station yang memiliki item; station nonaktif dilewati.
+- [ ] Tiket station memuat meja, nama pelanggan, kode pesanan, waktu, item, dan catatan; struk kasir memuat harga, diskon, total, metode & status bayar.
+- [ ] Tiket dapur/bar tercetak **otomatis** saat pesanan lunas (mode *self pick-up*) atau dikonfirmasi (mode layanan meja), dan bisa dicetak ulang manual.
+- [ ] Bila printer gagal dihubungi, kasir mendapat pesan error yang jelas dan pesanan tidak gagal.
+- [ ] Pengiriman ke printer LAN berjalan saat API di-deploy di cloud, lewat agen cetak lokal di perangkat kasir atau lewat Olsera (lihat catatan teknis).
+
+**Catatan Teknis:**
+- Printer LAN berada di jaringan lokal outlet sehingga tidak bisa dijangkau dari Cloud Run. Pilihan: (a) **agen cetak lokal** di tablet/laptop kasir yang menerima tiket lewat Socket.IO lalu meneruskannya ke IP printer; (b) **lewat Olsera** setelah approval API keluar dan bila API mendukung pembuatan pesanan (2.2.10). Untuk target Desember 2026, opsi (a) adalah jalur utama.
+- Cetak lewat browser ke printer Bluetooth di tablet Android kemungkinan butuh aplikasi perantara (mis. RawBT) atau driver printer; harus diuji di perangkat outlet.
+
+**Status implementasi:** pemetaan kategori → station, pemecahan tiket, encoder ESC/POS, kirim ke printer LAN dari server, dan tes printer sudah ada (cetak dipicu manual dari kartu pesanan). Cetak otomatis dan agen cetak lokal belum ada.
+
+---
+
+#### 2.2.16 Varian Menu & Navigasi Kategori (FR-027)
+
+**Deskripsi:** Banyak menu Matwona berharga sama dan hanya berbeda sambal, misalnya Tuna Jumbo lada garam, sambal matah, atau dabu-dabu. Agar daftar menu tidak terlalu panjang, item yang memiliki `variant_group` sama dalam satu kategori ditampilkan sebagai **satu kartu**. Pelanggan memilih varian di pop-up, dengan keterangan level pedas dalam kurung, mis. "Sambal Matah (pedas level 2)". Menu juga menyediakan tombol pop-up daftar kategori agar pelanggan bisa lompat ke kategori tanpa scroll.
+
+**User Stories:**
+- Sebagai pelanggan, saya ingin memilih sambal di satu pop-up, agar tidak perlu scroll daftar menu yang panjang.
+- Sebagai pelanggan, saya ingin langsung lompat ke kategori minuman, agar tidak perlu scroll naik-turun.
+- Sebagai owner, saya ingin stok tetap dihitung per varian, agar varian yang habis tidak bisa dipesan.
+
+**Acceptance Criteria:**
+- [ ] Item dengan `variant_group` sama tampil sebagai satu kartu dengan harga "Mulai Rp…" bila harga variannya berbeda.
+- [ ] Pop-up varian menampilkan label varian + level pedas, stok/habis per varian, jumlah, dan catatan; varian habis tidak bisa dipilih.
+- [ ] Item tanpa `variant_group` tetap tampil sebagai kartu biasa.
+- [ ] Tombol kategori membuka daftar kategori dan menggulir ke bagian yang dipilih.
+- [ ] Admin bisa mengisi `variant_group`, `variant_label`, dan `spice_level` di form menu.
+
+**Status implementasi:** semua kriteria di atas sudah ada di kode. Belum ada: varian dua dimensi (ukuran × sambal dalam satu pop-up) dan impor kolom varian dari CSV Olsera.
+
+---
+
+#### 2.2.17 Pengingat & Peringatan Stok (FR-028)
+
+**Deskripsi:** Masukan mitra: saat ramai, kasir jarang mengecek stok, sehingga pelanggan bisa memesan menu yang sudah habis. Sistem mengingatkan kasir untuk mengecek stok pada jam yang diatur admin (default 11.00, 15.00, 18.00 WIB) dan menampilkan menu yang stoknya menipis (≤ 5) atau habis.
+
+**User Stories:**
+- Sebagai owner, saya ingin kasir diingatkan cek stok setiap beberapa jam, agar menu yang habis segera ditandai.
+- Sebagai kasir, saya ingin melihat daftar menu yang stoknya menipis dan mengubah status habis dari satu tempat.
+
+**Acceptance Criteria:**
+- [ ] Admin mengatur jam pengingat (`stock_reminder_hours`, jam WIB).
+- [ ] Pada jam pengingat, dashboard kasir menampilkan banner pengingat yang bisa ditutup; tombol "Cek" membuka daftar stok menipis/habis dengan toggle tersedia.
+- [ ] Pengingat juga dikirim dari server pada jam yang sama ke kanal notifikasi owner (FR-029), walaupun dashboard kasir sedang tidak dibuka.
+- [ ] Saat pesanan membuat stok menipis, owner menerima peringatan stok (FR-029).
+
+**Status implementasi:** banner pengingat (hanya bila dashboard kasir terbuka), sheet cek stok, peringatan stok menipis setelah pesanan, dan event `stock.reminder` sudah ada. Pengingat terjadwal dari server belum ada.
+
+---
+
+#### 2.2.18 Notifikasi Owner (FR-029)
+
+**Deskripsi:** Owner menerima ringkasan setiap pesanan baru (kode, meja, nama, metode bayar, item beserta catatan, total) dan peringatan stok menipis lewat Telegram Bot dan/atau webhook WhatsApp. Pengiriman tidak boleh membuat pembuatan pesanan gagal.
+
+**Acceptance Criteria:**
+- [ ] Admin mengisi Bot Token + Chat ID Telegram dan URL webhook WhatsApp; token ditampilkan tersamarkan.
+- [ ] Tombol "Tes Notifikasi" melaporkan hasil per kanal.
+- [ ] Notifikasi dikirim non-blocking dengan timeout; kegagalan hanya dicatat di log.
+- [ ] Notifikasi memuat catatan item agar catatan yang kurang jelas di struk tetap terbaca owner.
+
+**Status implementasi:** semua kriteria di atas sudah ada. WhatsApp masih berupa webhook generik; penyedia WhatsApp (mis. WhatsApp Cloud API atau gateway lokal) belum dipilih.
+
+---
+
+#### 2.2.19 Absensi Staf dengan PIN (FR-030)
+
+**Deskripsi:** Staf absen masuk/pulang dari perangkat kasir dengan memilih nama dan memasukkan PIN 4–6 digit. Admin mengatur PIN setiap staf dan melihat rekap absensi per rentang tanggal (default 7 hari). Mitra menyebut fitur ini tidak terlalu penting untuk Matwona karena sudah punya sistem absensi sendiri, tetapi berguna bila produk dijual ke outlet lain.
+
+**Acceptance Criteria:**
+- [ ] Admin mengatur PIN staf (disimpan sebagai hash bcrypt).
+- [ ] Absen masuk ditolak bila staf masih tercatat masuk; absen pulang ditolak bila belum absen masuk.
+- [ ] Admin melihat rekap per rentang tanggal dan per staf.
+- [ ] Percobaan PIN salah dibatasi (mis. 5 kali per 10 menit per staf) untuk mencegah PIN ditebak.
+
+**Status implementasi:** semua kriteria kecuali pembatasan percobaan PIN sudah ada.
 
 ---
 
@@ -599,6 +748,8 @@ erDiagram
     USERS ||--o{ REFRESH_TOKENS : owns
     MENU_ITEMS ||--o{ RECOMMENDATION_EVENTS : "shown as"
     ORDERS ||--o{ RECOMMENDATION_EVENTS : "converted in"
+    OUTLETS ||--o{ STAFF_ATTENDANCES : logs
+    USERS ||--o{ STAFF_ATTENDANCES : "clocks in"
 
     OUTLETS {
         uuid id PK
@@ -609,6 +760,9 @@ erDiagram
         json opening_hours
         decimal latitude
         decimal longitude
+        boolean qris_enabled
+        string service_mode
+        json printer_stations
     }
     USERS {
         uuid id PK
@@ -616,8 +770,16 @@ erDiagram
         string name
         string email UK
         string password_hash
+        string pin_hash
         enum role
         boolean is_active
+    }
+    STAFF_ATTENDANCES {
+        uuid id PK
+        uuid outlet_id FK
+        uuid user_id FK
+        datetime clock_in_at
+        datetime clock_out_at
     }
     DINING_TABLES {
         uuid id PK
@@ -631,6 +793,7 @@ erDiagram
         uuid outlet_id FK
         string name
         int sort_order
+        string printer_station
     }
     MENU_ITEMS {
         uuid id PK
@@ -639,6 +802,7 @@ erDiagram
         int price
         int stock
         string sku
+        string variant_group
         string olsera_product_id
         boolean is_available
         boolean is_archived
@@ -681,6 +845,7 @@ erDiagram
         string title
         enum discount_type
         int discount_value
+        int max_quantity
         date starts_on
         date ends_on
     }
@@ -735,16 +900,16 @@ flowchart TD
     D --> E["Keranjang + Sering dibeli bersama"]
     E -->|Tambah rekomendasi| D
     E --> F["Checkout: isi nama, no. HP opsional"]
-    F --> G{"Pilih metode bayar"}
-    G -->|QRIS| H["Midtrans Snap: scan & bayar"]
+    F --> G{"Pilih metode bayar<br/>(QRIS hanya tampil bila<br/>diaktifkan outlet)"}
+    G -->|QRIS| H["Midtrans: scan & bayar"]
     H --> I{"Pembayaran berhasil<br/>≤ 15 menit?"}
     I -->|Ya| J["Status: Lunas, menunggu kasir"]
     I -->|Tidak / kedaluwarsa| K["Pesanan dibatalkan,<br/>pilih ulang metode"]
     K --> G
-    G -->|Bayar di kasir| L["Status: Belum bayar,<br/>bayar di kasir"]
-    L --> M["Kasir terima pembayaran<br/>& tandai lunas"]
+    G -->|Bayar di kasir| L["Status: Belum bayar,<br/>ke kasir sebut kode pesanan"]
+    L --> M["Kasir terima pembayaran,<br/>tandai lunas & beri pager"]
     M --> J
-    J --> N["Kasir konfirmasi & teruskan<br/>ke dapur manual"]
+    J --> N["Kasir konfirmasi; tiket dapur/bar<br/>tercetak per station"]
     N --> O["Status: Sedang disiapkan"]
     O --> P["Status: Disajikan"]
     P --> Q["Selesai"]
@@ -759,9 +924,9 @@ flowchart TD
     C --> D{"Metode bayar?"}
     D -->|QRIS, sudah lunas| E["Konfirmasi pesanan"]
     D -->|Bayar di kasir| F["Terima pembayaran pelanggan"]
-    F --> G["Tandai Lunas"]
+    F --> G["Tandai Lunas<br/>& serahkan pager"]
     G --> E
-    E --> H["Cetak/catat ringkasan<br/>dan teruskan ke dapur manual"]
+    E --> H["Tiket dapur/bar tercetak<br/>per station (FR-024)"]
     H --> I["Ubah status: Diproses"]
     I --> J["Ubah status: Disajikan"]
     J --> K["Ubah status: Selesai"]
@@ -951,6 +1116,13 @@ Konvensi: nama tabel `snake_case` jamak, primary key UUID v7, nominal uang `INTE
 | longitude | DECIMAL(9,6) | NULL | Koordinat peta |
 | opening_hours | JSONB | NOT NULL | `{ "mon": ["10:00","21:00"], ... }` |
 | social_links | JSONB | NULL | Instagram, TikTok, dll. |
+| qris_enabled | BOOLEAN | NOT NULL, DEFAULT TRUE | Opsi QRIS di checkout (FR-026). Seed Matwona: `false` |
+| service_mode | VARCHAR(30) | NOT NULL, DEFAULT `'SELF_PICKUP_PAGER'` | `SELF_PICKUP_PAGER` atau `TABLE_SERVICE` (FR-026) |
+| stock_reminder_hours | SMALLINT[] | NOT NULL, DEFAULT `{11,15,18}` | Jam WIB pengingat cek stok (FR-028) |
+| telegram_bot_token | VARCHAR(200) | NULL | Token bot notifikasi owner (FR-029) |
+| telegram_chat_id | VARCHAR(64) | NULL | Chat tujuan notifikasi (FR-029) |
+| whatsapp_webhook_url | VARCHAR(500) | NULL | Webhook WhatsApp (FR-029) |
+| printer_stations | JSONB | NULL | `[{ id, name, type, host, port, brand, isActive }]`; NULL = station default (FR-024) |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu pembuatan |
 | updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu update |
 
@@ -963,6 +1135,7 @@ Konvensi: nama tabel `snake_case` jamak, primary key UUID v7, nominal uang `INTE
 | name | VARCHAR(100) | NOT NULL | Nama staf |
 | email | VARCHAR(150) | UNIQUE, NOT NULL | Email login |
 | password_hash | VARCHAR(255) | NOT NULL | bcrypt |
+| pin_hash | VARCHAR(255) | NULL | bcrypt PIN absensi 4–6 digit (FR-030) |
 | role | ENUM(`ADMIN`,`CASHIER`) | NOT NULL | Role |
 | is_active | BOOLEAN | NOT NULL, DEFAULT TRUE | Status akun |
 | failed_login_count | SMALLINT | NOT NULL, DEFAULT 0 | Untuk lockout |
@@ -1003,6 +1176,7 @@ Konvensi: nama tabel `snake_case` jamak, primary key UUID v7, nominal uang `INTE
 | outlet_id | UUID | FK → outlets.id, NOT NULL | Outlet |
 | name | VARCHAR(60) | NOT NULL | Nama kategori |
 | sort_order | INTEGER | NOT NULL, DEFAULT 0 | Urutan tampil |
+| printer_station | VARCHAR(40) | NOT NULL, DEFAULT `'kitchen'` | Station tujuan tiket item kategori ini, mengacu ke `outlets.printer_stations[].id` (FR-024) |
 | olsera_category_id | VARCHAR(64) | NULL | ID kategori di Olsera |
 | is_active | BOOLEAN | NOT NULL, DEFAULT TRUE | Tampil/tidak |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu pembuatan |
@@ -1021,6 +1195,9 @@ Konvensi: nama tabel `snake_case` jamak, primary key UUID v7, nominal uang `INTE
 | image_url | TEXT | NULL | URL Cloudinary |
 | stock | INTEGER | NULL, CHECK (stock >= 0) | NULL = tidak dilacak |
 | sku | VARCHAR(64) | NULL, UNIQUE(outlet_id, sku) | SKU dari Olsera |
+| variant_group | VARCHAR(80) | NULL | Nama kartu gabungan, mis. "Tuna Jumbo" (FR-027) |
+| variant_label | VARCHAR(60) | NULL | Label pilihan, mis. "Sambal Matah" (FR-027) |
+| spice_level | VARCHAR(40) | NULL | Keterangan pedas, mis. "pedas level 2" (FR-027) |
 | olsera_product_id | VARCHAR(64) | NULL, UNIQUE(outlet_id, olsera_product_id) | ID produk Olsera |
 | is_available | BOOLEAN | NOT NULL, DEFAULT TRUE | Toggle tersedia/habis |
 | is_archived | BOOLEAN | NOT NULL, DEFAULT FALSE | Soft delete |
@@ -1113,6 +1290,8 @@ Index: `(outlet_id, created_at)`, `(outlet_id, status)`, `(table_id, created_at)
 | discount_type | ENUM(`PERCENT`,`NOMINAL`) | NOT NULL | Tipe diskon |
 | discount_value | INTEGER | NOT NULL, CHECK (discount_value > 0) | Persen (1–100) atau Rupiah |
 | min_purchase | INTEGER | NOT NULL, DEFAULT 0 | Minimal belanja |
+| max_quantity | INTEGER | NULL | Kuota porsi promo; NULL = tanpa batas (FR-020) |
+| used_quantity | INTEGER | NOT NULL, DEFAULT 0 | Porsi yang sudah memakai promo |
 | active_days | SMALLINT[] | NULL | 1=Senin … 7=Minggu; NULL = setiap hari |
 | starts_on | DATE | NOT NULL | Tanggal mulai |
 | ends_on | DATE | NOT NULL, CHECK (ends_on >= starts_on) | Tanggal selesai |
@@ -1199,9 +1378,27 @@ Index: `(outlet_id, created_at)`, `(outlet_id, status)`, `(table_id, created_at)
 | model_version | VARCHAR(30) | NULL | Versi model |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu event |
 
+#### Tabel: staff_attendances
+
+| Kolom | Tipe Data | Constraint | Deskripsi |
+|-------|-----------|------------|-----------|
+| id | UUID | PK | Primary key |
+| outlet_id | UUID | FK → outlets.id, NOT NULL | Outlet |
+| user_id | UUID | FK → users.id ON DELETE CASCADE, NOT NULL | Staf |
+| clock_in_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu absen masuk |
+| clock_out_at | TIMESTAMPTZ | NULL | Waktu absen pulang; NULL = masih bertugas |
+| note | VARCHAR(200) | NULL | Catatan opsional |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() | Waktu pembuatan |
+
+Index: `(outlet_id, clock_in_at)`, `(user_id, clock_in_at)`. Dipakai FR-030.
+
+> Usulan kolom baru yang belum ada di `schema.prisma`: `orders.pager_number VARCHAR(10) NULL` untuk nomor pager mode *self pick-up* (FR-026).
+
 ### 4.3 API Endpoints
 
 Base URL: `https://api.<domain>/api`. Semua response JSON dengan format `{ "success": true, "data": ... }`.
+
+> Revisi 1.2: tabel Pesanan, Promo & Staf, Sinkronisasi Olsera, dan Event WebSocket disesuaikan dengan route di kode; ditambah tabel Outlet & Operasional serta Absensi. Detail request/response dan status implementasi per endpoint ada di `docs/API.md`.
 
 #### Autentikasi
 
@@ -1241,6 +1438,27 @@ Base URL: `https://api.<domain>/api`. Semua response JSON dengan format `{ "succ
 | PATCH | `/orders/:id/status` | Ubah status sesuai state machine | ✅ CASHIER, ADMIN |
 | POST | `/orders/:id/mark-paid` | Tandai lunas (bayar di kasir) | ✅ CASHIER, ADMIN |
 | POST | `/orders/:id/cancel` | Batalkan dengan alasan | ✅ CASHIER, ADMIN |
+| GET | `/orders/:id/tickets` | Pratinjau struk kasir + tiket per station (FR-024) | ✅ CASHIER, ADMIN |
+| POST | `/orders/:id/print` | Kirim tiket ke printer (body opsional `stationId`) (FR-024) | ✅ CASHIER, ADMIN |
+
+#### Outlet & Operasional
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| GET | `/outlet/settings` | Pengaturan outlet: mode layanan, QRIS, jam pengingat stok, notifikasi, printer station (FR-024, FR-026, FR-028, FR-029) | ✅ ADMIN |
+| PATCH | `/outlet/settings` | Ubah pengaturan outlet (parsial) | ✅ ADMIN |
+| POST | `/outlet/notifications/test` | Kirim notifikasi tes ke Telegram/WhatsApp | ✅ ADMIN |
+| POST | `/outlet/printers/test` | Cetak tiket tes ke satu station | ✅ ADMIN |
+| GET | `/outlet/cashier-info` | Info operasional untuk dashboard kasir (mode, printer, jam pengingat, stok menipis) | ✅ CASHIER, ADMIN |
+| POST | `/outlet/stock-reminder/ping` | Picu event pengingat stok ke dashboard kasir | ✅ CASHIER, ADMIN |
+
+#### Absensi
+
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| GET | `/attendance/staff-options` | Daftar staf aktif + status PIN & status masuk (FR-030) | ✅ CASHIER, ADMIN |
+| POST | `/attendance/clock` | Absen masuk/pulang dengan PIN | ✅ CASHIER, ADMIN |
+| GET | `/attendance` | Rekap absensi (`from`, `to`, `userId`) | ✅ ADMIN |
 
 #### Menu
 
@@ -1273,13 +1491,15 @@ Base URL: `https://api.<domain>/api`. Semua response JSON dengan format `{ "succ
 | Method | Endpoint | Deskripsi | Auth |
 |--------|----------|-----------|------|
 | GET | `/promos` | Daftar promo | ✅ ADMIN |
-| POST | `/promos` | Buat promo | ✅ ADMIN |
-| PUT | `/promos/:id` | Ubah promo | ✅ ADMIN |
+| POST | `/promos` | Buat promo (termasuk kuota `maxQuantity`) | ✅ ADMIN |
+| PATCH | `/promos/:id/toggle` | Aktif/nonaktifkan promo | ✅ ADMIN |
 | DELETE | `/promos/:id` | Hapus promo | ✅ ADMIN |
-| GET | `/users` | Daftar staf | ✅ ADMIN |
-| POST | `/users` | Buat akun kasir | ✅ ADMIN |
-| PATCH | `/users/:id` | Ubah/nonaktifkan akun | ✅ ADMIN |
-| POST | `/users/:id/reset-password` | Reset password | ✅ ADMIN |
+| GET | `/staff` | Daftar staf | ✅ ADMIN |
+| POST | `/staff` | Buat akun staf (PIN absensi opsional) | ✅ ADMIN |
+| PATCH | `/staff/:id/toggle` | Aktif/nonaktifkan akun | ✅ ADMIN |
+| PATCH | `/staff/:id/password` | Reset password | ✅ ADMIN |
+| PATCH | `/staff/:id/pin` | Atur PIN absensi (FR-030) | ✅ ADMIN |
+| DELETE | `/staff/:id` | Hapus akun staf | ✅ ADMIN |
 
 #### Analitik
 
@@ -1299,13 +1519,16 @@ Semua endpoint analitik menerima query `from`, `to` (ISO date) dan `source=all|d
 
 | Method | Endpoint | Deskripsi | Auth |
 |--------|----------|-----------|------|
-| POST | `/pos-sync/products/preview` | Unggah CSV produk → hasil pratinjau + `preview_id` | ✅ ADMIN |
-| POST | `/pos-sync/products/apply` | Terapkan pratinjau (`preview_id`) | ✅ ADMIN |
-| POST | `/pos-sync/history/import` | Impor riwayat transaksi Olsera (data analitik & AI) | ✅ ADMIN |
-| GET | `/pos-sync/transactions/export.csv` | Ekspor transaksi lunas (`from`, `to`) | ✅ ADMIN |
-| GET | `/pos-sync/mappings/:entity` | Ambil pemetaan kolom | ✅ ADMIN |
-| PUT | `/pos-sync/mappings/:entity` | Simpan pemetaan kolom | ✅ ADMIN |
-| GET | `/pos-sync/logs` | Riwayat sinkronisasi | ✅ ADMIN |
+| POST | `/pos-sync/preview` | Unggah CSV produk → hasil pratinjau | ✅ ADMIN |
+| POST | `/pos-sync/apply` | Terapkan pratinjau | ✅ ADMIN |
+| POST | `/pos-sync/transactions/import` | Impor riwayat transaksi Olsera (data analitik & AI) | ✅ ADMIN |
+| GET | `/pos-sync/export-transactions` | Ekspor transaksi lunas ke CSV (`from`, `to`) | ✅ ADMIN |
+| GET | `/pos-sync/mapping` | Ambil pemetaan kolom | ✅ ADMIN |
+| PUT | `/pos-sync/mapping` | Simpan pemetaan kolom | ✅ ADMIN |
+| GET | `/pos-sync/history` | Riwayat sinkronisasi | ✅ ADMIN |
+| GET | `/pos-sync/olsera-test/endpoints` | Daftar endpoint baca Olsera yang diizinkan konsol uji | ✅ ADMIN |
+| POST | `/pos-sync/olsera-test/token` | Uji ambil token Olsera (kredensial tidak disimpan) | ✅ ADMIN |
+| POST | `/pos-sync/olsera-test/probe` | Uji panggil endpoint GET read-only Olsera | ✅ ADMIN |
 
 #### Rekomendasi (Admin) & Internal AI Service
 
@@ -1326,6 +1549,7 @@ Semua endpoint analitik menerima query `from`, `to` (ISO date) dan `source=all|d
 | `order.updated` | Server → Kasir & Pelanggan | `outlet:<id>:cashier`, `order:<code>` | `{ order_code, status }` |
 | `payment.updated` | Server → Kasir & Pelanggan | `outlet:<id>:cashier`, `order:<code>` | `{ order_code, payment_status }` |
 | `menu.updated` | Server → Pelanggan | `outlet:<id>:menu` | `{ menu_item_id, is_available }` |
+| `stock.reminder` | Server → Kasir | `outlet:<id>:cashier` | `{ message, lowStockItems, triggeredAt }` (FR-028) |
 
 #### Contoh: `POST /api/public/orders`
 
@@ -1593,7 +1817,9 @@ NEXT_PUBLIC_GMAPS_EMBED_URL=
 | Service | Kegunaan | Dokumentasi |
 |---------|----------|-------------|
 | Midtrans Snap (QRIS) | Pembayaran online pelanggan | https://docs.midtrans.com |
-| Olsera POS | Sumber master menu/harga/stok & tujuan ekspor transaksi (CSV sekarang, API saat akses tersedia) | Backoffice Olsera milik mitra; dokumentasi API menunggu konfirmasi dari Olsera |
+| Olsera POS | Sumber master menu/harga/stok & tujuan ekspor transaksi (CSV sekarang, Open API setelah akses di-approve) | Olsera Open API v1 (`/api/open-api/v1/<lang>/...`, token dari App ID + secret key). Key sudah ada, akses menunggu approval Olsera (28 Nov 2026) |
+| Telegram Bot API | Notifikasi pesanan & stok ke owner (FR-029) | https://core.telegram.org/bots/api |
+| Printer thermal ESC/POS | Cetak struk & tiket per station via LAN (port 9100) atau Bluetooth (FR-024) | Manual printer masing-masing merek (dapur Matwona: "Silicon" LAN) |
 | Cloudinary | Penyimpanan & optimasi foto menu | https://cloudinary.com/documentation |
 | Google Maps Embed | Peta lokasi di landing page | https://developers.google.com/maps/documentation/embed |
 | mlxtend | FP-Growth & association rules | https://rasbt.github.io/mlxtend/ |
@@ -1670,6 +1896,8 @@ Diasumsikan hari ini (30 Oktober 2026) berada di **minggu ke-7** perkuliahan. Ta
 | 15 | **Beta Release** | Deploy production; final presentation ke Dosen Pendamping | Final report, presentasi & demo |
 | 16 | **Exhibition** | Demo di booth: QR meja nyata, dashboard kasir & owner, poster, video | Exhibition (produk, poster, video) |
 
+**Revisi 28 Nov 2026 (minggu 11):** setelah diskusi mitra 24 Nov, tim menargetkan fitur selesai **7 Desember** (paling lambat **14 Desember**) 2026. Sebelum tanggal itu tim kembali ke outlet untuk menguji cetak tiket ke printer dapur (LAN) dan printer depan (Bluetooth). Task turunannya ada di `docs/BACKLOG.md` (S3-11 s.d. S3-27).
+
 **Definisi MVP (minggu 9):** FR-001 s.d. FR-004, FR-006, FR-008, FR-009, FR-010 (dasar) berjalan di staging. Fitur lain boleh masih dalam bentuk mockup.
 
 **Definition of Done per fitur:** kode di-review & di-merge ke `develop`, acceptance criteria lulus, test tertulis, dokumentasi API diperbarui, dan sudah dideploy ke staging.
@@ -1698,16 +1926,19 @@ Setiap anggota mencatat aktivitas di logbook dan task board, serta melakukan com
 
 | ID | Risiko | Dampak | Kemungkinan | Mitigasi |
 |----|--------|--------|-------------|----------|
-| R-01 | Akses API Olsera tidak didapat sampai akhir semester | Sinkronisasi tidak realtime | Tinggi | Adapter pattern + CSV import/export (FR-013). PM mengirim permintaan akses partner ke Olsera di minggu 7 dan menyimpan buktinya. Jika Olsera tidak mendukung impor transaksi, CSV ekspor dipakai untuk rekonsiliasi harian dan kasir tetap mencatat di Olsera |
+| R-01 | Approval akses API Olsera tidak keluar sampai akhir semester (key sudah ada dan sudah dicoba, status 28 Nov 2026: menunggu approval) | Sinkronisasi tidak realtime; pesanan tidak bisa dikirim ke Olsera | Tinggi | Adapter pattern + CSV import/export (FR-013). PM menindaklanjuti approval ke Olsera dan menyimpan buktinya. Jalur cetak (FR-024) tidak bergantung pada Olsera. Jika Olsera tidak mendukung impor transaksi, CSV ekspor dipakai untuk rekonsiliasi harian dan kasir tetap mencatat di Olsera |
 | R-02 | Format export Olsera berbeda dari asumsi | Impor gagal | Sedang | Pemetaan kolom yang bisa dikonfigurasi + pratinjau; minta contoh file asli sedini mungkin |
 | R-03 | Data transaksi historis sedikit (cold start) | Rule asosiasi lemah | Sedang | Fallback "Populer sekarang"; turunkan `min_support` setelah EDA; data pesanan digital selama uji coba menambah data |
-| R-04 | Mitra belum punya akun Midtrans produksi | QRIS hanya bisa demo sandbox | Tinggi | Demo memakai sandbox simulator; opsi "bayar di kasir" tetap fungsional; aktivasi produksi masuk roadmap |
+| R-04 | Mitra belum punya akun Midtrans produksi | QRIS hanya bisa demo sandbox | Rendah (QRIS dimatikan untuk Matwona sejak 24 Nov 2026) | Demo memakai sandbox simulator; opsi "bayar di kasir" adalah alur utama; aktivasi produksi masuk roadmap |
 | R-05 | Jumlah meja berubah-ubah | QR perlu dicetak ulang | Sedang | Manajemen meja dinamis + regenerate & cetak PDF QR kapan saja |
 | R-06 | Internet outlet tidak stabil | Pesanan terlambat sampai kasir | Sedang | Reconnect otomatis + polling fallback; notifikasi koneksi di dashboard kasir |
 | R-07 | Scope terlalu besar untuk ±9 minggu | Fitur tidak selesai | Sedang | Prioritas MoSCoW; fitur Should/Could dipotong lebih dulu; MVP minggu 9 fokus pada alur inti |
 | R-08 | Penyalahgunaan QR (pesanan iseng dari luar outlet) | Pesanan palsu | Rendah | Rate limit, regenerate token, pesanan "bayar di kasir" wajib dikonfirmasi kasir sebelum diproses |
 | R-09 | Cold start Cloud Run saat demo | Respons lambat di depan penguji | Sedang | `min-instances=1` selama minggu 15–16; warm-up request sebelum presentasi |
 | R-10 | Lisensi font Mosvita tidak tersedia | Tampilan beda dari brand | Rendah | Fallback Plus Jakarta Sans; konfirmasi file font ke mitra |
+| R-11 | Printer LAN outlet tidak terjangkau dari API di cloud | Tiket dapur tidak tercetak setelah deploy | Tinggi | Agen cetak lokal di perangkat kasir yang menerima tiket lewat Socket.IO; atau cetak lewat Olsera setelah approval API keluar (FR-024) |
+| R-12 | Printer tidak kompatibel (merek "Silicon" LAN, printer Bluetooth di tablet Android) | Cetak gagal di outlet; masalah yang sama pernah dialami aplikasi pembanding | Sedang | Pakai perintah ESC/POS standar; uji langsung di outlet sebelum 7 Des 2026; siapkan aplikasi perantara (mis. RawBT) untuk Bluetooth |
+| R-13 | Pelanggan memesan menu yang sudah habis saat jam ramai | Pesanan dibatalkan, pelanggan kecewa | Sedang | Pengingat cek stok terjadwal (FR-028), peringatan stok menipis ke owner (FR-029), toggle habis cepat dari dashboard kasir |
 
 ---
 
@@ -1728,13 +1959,16 @@ Setiap anggota mencatat aktivitas di logbook dan task board, serta melakukan com
 | ID | Skenario | Aktor | Hasil yang Diharapkan |
 |----|----------|-------|------------------------|
 | UAT-01 | Pelanggan scan QR meja, pesan 2 item, bayar di kasir | Pelanggan, Kasir | Pesanan tampil di kasir ≤ 2 detik; kasir menandai lunas; status pelanggan berubah |
-| UAT-02 | Pelanggan bayar QRIS (sandbox) | Pelanggan | Status otomatis "Lunas" tanpa campur tangan kasir |
+| UAT-02 | Pelanggan bayar QRIS (sandbox, outlet dengan QRIS aktif; untuk Matwona cukup cek opsi QRIS tidak tampil) | Pelanggan | Status otomatis "Lunas" tanpa campur tangan kasir |
 | UAT-03 | Owner menandai menu habis | Owner | Menu tidak bisa dipesan pelanggan |
 | UAT-04 | Owner impor CSV produk dari Olsera | Owner | Pratinjau benar; harga di menu digital sama dengan Olsera |
 | UAT-05 | Owner ekspor transaksi minggu ini | Owner | CSV berisi semua pesanan lunas dengan total sesuai dashboard |
 | UAT-06 | Pelanggan menambah item dari rekomendasi | Pelanggan | Item masuk keranjang; event tercatat di performa rekomendasi |
 | UAT-07 | Owner melihat analitik 30 hari | Owner | Omzet & menu terlaris sesuai data uji |
 | UAT-08 | Owner menambah meja baru dan mencetak QR | Owner | QR baru langsung bisa dipakai memesan |
+| UAT-09 | Kasir menandai lunas pesanan berisi makanan & minuman | Kasir | Tiket dapur keluar di printer LAN dapur, tiket bar di printer depan, struk kasir lengkap dengan total |
+| UAT-10 | Pelanggan memilih Tuna Jumbo varian sambal matah dari pop-up | Pelanggan | Varian benar masuk keranjang; varian habis tidak bisa dipilih |
+| UAT-11 | Jam pengingat stok tiba saat dashboard kasir terbuka | Kasir | Banner pengingat muncul; kasir bisa menandai menu habis dari daftar stok |
 
 **Metrik keberhasilan produk (diukur saat uji coba di outlet):**
 - Waktu rata-rata dari scan QR sampai pesanan terkonfirmasi < 3 menit.
@@ -1770,7 +2004,7 @@ Setiap anggota mencatat aktivitas di logbook dan task board, serta melakukan com
 | Versi | Target | Fitur |
 |-------|--------|-------|
 | v1.0 | Akhir semester (minggu 15–16) | Seluruh fitur Must & Should dalam PRD ini |
-| v1.1 | +1–2 bulan | Adapter API Olsera (jika akses diberikan), cetak struk thermal, panggil pelayan |
+| v1.1 | +1–2 bulan | Adapter API Olsera (setelah approval keluar) termasuk kirim pesanan ke Olsera, panggil pelayan, perhitungan HPP & margin per menu, saran operasional dari analisis jam ramai |
 | v2.0 | +3–6 bulan | Kitchen Display System, multi-outlet, program loyalitas berbasis no. HP, pre-order/takeaway dari landing page |
 | v3.0 | +6–12 bulan | Multi-tenant SaaS untuk UMKM lain, prediksi permintaan bahan (tuna & ayam) dengan time-series forecasting, rekomendasi personal berbasis riwayat pelanggan, integrasi POS lain |
 
@@ -1778,17 +2012,19 @@ Setiap anggota mencatat aktivitas di logbook dan task board, serta melakukan com
 
 ## Lampiran G: Pertanyaan Terbuka untuk Mitra
 
-| No | Pertanyaan | Dibutuhkan Untuk | Target Jawaban |
-|----|-----------|------------------|----------------|
-| 1 | Jumlah dan penamaan meja saat ini serta rencana penambahan | Manajemen meja & cetak QR | Minggu 8 |
-| 2 | Contoh file export **produk** dan **riwayat transaksi** (≥ 3 bulan) dari backoffice Olsera | Pemetaan CSV, data latih AI, analitik | Minggu 7–8 |
-| 3 | Apakah backoffice Olsera mitra mendukung impor transaksi? Apakah mitra bersedia membantu meminta akses API ke Olsera? | Desain sinkronisasi transaksi | Minggu 8 |
-| 4 | Apakah mitra memiliki atau bersedia membuat akun Midtrans? | Aktivasi QRIS produksi | Minggu 10 |
-| 5 | Foto menu resmi, deskripsi menu, alamat, jam buka, dan akun media sosial | Landing page & menu digital | Minggu 8 |
-| 6 | File logo SVG dan font Mosvita | Penerapan brand | Minggu 8 |
-| 7 | Perangkat yang tersedia di kasir (tablet/laptop/printer thermal) | Desain dashboard kasir & fitur cetak | Minggu 8 |
-| 8 | Jadwal yang memungkinkan untuk uji coba dan UAT di outlet | Lampiran E | Minggu 12 |
-| 9 | Kesediaan menjadi studi kasus & persetujuan pengajuan HKI | Exhibition & HKI | Minggu 14 |
+| No | Pertanyaan | Dibutuhkan Untuk | Target Jawaban | Jawaban / Status (28 Nov 2026) |
+|----|-----------|------------------|----------------|--------------------------------|
+| 1 | Jumlah dan penamaan meja saat ini serta rencana penambahan | Manajemen meja & cetak QR | Minggu 8 | – |
+| 2 | Contoh file export **produk** dan **riwayat transaksi** (≥ 3 bulan) dari backoffice Olsera | Pemetaan CSV, data latih AI, analitik | Minggu 7–8 | – |
+| 3 | Apakah backoffice Olsera mitra mendukung impor transaksi? Apakah mitra bersedia membantu meminta akses API ke Olsera? | Desain sinkronisasi transaksi | Minggu 8 | **Sebagian terjawab.** Olsera menyediakan Open API (App ID + secret key); key sudah didapat lewat akun mitra dan sudah dicoba, tetapi akses masih menunggu approval Olsera |
+| 4 | Apakah mitra memiliki atau bersedia membuat akun Midtrans? | Aktivasi QRIS produksi | Minggu 10 | **Tidak diperlukan untuk Matwona.** Mitra memilih bayar di kasir karena layanan *self pick-up* dengan pager (24 Nov 2026) |
+| 5 | Foto menu resmi, deskripsi menu, alamat, jam buka, dan akun media sosial | Landing page & menu digital | Minggu 8 | – |
+| 6 | File logo SVG dan font Mosvita | Penerapan brand | Minggu 8 | – |
+| 7 | Perangkat yang tersedia di kasir (tablet/laptop/printer thermal) | Desain dashboard kasir & fitur cetak | Minggu 8 | **Terjawab (24 Nov 2026).** Laptop untuk Olsera + tablet untuk pesanan QR; printer depan Bluetooth (2 unit); printer dapur LAN merek "Silicon" (diatur via IP address); printer sudah dipetakan per grup produk di Olsera |
+| 8 | Jadwal yang memungkinkan untuk uji coba dan UAT di outlet | Lampiran E | Minggu 12 | **Sebagian.** Tim kembali ke outlet sebelum 7–14 Des 2026 untuk uji cetak; tanggal pasti belum ditentukan |
+| 9 | Kesediaan menjadi studi kasus & persetujuan pengajuan HKI | Exhibition & HKI | Minggu 14 | – |
+
+Tanda "–" berarti status belum diperbarui di dokumen ini. Notulen lengkap diskusi 24 Nov 2026 ada di `docs/notulen/`.
 
 ---
 
@@ -1798,6 +2034,7 @@ Setiap anggota mencatat aktivitas di logbook dan task board, serta melakukan com
 |-------|---------|-----------|--------|
 | 1.0 | 30 Oktober 2026 | Dokumen awal berdasarkan notulensi mitra Matwona, Panduan Computing Project 2026, dan Brand Guideline Matwona | Tim Computing Project |
 | 1.1 | 30 Oktober 2026 | Versi stack diselaraskan dengan scaffold repo: Next.js 16, NestJS 12 (ESM), Prisma 7, Tailwind CSS v4, TypeScript 6, Vitest | Tim Computing Project |
+| 1.2 | 28 November 2026 | Revisi dari diskusi mitra 24 Nov 2026: bayar di kasir jadi alur utama & QRIS opsional per outlet (FR-005 turun ke Should); FR-024 naik ke Must menjadi cetak tiket per station; FR baru FR-026 s.d. FR-030 (mode layanan, varian menu, pengingat stok, notifikasi owner, absensi PIN); kuota promo di FR-020; status API Olsera (key ada, menunggu approval); batasan printer LAN dari cloud; tabel database & endpoint disesuaikan dengan kode (`fc6dbba`); risiko R-11 s.d. R-13; jawaban Lampiran G no. 3, 4, 7, 8 | Tim Computing Project |
 
 ---
 

@@ -48,3 +48,6 @@ skills-lock.json
 
 # Local design references and browser review artifacts
 /tmp/design-review/
+
+# transkrip mentah diskusi mitra (repo public; simpan di luar git)
+docs/notulen/*transkrip*

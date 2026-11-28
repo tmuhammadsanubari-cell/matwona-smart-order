@@ -59,6 +59,13 @@ Catatan implementasi (S1-06):
 - Diskon promo selalu 0 sampai S3-08. Setelah commit, `order.created` dipancarkan ke room kasir (S1-08).
 - `GET /public/orders/:code` (S1-08) wajib header `X-Table-Token` → `PublicOrderDto`. Hanya pesanan yang dibuat dari meja token tersebut; kode milik meja lain/tidak dikenal → 404 `NOT_FOUND`; token tidak valid → 400 `INVALID_TABLE_TOKEN`.
 
+Catatan implementasi (S3-11, S3-12, S3-17; `fc6dbba`):
+- `GET /public/outlets/:slug/menu` sekarang juga mengembalikan `outlet.qrisEnabled` dan `outlet.serviceMode` (`SELF_PICKUP_PAGER` | `TABLE_SERVICE`) agar checkout menyembunyikan QRIS dan halaman status menampilkan instruksi yang sesuai (FR-026).
+- Item menu publik memuat `variantGroup`, `variantLabel`, `spiceLevel` (null bila bukan varian). Web mengelompokkan item ber-`variantGroup` sama dalam satu kategori menjadi satu kartu (FR-027). `stock` hanya dikirim bila stok dilacak dan tersisa 1–5 (untuk label "sisa sedikit").
+- `POST /public/orders` dengan `paymentMethod = "QRIS"` saat outlet mematikan QRIS → 400 `VALIDATION_ERROR` "Pembayaran QRIS saat ini dinonaktifkan untuk outlet ini. Silakan bayar di kasir."
+- Promo dengan kuota (`maxQuantity`) hanya berlaku bila sisa kuota > 0; diskon dihitung paling banyak sebanyak sisa kuota, lalu `usedQuantity` bertambah dalam transaksi yang sama. Kuota dikembalikan saat pesanan dibatalkan kasir atau QRIS kedaluwarsa.
+- Setelah pesanan dibuat, notifikasi ke Telegram/webhook WhatsApp dikirim non-blocking (FR-029); bila ada item yang stoknya turun ke ≤ 5, peringatan stok ikut dikirim.
+
 ## Pembayaran (FR-005)
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
@@ -66,6 +73,7 @@ Catatan implementasi (S1-06):
 | ✅ | POST | `/payments/midtrans/notification` | signature |
 
 Catatan implementasi (S2-01, S2-02):
+- Bila outlet mematikan QRIS (`qrisEnabled = false`, default seed Matwona), `POST /public/orders/:code/pay` → 400 `VALIDATION_ERROR` "Pembayaran QRIS sedang dinonaktifkan oleh outlet." (FR-026).
 - `POST /public/orders/:code/pay` (S2-01): Membuat transaksi Snap QRIS dengan batas waktu 15 menit. Wajib header `X-Table-Token` dari meja yang memesan. Mengembalikan `{ orderCode, snapToken, redirectUrl, expiresAt }`. Bila Midtrans API sedang mock/sandbox placeholder, token otomatis disimulasikan agar alur tetap berjalan.
 - `POST /payments/midtrans/notification` (S2-02): Webhook publik notifikasi status transaksi Midtrans. Wajib verifikasi signature SHA-512 `SHA512(order_id + status_code + gross_amount + serverKey)`. Idempoten (jika sudah PAID, abaikan). Pada status `settlement` / `capture`, pesanan ditandai `PAID` dan dipancarkan event `payment.updated`. Pada `expire`, `cancel`, atau `deny`, pesanan dibatalkan (`CANCELLED`), stok dikembalikan ke database, dan event `payment.updated` dipancarkan ke kasir dan pelanggan.
 
@@ -77,6 +85,13 @@ Catatan implementasi (S2-01, S2-02):
 | ✅ | PATCH | `/orders/:id/status` | CASHIER, ADMIN |
 | ✅ | POST | `/orders/:id/mark-paid` | CASHIER, ADMIN |
 | ✅ | POST | `/orders/:id/cancel` | CASHIER, ADMIN |
+| ✅ | GET | `/orders/:id/tickets` | CASHIER, ADMIN |
+| 🟨 | POST | `/orders/:id/print` | CASHIER, ADMIN |
+
+Catatan implementasi (S3-13, cetak per station, FR-024):
+- `GET /orders/:id/tickets` → `SplitPrintTicket[]`: tiket pertama selalu struk kasir (station `cashier`, berisi harga, subtotal, diskon, total, metode & status bayar, dan baris "Self Pick-up (Ambil Pager)" pada mode `SELF_PICKUP_PAGER`); lalu satu tiket per station lain yang memiliki item (`kitchen`, `bar`, …) tanpa harga, dengan catatan item. Station item = `categories.printerStation`. Station nonaktif dilewati. Setiap tiket punya `plainText` siap cetak dan info printer (`type`, `host`, `port`). Pesanan outlet lain → 404.
+- `POST /orders/:id/print` body opsional `{ stationId }` (tanpa body = semua tiket) → `PrintStationResult[]` (`{ stationId, stationName, type, success, message }`). Tipe `NETWORK_LAN` dikirim sebagai ESC/POS lewat TCP ke `host:port` (default 9100, timeout 2,5 dtk); gagal tidak melempar error, cukup `success: false` + pesan. Tipe `BROWSER`/`BLUETOOTH` hanya mengembalikan `success: true` karena dicetak lewat dialog cetak perangkat kasir. `stationId` tidak ada di pesanan → 404.
+- ⚠️ Pengiriman TCP dilakukan dari server API, sehingga hanya berfungsi bila API berjalan di jaringan yang sama dengan printer. Setelah deploy ke Cloud Run perlu agen cetak lokal (S3-20). Cetak masih dipicu manual; cetak otomatis menyusul (S3-21).
 
 Catatan implementasi (S1-07):
 - Semua endpoint mengembalikan `StaffOrderDto` = `PublicOrderDto` + `{ id, customerPhone, cancelReason, paidAt, updatedAt, allowedNextStatuses, canMarkPaid }`. UI kasir cukup menampilkan tombol sesuai `allowedNextStatuses` (sudah memperhitungkan syarat bayar) dan `canMarkPaid`.
@@ -109,6 +124,7 @@ Catatan implementasi (S1-03):
 - `POST /menu-items` body `{ categoryId, name, price, description?, stock?, sku?, isAvailable?, sortOrder? }`; `PUT /menu-items/:id` parsial (field yang tidak dikirim tidak berubah). Harga integer Rupiah ≥ 0. SKU unik per outlet → 409 `SKU_TAKEN`. Kategori outlet lain → 404.
 - `PATCH /menu-items/:id/availability` body `{ isAvailable }`; item arsip → 404.
 - `DELETE /menu-items/:id` **mengarsipkan** (`isArchived = true`), tidak menghapus permanen; response `MenuItemDto`.
+- (S3-12, S3-13) `POST/PUT /categories` menerima `printerStation` (string 1–40, default `"kitchen"`; mengacu ke `id` di `outlet.printerStations`). `POST/PUT /menu-items` menerima `variantGroup` (≤ 80), `variantLabel` (≤ 60), `spiceLevel` (≤ 40), masing-masing boleh `null`.
 
 Catatan implementasi (S2-11, foto menu):
 - `POST /menu-items/:id/image` **multipart/form-data**, field `file` (+ header `X-CSRF-Token` seperti mutasi lain). JPG/PNG/WebP maks. 2 MB (`MENU_IMAGE_TYPES`, `MENU_IMAGE_MAX_BYTES` di `shared`); jenis dicek dari **isi file** (magic bytes), bukan dari `Content-Type`. Tanpa file / format lain / > 2 MB → 400 `VALIDATION_ERROR` (`details.field = "file"`); > 4 MB ditolak multer sebelum dibaca → 413 `VALIDATION_ERROR` "Ukuran file terlalu besar.". Item arsip/outlet lain → 404. Response `MenuItemDto` dengan `imageUrl` baru.
@@ -139,24 +155,65 @@ Catatan implementasi (S2-04):
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
 | ✅ | GET/POST | `/promos` | ADMIN |
-| ✅ | PUT/DELETE | `/promos/:id` | ADMIN |
+| ✅ | PATCH | `/promos/:id/toggle` | ADMIN |
+| ✅ | DELETE | `/promos/:id` | ADMIN |
 | ✅ | GET | `/staff` | ADMIN |
 | ✅ | POST | `/staff` | ADMIN |
 | ✅ | PATCH | `/staff/:id/toggle` | ADMIN |
 | ✅ | PATCH | `/staff/:id/password` | ADMIN |
+| 🟨 | PATCH | `/staff/:id/pin` | ADMIN |
 | ✅ | DELETE | `/staff/:id` | ADMIN |
+
+Catatan implementasi (koreksi 28 Nov):
+- **Tidak ada `PUT /promos/:id`** (sebelumnya tercatat ✅). Promo hanya bisa dibuat, diaktif/nonaktifkan (`PATCH /promos/:id/toggle`), dan dihapus. Mengubah isi promo = hapus lalu buat ulang, atau tambahkan endpoint update di PR berikutnya.
+- `POST /promos` body `{ title, description?, discountType: "PERCENT"|"NOMINAL", discountValue, minPurchase?, maxQuantity?, startsOn?, endsOn?, menuItemIds? }`. `maxQuantity` ≤ 0 atau kosong = tanpa kuota. Response `PromoDto` memuat `maxQuantity` dan `usedQuantity`. Body belum divalidasi skema Zod.
+- `POST /staff` menerima `pin` opsional (4–6 digit). `PATCH /staff/:id/pin` body `{ pin }` (4–6 digit, skema `setStaffPinSchema`) → `StaffDto` dengan `hasPin`. PIN disimpan sebagai hash bcrypt (FR-030).
+
+## Outlet & Operasional (FR-024, FR-026, FR-028, FR-029)
+| Status | Method | Endpoint | Auth |
+|---|---|---|---|
+| 🟨 | GET | `/outlet/settings` | ADMIN |
+| 🟨 | PATCH | `/outlet/settings` | ADMIN |
+| 🟨 | POST | `/outlet/notifications/test` | ADMIN |
+| 🟨 | POST | `/outlet/printers/test` | ADMIN |
+| 🟨 | GET | `/outlet/cashier-info` | CASHIER, ADMIN |
+| 🟨 | POST | `/outlet/stock-reminder/ping` | CASHIER, ADMIN |
+
+Catatan implementasi (S3-11, S3-13, S3-14, S3-15; `fc6dbba`, modul belum punya test):
+- `GET /outlet/settings` → `OutletSettingsDto`: `{ id, slug, name, qrisEnabled, serviceMode, stockReminderHours, telegramBotTokenConfigured, telegramBotTokenMasked, telegramChatId, whatsappWebhookUrl, printerStations }`. Bot token Telegram **tidak pernah** dikirim utuh (hanya `abcd••••wxyz`). `printerStations` kosong di DB → daftar default (`cashier` BROWSER, `kitchen` NETWORK_LAN 192.168.1.200:9100, `bar` BLUETOOTH).
+- `PATCH /outlet/settings` body parsial (skema `outletSettingsUpdateSchema`, minimal satu field): `qrisEnabled`, `serviceMode`, `stockReminderHours` (jam 0–23, maks. 12; disimpan unik & terurut), `telegramBotToken`, `telegramChatId`, `whatsappWebhookUrl` (string kosong → null), `printerStations` (maks. 10; tiap station `{ id, name, type: "BROWSER"|"NETWORK_LAN"|"BLUETOOTH", host?, port?, brand?, isActive }`). Mengubah `qrisEnabled`/`serviceMode` meng-invalidate cache menu publik.
+- `POST /outlet/notifications/test` (tanpa body) → `{ telegram: { configured, sent, message }, whatsapp: { configured, sent, message } }`. Telegram memakai Bot API `sendMessage` (Markdown); WhatsApp = POST JSON ke URL webhook. Timeout 4 dtk per kanal.
+- `POST /outlet/printers/test` body `{ stationId }` → `PrintStationResult`. Station LAN dikirimi tiket tes ESC/POS; station browser/Bluetooth hanya dikonfirmasi. Station tidak dikenal → 404.
+- `GET /outlet/cashier-info` → `{ qrisEnabled, serviceMode, stockReminderHours, printerStations, lowStockItems: [{ id, name, stock, isAvailable }] }`. `lowStockItems` = item non-arsip yang ditandai habis atau stoknya ≤ 5 (maks. 25). Dipakai dashboard kasir untuk banner pengingat stok.
+- `POST /outlet/stock-reminder/ping` (tanpa body) memancarkan `stock.reminder` ke room kasir dan mengembalikan payload yang sama. Belum ada penjadwal di server; banner terjadwal dihitung di browser kasir dari `stockReminderHours` (pengingat server menyusul di S3-23).
+
+## Absensi (FR-030)
+| Status | Method | Endpoint | Auth |
+|---|---|---|---|
+| 🟨 | GET | `/attendance/staff-options` | CASHIER, ADMIN |
+| ✅ | POST | `/attendance/clock` | CASHIER, ADMIN |
+| 🟨 | GET | `/attendance` | ADMIN |
+
+Catatan implementasi (S3-16):
+- `GET /attendance/staff-options` → `StaffPinOptionDto[]`: `{ id, name, role, hasPin, clockedIn, lastClockInAt }` untuk staf aktif outlet.
+- `POST /attendance/clock` body `{ userId, pin (4–6 digit), action: "IN"|"OUT", note? (≤ 200) }` → `StaffAttendanceDto` `{ id, userId, userName, userRole, clockInAt, clockOutAt, note }`. Staf tidak aktif/outlet lain → 404; PIN belum diatur → 400 `VALIDATION_ERROR`; PIN salah → 401 `UNAUTHORIZED`; `IN` saat masih tercatat masuk atau `OUT` tanpa absen masuk → 400 `VALIDATION_ERROR`.
+- ⚠️ Belum ada batas percobaan PIN salah (S3-25).
+- `GET /attendance?from=YYYY-MM-DD&to=YYYY-MM-DD&userId=` → `StaffAttendanceDto[]` terbaru dulu, maks. 200. Tanggal WIB inklusif; default 7 hari terakhir.
 
 ## Analitik (FR-017…019)
 Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | Status | Method | Endpoint | Auth |
 |---|---|---|---|
-| ⬜ | GET | `/analytics/summary` | ADMIN |
+| 🟨 | GET | `/analytics/summary` | ADMIN |
 | ⬜ | GET | `/analytics/sales-trend` | ADMIN |
 | ⬜ | GET | `/analytics/top-items` | ADMIN |
 | ⬜ | GET | `/analytics/peak-hours` | ADMIN |
 | ⬜ | GET | `/analytics/menu-engineering` | ADMIN |
 | ⬜ | GET | `/analytics/recommendation-performance` | ADMIN |
 | ⬜ | GET | `/analytics/export.csv` | ADMIN |
+
+Catatan implementasi (S3-05, sebagian):
+- `GET /analytics/summary?from=&to=` (default 7 hari terakhir) → `{ from, to, totalRevenue, totalOrders, averageOrderValue, digitalSharePercent, salesTrend: [{ date, revenue, orders }], topItems: [{ id, name, quantity, revenue }], peakHours: [{ hour, orderCount, label }], paymentMethods: [{ method, count, total }] }`. Jam ramai dihitung dalam WIB. Tren, menu terlaris, dan jam ramai sementara digabung di endpoint ini. Filter `source` belum didukung, belum ada perbandingan dengan periode sebelumnya, dan belum ada test.
 
 ## Sinkronisasi Olsera (FR-013, FR-014, FR-023)
 | Status | Method | Endpoint | Auth |
@@ -168,6 +225,16 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | ✅ | GET | `/pos-sync/mapping` | ADMIN |
 | ✅ | PUT | `/pos-sync/mapping` | ADMIN |
 | ✅ | GET | `/pos-sync/history` | ADMIN |
+| ✅ | GET | `/pos-sync/olsera-test/endpoints` | ADMIN |
+| ✅ | POST | `/pos-sync/olsera-test/token` | ADMIN |
+| ✅ | POST | `/pos-sync/olsera-test/probe` | ADMIN |
+
+Catatan implementasi (konsol uji Olsera, `fc6dbba`):
+- **Status Olsera Open API per 28 Nov 2026:** key sudah didapat dan sudah dicoba, tetapi pemanggilan belum berhasil karena akses masih menunggu approval Olsera. `POS_SYNC_ADAPTER` tetap `olsera-csv`; belum ada `OlseraApiAdapter` (FR-023).
+- Konsol uji bersifat **read-only dan stateless**: kredensial dan token tidak disimpan ke DB. `GET .../endpoints` → daftar base URL (production/sandbox) dan endpoint GET yang diizinkan (`global/store`, `collection`, `product`, `productvariantonlysearch`, `order/openorder`, `order/closeorder`, dst.).
+- `POST .../token` body `{ environment?, lang?, grantType: "secret_key"|"refresh_token", appId?, secretKey?, refreshToken?, bodyFormat?: "json"|"form" }` → meneruskan ke `POST <base>/api/open-api/v1/<lang>/token` dan mengembalikan `{ ok, statusCode, durationMs, endpoint, tokenType?, expiresIn?, accessToken?, refreshToken?, rawBody }`. Token dikembalikan ke browser admin untuk dipakai di `probe`, tetapi tidak disimpan server.
+- `POST .../probe` body `{ environment?, lang?, accessToken, path, query? }`; `path` di luar daftar aman (mis. endpoint mutasi atau pembuatan order) → 400 `VALIDATION_ERROR`. Selalu memakai GET dengan header Bearer, timeout 15 dtk, `per_page` maks. 50.
+- ⚠️ Pemanggilan Olsera di sini berada di luar folder `adapters/` (aturan 7 CLAUDE.md); dirapikan di S3-24.
 
 ## Rekomendasi admin (FR-019, FR-022)
 | Status | Method | Endpoint | Auth |
@@ -191,6 +258,7 @@ Semua menerima `from`, `to`, `source=all|digital|olsera`.
 | ✅ | `order.updated` | `order:<code>` | `{ orderCode, status }` |
 | ✅ | `payment.updated` | `outlet:<id>:cashier` | `{ orderCode, paymentStatus, order: StaffOrderDto }` |
 | ✅ | `payment.updated` | `order:<code>` | `{ orderCode, paymentStatus }` |
+| 🟨 | `stock.reminder` | `outlet:<id>:cashier` | `{ message, lowStockItems: [{ id, name, stock }], triggeredAt }` (FR-028; dipancarkan oleh `POST /outlet/stock-reminder/ping`) |
 | ⬜ | `menu.updated` | `outlet:<id>:menu` | `{ menuItemId, isAvailable }` (belum dijadwalkan) |
 
 Catatan implementasi (S1-08):

@@ -47,7 +47,7 @@ Akun seed: `admin@matwona.local` / `Admin123!` (ADMIN), `kasir@matwona.local` / 
 4. **Webhook Midtrans:** verifikasi `signature_key = SHA512(order_id + status_code + gross_amount + SERVER_KEY)` dan idempoten.
 5. **Pembuatan pesanan idempoten** via header `Idempotency-Key`; stok dikurangi dalam transaksi DB yang sama.
 6. **Item menu tidak pernah dihapus permanen** jika pernah dipesan, cukup `isArchived = true`.
-7. **Olsera = sumber kebenaran master data** (nama, harga, stok); Smart Order = sumber kebenaran pesanan digital. Semua akses ke Olsera lewat interface `PosSyncAdapter`. API Olsera **belum tersedia**, jadi adapter aktif adalah `olsera-csv`. Jangan menulis kode yang memanggil Olsera di luar folder `adapters/`.
+7. **Olsera = sumber kebenaran master data** (nama, harga, stok); Smart Order = sumber kebenaran pesanan digital. Semua akses ke Olsera lewat interface `PosSyncAdapter`. Key Olsera Open API sudah ada, tetapi akses **masih menunggu approval Olsera** (status 28 Nov 2026), jadi adapter aktif tetap `olsera-csv`. Jangan membuat fitur kritis (cetak tiket, sinkron pesanan) yang bergantung pada Olsera API. Jangan menulis kode yang memanggil Olsera di luar folder `adapters/` (konsol uji `pos-sync/olsera-test.service.ts` masih melanggar; dirapikan di S3-24).
 8. **AI service boleh mati.** Jika `reco` timeout (> 300 ms) atau error, API mengembalikan fallback "menu terlaris". (NFR-020)
 9. **Pelanggan tidak login.** Akses pelanggan berbasis `X-Table-Token`. Jangan menambah fitur akun pelanggan (di luar scope).
 10. Tidak ada role Dapur / Kitchen Display di v1 (di luar scope).
@@ -84,5 +84,7 @@ Akun seed: `admin@matwona.local` / `Admin123!` (ADMIN), `kasir@matwona.local` / 
 
 - Format kolom CSV export Olsera belum diketahui → parser memakai pemetaan kolom yang bisa dikonfigurasi (`pos_column_mappings`). Contoh file sementara: `apps/api/test/fixtures/olsera-products.sample.csv` (fiktif).
 - Jumlah meja belum pasti → meja dikelola dinamis.
-- Midtrans masih sandbox.
+- Midtrans masih sandbox. QRIS dimatikan untuk Matwona (layanan *self pick-up*, bayar di kasir sambil ambil pager); fitur tetap dipertahankan untuk outlet lain (FR-026).
+- Approval Olsera Open API belum keluar (lihat aturan 7 dan PRD 2.2.10).
+- Printer LAN outlet tidak bisa dijangkau dari API di Cloud Run → butuh agen cetak lokal (FR-024, S3-20).
 - Font Mosvita belum tersedia → fallback Plus Jakarta Sans.
